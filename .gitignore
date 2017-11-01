@@ -99,3 +99,9 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# IDE config file
+.idea/
+
+# Database
+*.sqlite3
