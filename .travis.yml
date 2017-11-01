@@ -1,0 +1,16 @@
+language: python
+
+python:
+  - 3.6
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
+
+install:
+  - pip install -r requirements.txt
+  - pip install pep8
+
+script:
+  - pep8 --count --show-source --exclude=env/ ./
