@@ -1,6 +1,8 @@
 # API-Volontaria [![Build Status](https://travis-ci.org/Volontaria/API-Volontaria.svg?branch=master)](https://travis-ci.org/Volontaria/API-Volontaria) 
 
-API to manage volunteer and order in an organisation.
+**API to manage volunteer and order in an organisation.**
+
+Full documentation for the project is available at [http://volontaria.readthedocs.io](http://volontaria.readthedocs.io).
 
 ## Important
 
