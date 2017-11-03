@@ -2,3 +2,5 @@ Django==1.11
 django-filter==1.1.0
 djangorestframework==3.7.1
 Markdown==2.6.9
+drfdocs==0.0.11
+django-cors-headers==2.0.2

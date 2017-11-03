@@ -13,4 +13,4 @@ install:
   - pip install pep8
 
 script:
-  - pep8 --count --show-source --exclude=env/ ./
+  - pep8 --count --show-source --exclude=migrations source/apiVolontaria
