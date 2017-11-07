@@ -4,3 +4,5 @@ djangorestframework==3.7.1
 Markdown==2.6.9
 drfdocs==0.0.11
 django-cors-headers==2.0.2
+Faker==0.8.6
+factory-boy==2.9.2
