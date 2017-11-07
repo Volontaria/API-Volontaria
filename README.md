@@ -1,4 +1,4 @@
-# API-Volontaria [![Build Status](https://travis-ci.org/Volontaria/API-Volontaria.svg?branch=master)](https://travis-ci.org/Volontaria/API-Volontaria) 
+# API-Volontaria [![Build Status](https://travis-ci.org/Volontaria/API-Volontaria.svg?branch=master)](https://travis-ci.org/Volontaria/API-Volontaria) [![Coverage Status](https://coveralls.io/repos/github/Volontaria/API-Volontaria/badge.svg?branch=master)](https://coveralls.io/github/Volontaria/API-Volontaria?branch=master)
 
 **API to manage volunteer and order in an organisation.**
 
