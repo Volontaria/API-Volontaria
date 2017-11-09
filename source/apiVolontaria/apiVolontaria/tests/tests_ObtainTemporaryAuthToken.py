@@ -33,6 +33,30 @@ class ObtainTemporaryAuthTokenTests(APITestCase):
         token = TemporaryToken.objects.get(user__username='John')
         self.assertContains(response, token)
 
+    def test_authenticate_expired_token(self):
+        """
+        Ensure we can authenticate on the platform when token is expired.
+        """
+        data = {
+            'login': 'John',
+            'password': 'Test123!'
+        }
+
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        token_old = TemporaryToken.objects.get(user__username='John')
+        token_old.expire()
+
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        token_new = TemporaryToken.objects.get(user__username='John')
+
+        self.assertNotContains(response, token_old)
+        self.assertContains(response, token_new)
+
+
     def test_authenticate_bad_password(self):
         """
         Ensure we can't authenticate with a wrong password'
