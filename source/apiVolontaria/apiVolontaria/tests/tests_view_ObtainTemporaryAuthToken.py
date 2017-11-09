@@ -56,7 +56,6 @@ class ObtainTemporaryAuthTokenTests(APITestCase):
         self.assertNotContains(response, token_old)
         self.assertContains(response, token_new)
 
-
     def test_authenticate_bad_password(self):
         """
         Ensure we can't authenticate with a wrong password'
