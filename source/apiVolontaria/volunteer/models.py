@@ -13,8 +13,12 @@ class Cycle(models.Model):
 
     start_date = models.DateTimeField(
         verbose_name="Start date",
+        blank=True,
+        null=True
     )
 
     end_date = models.DateTimeField(
         verbose_name="End date",
+        blank=True,
+        null=True
     )
