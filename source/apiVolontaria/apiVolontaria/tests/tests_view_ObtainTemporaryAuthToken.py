@@ -23,14 +23,16 @@ class ObtainTemporaryAuthTokenTests(APITestCase):
         Ensure we can authenticate on the platform.
         """
         data = {
-            'login': 'John',
+            'login': self.user.username,
             'password': 'Test123!'
         }
 
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        token = TemporaryToken.objects.get(user__username='John')
+        token = TemporaryToken.objects.get(
+            user__username=self.user.username,
+        )
         self.assertContains(response, token)
 
     def test_authenticate_expired_token(self):
@@ -38,20 +40,24 @@ class ObtainTemporaryAuthTokenTests(APITestCase):
         Ensure we can authenticate on the platform when token is expired.
         """
         data = {
-            'login': 'John',
+            'login': self.user.username,
             'password': 'Test123!'
         }
 
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        token_old = TemporaryToken.objects.get(user__username='John')
+        token_old = TemporaryToken.objects.get(
+            user__username=self.user.username,
+        )
         token_old.expire()
 
         response = self.client.post(self.url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        token_new = TemporaryToken.objects.get(user__username='John')
+        token_new = TemporaryToken.objects.get(
+            user__username=self.user.username,
+        )
 
         self.assertNotContains(response, token_old)
         self.assertContains(response, token_new)
@@ -61,7 +67,7 @@ class ObtainTemporaryAuthTokenTests(APITestCase):
         Ensure we can't authenticate with a wrong password'
         """
         data = {
-            'login': 'John',
+            'login': self.user.username,
             'password': 'test123!'  # No caps on the first letter
         }
 
