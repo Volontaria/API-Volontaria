@@ -30,6 +30,11 @@ urlpatterns = [
         ObtainTemporaryAuthToken.as_view(),
         name='token_api'
     ),
+    # Volunteer
+    url(
+        r'^volunteer/',
+        include('volunteer.urls', namespace="volunteer"),
+    ),
     # DOCUMENTATION SWAGGER
     url(
         r'^documentation/',
