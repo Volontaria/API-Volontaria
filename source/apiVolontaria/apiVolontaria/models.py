@@ -9,10 +9,17 @@ from django.conf import settings
 class TemporaryToken(Token):
     """Subclass of Token to add an expiration time."""
     expires = models.DateTimeField(
-        default=timezone.now() + timezone.timedelta(
-            minutes=settings.REST_FRAMEWORK_TEMPORARY_TOKENS['MINUTES']
-        )
+        verbose_name="Expiration date",
+        blank=True,
     )
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.expires = timezone.now() + timezone.timedelta(
+                minutes=settings.REST_FRAMEWORK_TEMPORARY_TOKENS['MINUTES']
+            )
+
+        super(TemporaryToken, self).save(*args, **kwargs)
 
     @property
     def expired(self):
