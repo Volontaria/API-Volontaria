@@ -11,11 +11,11 @@ notifications:
 install:
   - pip install -r requirements.txt
   - pip install coveralls
-  - pip install pycodestyle
+  - pip install flake8
 
 script:
   - coverage run --omit=*.virtualenvs*,*virtualenv* source/apiVolontaria/manage.py test source/apiVolontaria/
-  - pycodestyle --count --show-source --exclude=migrations source/apiVolontaria
+  - flake8 --count --show-source --exclude=migrations source/apiVolontaria
 
 after_success:
   coveralls
