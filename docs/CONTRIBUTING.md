@@ -37,7 +37,7 @@ This project and everyone participating in it is governed by the [Volontaria Cod
 
 You can join the Volontaria Slack team:
 
-* [Join the Volontaria Slack Team](http://nowhere.com/)
+* [Join the Volontaria Slack Team](https://join.slack.com/t/volontaria/shared_invite/enQtMjcxODcyNjQwNTk3LTg4OWViMDk5YTQ4OWUxYTFhOWRlYjM2NmM0M2U3YTQ3NmFjYWM4MjlmNzk3NGYxZGVkNTUxYTgzZGU0YThjODg)
     * Even though Slack is a chat service, sometimes it takes several hours for community members to respond &mdash; please be patient!
     * Use the `#volontaria` channel for general questions or discussion about Volontaria
     * Use the `#api` channel for questions and discussion about the API
@@ -69,7 +69,7 @@ Before creating bug reports, please check [this list](#before-submitting-a-bug-r
 
 #### How Do I Submit A (Good) Bug Report?
 
-Bugs are tracked as [GitHub issues](https://guides.github.com/features/issues/). After you've determined [which repository](#atom-and-packages) your bug is related to, create an issue on that repository and provide the following information by filling in [the template](.github/ISSUE_TEMPLATE.md).
+Bugs are tracked as [GitHub issues](https://guides.github.com/features/issues/). Create an issue on the repository and fill in [the template](.github/ISSUE_TEMPLATE.md) automatically generated in the issue text box.
 
 Explain the problem and include additional details to help maintainers reproduce the problem:
 
@@ -97,33 +97,35 @@ Include details about your configuration and environment:
 
 This section guides you through submitting an enhancement suggestion for Volontaria, including completely new features and minor improvements to existing functionality. Following these guidelines helps maintainers and the community understand your suggestion :pencil: and find related suggestions :mag_right:.
 
-Before creating enhancement suggestions, please check [this list](#before-submitting-an-enhancement-suggestion) as you might find out that you don't need to create one. When you are creating an enhancement suggestion, please [include as many details as possible](#how-do-i-submit-a-good-enhancement-suggestion). Fill in [the template](.github/ISSUE_TEMPLATE.md), including the steps that you imagine you would take if the feature you're requesting existed.
+Before submitting a suggestion, be sure to check these things first:
+
+* **Verify if the same suggestion has already been created on Feathub** so that you do not create a duplicate.
+* **If a suggestion similar to yours**, comment on the existing suggestion instead of creating a new one.
 
 #### How Do I Submit A (Good) Enhancement Suggestion?
 
-Enhancement suggestions are tracked as [GitHub issues](https://guides.github.com/features/issues/). After you've determined [which repository](#atom-and-packages) your enhancement suggestion is related to, create an issue on that repository and provide the following information:
+Enhancement suggestions are tracked in [Volontaria Feathub page](https://feathub.com/Volontaria/API-Volontaria).
 
 * **Use a clear and descriptive title** for the issue to identify the suggestion.
 * **Provide a step-by-step description of the suggested enhancement** in as many details as possible.
 * **Provide specific examples to demonstrate the steps**. Include copy/pasteable snippets which you use in those examples, as [Markdown code blocks](https://help.github.com/articles/markdown-basics/#multiple-lines).
 * **Describe the current behavior** and **explain which behavior you expected to see instead** and why.
-* **Include screenshots and animated GIFs** which help you demonstrate the steps or point out the part of Atom which the suggestion is related to. You can use [this tool](http://www.cockos.com/licecap/) to record GIFs on macOS and Windows, and [this tool](https://github.com/colinkeenan/silentcast) or [this tool](https://github.com/GNOME/byzanz) on Linux.
 * **Explain why this enhancement would be useful** to most Volontaria users.
 * **Specify the name and version of the OS you're using.**
 
 ### Your First Code Contribution
 
-Unsure where to begin contributing to Volontaria? You can start by looking through these `beginner` and `help-wanted` issues:
+Unsure where to begin contributing to Volontaria? You can start by looking through these `good first issue` and `help-wanted` issues:
 
-* [Beginner issues][beginner] - issues which should only require a few lines of code, and a test or two.
-* [Help wanted issues][help-wanted] - issues which should be a bit more involved than `beginner` issues.
+* [Good first issue issues][good first issue] - issues which should only require a few lines of code, and a test or two.
+* [Help wanted issues][help-wanted] - issues which should be a bit more involved than `good first issue` issues.
 
 ### Pull Requests
 * Branches naming convention: prefix + snake_case, ex: enhancement-create_new_cell, fix-pep8_standard_on_cell_model
-* Fill in [the required template](.github/PULL_REQUEST_TEMPLATE.md)
+* Fill in automatically generated [PR template](.github/PULL_REQUEST_TEMPLATE.md) in the PR text box
 * Do not include issue numbers in the PR title
-* Include screenshots and animated GIFs in your pull request whenever possible.
-* Follow the [Python Styleguide](#python-styleguide).
+* Include screenshots and animated GIFs in your pull request whenever possible
+* Follow the [Python Styleguide](#python-styleguide)
 * Document new code based on the [Documentation Styleguide](#documentation-styleguide)
 * End all files with a newline
 
@@ -141,7 +143,6 @@ Unsure where to begin contributing to Volontaria? You can start by looking throu
 * Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
 * Limit the first line to 72 characters or less
 * Reference issues and pull requests liberally after the first line
-* When only changing documentation, include `[ci skip]` in the commit description
 * Consider starting the commit message with an applicable emoji:
     * :art: `:art:` when improving the format/structure of the code
     * :racehorse: `:racehorse:` when improving performance
@@ -165,7 +166,7 @@ All Python must adhere to the [PEP8 Styleguide](https://www.python.org/dev/peps/
 
 Start reading our code and you'll get the hang of it. We optimize for readability:
 
-  * We indent using two spaces (soft tabs)
+  * We indent using four spaces (soft tabs)
   * We ALWAYS put spaces after list items and method parameters (`[1, 2, 3]`, not `[1,2,3]`), around operators (`x += 1`, not `x+=1`), and around hash arrows.
   * We end multi-lines lists or dicts with a comma (
     ```
@@ -183,20 +184,52 @@ Start reading our code and you'll get the hang of it. We optimize for readabilit
       "key3": 3
     }
     ```
+  * When initializing an empty variable, use its type constructor
+  ```
+  mydict =  dict()
+  mylist = list()
+  myint = int()
+  mybool = bool()
+  etc.
+  ```
+  and not
+  ```
+  mydict = {}
+  mylist = []
+  etc.
+  ```
   * This is open source software. Consider the people who will read your code, and make it look nice for them. It's sort of like driving a car: Perhaps you love doing donuts when you're alone, but with passengers the goal is to make the ride as smooth as possible.
 
 ## Additional Notes
 
-### Issue and Pull Request Labels
+### Issue  Labels
 
-This section lists the labels we use to help us track and manage issues and pull requests. Most labels are used across all Volontaria repositories.
+| Label name | `volontaria`‑org :mag_right: | Description |
+| --- | --- | --- |
+| `enhancement` | [search][search-volontaria-org-label-enhancement] | Feature requests. |
+| `backlog` | [search][search-volontaria-org-label-backlog] | Issue to be addressed later. |
+| `next` | [search][search-volontaria-org-label-next] | Issue to be addressed for next release. |
+| `bug` | [search][search-volontaria-org-label-bug] | Confirmed bugs or reports that are very likely to be bugs. |
+| `question` | [search][search-volontaria-org-label-question] | Questions more than bug reports or feature requests (e.g. how do I do X). |
+| `help-wanted` | [search][search-volontaria-org-label-help-wanted] | The Volontaria team would appreciate help from the community in resolving these issues. |
+| `good first issue` | [search][search-volontaria-org-label-good-first-issue] | Less complex issues which would be good first issues to work on for users who want to contribute to Volontaria. |
+| `duplicate` | [search][search-volontaria-org-label-duplicate] | Issues which are duplicates of other issues, i.e. they have been reported before. |
+| `invalid` | [search][search-volontaria-org-label-invalid] | Issues which aren't valid (e.g. user errors). |
 
-#### Type of Issue and Issue State
+[search-volontaria-org-label-enhancement]: https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+archived%3Afalse+label%3Aenhancement+user%3AVolontaria
+[search-volontaria-org-label-backlog]: https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+archived%3Afalse+label%3Abacklog+user%3AVolontaria
+[search-volontaria-org-label-next]: https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+archived%3Afalse+label%3Anext+user%3AVolontaria
+[search-volontaria-org-label-bug]: https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+archived%3Afalse+label%3Abug+user%3AVolontaria
+[search-volontaria-org-label-question]: https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+archived%3Afalse+label%3Aquestion+user%3AVolontaria
+[search-volontaria-org-label-help-wanted]: https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+archived%3Afalse+label%3A"help+wanted"+user%3AVolontaria
+[search-volontaria-org-label-good-first-issue]: https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+archived%3Afalse+user%3AVolontaria+label%3A%22good+first+issue%22
+[search-volontaria-org-label-documentation]: https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+archived%3Afalse+label%3Adocumentation+user%3AVolontaria
+[search-volontaria-org-label-duplicate]: https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+archived%3Afalse+label%3Aduplicate+user%3AVolontaria
+[search-volontaria-org-label-invalid]: https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+archived%3Afalse+label%3Ainvalid+user%3AVolontaria
+[search-volontaria-org-label-review]: https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+archived%3Afalse+label%3Areview+user%3AVolontaria
+[search-volontaria-org-label-in-progress]: https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+archived%3Afalse+label%3A"in+progress"+user%3AVolontaria
 
-Explain issues type and state here.
-
-#### Pull Request Labels
-
-Explain labels here.
+[good first issue]: https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+archived%3Afalse+user%3AVolontaria+label%3A%22good+first+issue%22
+[help-wanted]: https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+archived%3Afalse+label%3A"help+wanted"+user%3AVolontaria
 
 DISCLAIMER: This contributing document is highly based on [Atom's contributing.md](https://github.com/atom/atom/blob/master/CONTRIBUTING.md)
