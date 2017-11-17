@@ -48,7 +48,7 @@ have the right data schema.
 python source/apiVolontaria/manage.py migrate
 ```
 
-> By default this repository work with a Sqlite3 database which is a technology using a simple file in place of a server. You can change this config in `source/apiVolontaria/apiVolontaria/settings.py`. 
+> By default this repository work with a Sqlite3 database which is a technology using a simple file in place of a server. You can change this config in `source/apiVolontaria/apiVolontaria/local_settings.py`. 
  
 ## Test the installation
 
@@ -63,3 +63,7 @@ You can now [visit the homepage](http://localhost:8000/) to validate the install
 ```
 http://localhost:8000/
 ```
+
+## Custom settings
+
+If you need to have custom settings on your local environment, you can override global settings in `source/apiVolontaria/apiVolontaria/local_settings.py`.
