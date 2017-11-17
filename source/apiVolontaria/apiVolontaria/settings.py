@@ -164,3 +164,8 @@ REST_FRAMEWORK_TEMPORARY_TOKENS = {
     'RENEW_ON_SUCCESS': True,
     'USE_AUTHENTICATION_BACKENDS': False,
 }
+
+try:
+    from apiVolontaria.local_settings import *
+except ImportError:
+    pass
