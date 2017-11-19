@@ -84,11 +84,11 @@ class TaskTypes(generics.ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         if self.request.user.has_perm('volunteer.add_tasktype'):
             return self.create(request, *args, **kwargs)
-        else:
-            content = {
-                'detail': "You are not authorized to create a new tasktype.",
-            }
-            return Response(content, status=status.HTTP_403_FORBIDDEN)
+
+        content = {
+            'detail': "You are not authorized to create a new tasktype.",
+        }
+        return Response(content, status=status.HTTP_403_FORBIDDEN)
 
 
 class TaskTypesId(generics.RetrieveUpdateDestroyAPIView):
