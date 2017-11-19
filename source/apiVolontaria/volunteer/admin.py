@@ -1,4 +1,6 @@
 from django.contrib import admin
-from volunteer import models
+
+from . import models
 
 admin.site.register(models.Cycle)
+admin.site.register(models.TaskType)
