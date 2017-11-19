@@ -22,3 +22,27 @@ class Cycle(models.Model):
         blank=True,
         null=True
     )
+
+
+class TaskType(models.Model):
+
+    """
+
+    This class represents the TaskType model.
+
+    """
+
+    class Meta:
+
+        """
+
+        This class represents the TaskType model's metadata.
+
+        """
+
+        verbose_name_plural = 'TaskTypes'
+
+    name = models.CharField(
+        verbose_name="Name",
+        max_length=100,
+    )

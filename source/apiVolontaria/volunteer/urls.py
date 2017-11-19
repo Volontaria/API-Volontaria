@@ -1,6 +1,7 @@
 from django.conf.urls import include, url
 from rest_framework.urlpatterns import format_suffix_patterns
-from volunteer import views
+
+from . import views
 
 urlpatterns = format_suffix_patterns(
     [
@@ -15,5 +16,16 @@ urlpatterns = format_suffix_patterns(
             views.CyclesId.as_view(),
             name='cycles_id',
         ),
-     ]
+        # Tasktypes
+        url(
+            r'^tasktypes$',
+            views.TaskTypes.as_view(),
+            name='tasktypes',
+        ),
+        url(
+            r'^tasktypes/(?P<pk>\d+)$',
+            views.TaskTypesId.as_view(),
+            name='tasktypes_id',
+        ),
+    ]
 )

@@ -16,7 +16,7 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 
-from apiVolontaria.views import ObtainTemporaryAuthToken
+from .views import ObtainTemporaryAuthToken
 
 urlpatterns = [
     # Admin panel
