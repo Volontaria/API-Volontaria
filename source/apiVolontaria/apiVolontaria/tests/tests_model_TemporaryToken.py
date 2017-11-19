@@ -1,5 +1,3 @@
-from rest_framework.test import APIClient
-
 from rest_framework.test import APITestCase
 
 from apiVolontaria.models import TemporaryToken
