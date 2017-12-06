@@ -1,17 +1,14 @@
-from apiVolontaria import serializers
-from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import authenticate
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.response import Response
-from rest_framework import status
 from django.conf import settings
 from django.utils import timezone
+from django.utils.translation import ugettext_lazy as _
 
-from apiVolontaria.models import TemporaryToken
+from rest_framework import generics, status
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.response import Response
 
-"""
-TOKEN
-"""
+from . import serializers
+from .models import TemporaryToken
 
 
 class ObtainTemporaryAuthToken(ObtainAuthToken):
@@ -81,3 +78,13 @@ class ObtainTemporaryAuthToken(ObtainAuthToken):
                 )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class Users(generics.CreateAPIView):
+    """
+    post:
+    Create a new user.
+    """
+    authentication_classes = ()
+    permission_classes = ()
+    serializer_class = serializers.UserBasicSerializer
