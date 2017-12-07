@@ -82,14 +82,38 @@ class ObtainTemporaryAuthToken(ObtainAuthToken):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class Users(generics.CreateAPIView):
+class Users(generics.ListCreateAPIView):
     """
+    get:
+    List all users in the system.
+
     post:
     Create a new user.
     """
-    authentication_classes = ()
-    permission_classes = ()
     serializer_class = serializers.UserBasicSerializer
+
+    def get_queryset(self):
+        return User.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        if self.request.user.has_perm('apiVolontaria.list_user'):
+            return self.list(request, *args, **kwargs)
+
+        content = {
+            'detail': "You are not authorized to list users.",
+        }
+        return Response(content, status=status.HTTP_403_FORBIDDEN)
+
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            self.permission_classes = ()
+
+        return [permission() for permission in self.permission_classes]
+
+    def get_authenticators(self):
+        if self.request.method == 'POST':
+            self.authentication_classes = ()
+        return [auth() for auth in self.authentication_classes]
 
 
 class UsersId(generics.RetrieveAPIView):

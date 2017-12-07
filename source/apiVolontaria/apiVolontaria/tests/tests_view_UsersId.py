@@ -52,7 +52,8 @@ class UsersIdTests(APITestCase):
             )
         )
 
-        content = {"detail": "You are not authorized to get detail of a given user."}
+        content = {"detail": "You are not authorized "
+                             "to get detail of a given user."}
         self.assertEqual(json.loads(response.content), content)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -76,7 +77,8 @@ class UsersIdTests(APITestCase):
         self.assertEqual(content['id'], 1)
 
         # Check the system doesn't return attributes not expected
-        attributes = ['id', 'username', 'email', 'first_name', 'last_name', 'is_active']
+        attributes = ['id', 'username', 'email', 'first_name',
+                      'last_name', 'is_active']
         for key in content.keys():
             self.assertTrue(
                 key in attributes,
