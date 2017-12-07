@@ -16,7 +16,7 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 
-from .views import ObtainTemporaryAuthToken, Users
+from .views import ObtainTemporaryAuthToken, Users, UsersId, UsersActivation
 
 urlpatterns = [
     # Admin panel
@@ -35,6 +35,16 @@ urlpatterns = [
         r'^users$',
         Users.as_view(),
         name='users'
+    ),
+    url(
+        r'^users/activate$',
+        UsersActivation.as_view(),
+        name='users_activation',
+    ),
+    url(
+        r'^users/(?P<pk>\d+)$',
+        UsersId.as_view(),
+        name='users_id',
     ),
     # Volunteer
     url(

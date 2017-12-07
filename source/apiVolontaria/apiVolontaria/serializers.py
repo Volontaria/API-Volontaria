@@ -88,14 +88,9 @@ class UserBasicSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id',
         ]
-        extra_kwargs = {
-            'password': {
-                'write_only': True,
-            }
-        }
 
     email = serializers.EmailField(required=True)
-    password = serializers.CharField(required=True)
+    password = serializers.CharField(required=True, write_only=True)
 
     def create(self, validated_data):
         user = User(**validated_data)
