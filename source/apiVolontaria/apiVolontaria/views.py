@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
 from django.conf import settings
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -6,9 +7,10 @@ from django.utils.translation import ugettext_lazy as _
 from rest_framework import generics, status
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from . import serializers
-from .models import TemporaryToken
+from .models import TemporaryToken, ActivationToken
 
 
 class ObtainTemporaryAuthToken(ObtainAuthToken):
@@ -88,3 +90,72 @@ class Users(generics.CreateAPIView):
     authentication_classes = ()
     permission_classes = ()
     serializer_class = serializers.UserBasicSerializer
+
+
+class UsersId(generics.RetrieveAPIView):
+    """
+    get:
+    Return the detail of a specific user.
+    """
+    serializer_class = serializers.UserBasicSerializer
+
+    def get_queryset(self):
+        return User.objects.filter()
+
+    def get(self, request, *args, **kwargs):
+        if self.request.user.has_perm('apiVolontaria.get_user'):
+            return self.retrieve(request, *args, **kwargs)
+
+        content = {
+            'detail': "You are not authorized to get detail of a given user.",
+        }
+        return Response(content, status=status.HTTP_403_FORBIDDEN)
+
+
+class UsersActivation(APIView):
+    """
+    Activate user from an activation token
+    """
+    authentication_classes = ()
+    permission_classes = ()
+    serializer_class = serializers.UserBasicSerializer
+
+    def post(self, request):
+        """
+        Respond to POSTed username/password with token.
+        """
+        activation_token = request.data.get('activation_token')
+
+        token = ActivationToken.objects.filter(key=activation_token)
+
+        # There is only one reference, we will set the user active
+        if len(token) == 1:
+            # We activate the user
+            user = token[0].user
+            user.is_active = True
+            user.save()
+
+            # We delete the token used
+            token[0].delete()
+
+            # We return the user
+            serializer = serializers.UserBasicSerializer(user)
+            return Response(serializer.data)
+
+        # There is no reference to this token
+        elif len(token) == 0:
+            error = '"{0}" is not a valid activation_token.'. \
+                format(activation_token)
+
+            return Response(
+                {'detail': error},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        # We have multiple token with the same key (impossible)
+        else:
+            error = 'The system have a problem, please contact us, ' \
+                    'it is not your fault.'
+            return Response(
+                {'detail': error},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
