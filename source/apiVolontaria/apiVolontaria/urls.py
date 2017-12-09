@@ -19,11 +19,6 @@ from django.contrib import admin
 from .views import ObtainTemporaryAuthToken, Users, UsersId, UsersActivation
 
 urlpatterns = [
-    # Admin panel
-    url(
-        r'^admin/',
-        admin.site.urls
-    ),
     # Token authentification
     url(
         r'^authentication$',
@@ -55,5 +50,10 @@ urlpatterns = [
     url(
         r'^documentation/',
         include('rest_framework_docs.urls')
-    )
+    ),
+    # Admin panel
+    url(
+        r'^admin/',
+        admin.site.urls
+    ),
 ]
