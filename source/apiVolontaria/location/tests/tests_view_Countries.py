@@ -46,6 +46,7 @@ class CountriesTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(json.loads(response.content), data)
 
     def test_create_existing_country_with_permission(self):
         """
@@ -64,11 +65,16 @@ class CountriesTests(APITestCase):
             format='json',
         )
 
+        err = {
+            'iso_code': ['country with this iso code already exists.']
+        }
+
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(json.loads(response.content), err)
 
     def test_create_new_country_without_permission(self):
         """
-        Ensure we can't create a new address if we don't have the permission.
+        Ensure we can't create a new country if we don't have the permission.
         """
         data = dict(
             iso_code='RC',

@@ -32,6 +32,10 @@ class AddressesTests(APITestCase):
             iso_code="RS",
             country=self.random_country,
         )
+        self.random_country2 = Country.objects.create(
+            name="random country",
+            iso_code="R2",
+        )
         self.address = Address.objects.create(
             address_line1='random address 1',
             postal_code='RAN DOM',
@@ -60,7 +64,51 @@ class AddressesTests(APITestCase):
             format='json',
         )
 
+        data['address_line2'] = ''
+        data['state_province'] = dict(
+            name=self.random_state_province.name,
+            iso_code=self.random_state_province.iso_code
+        )
+        data['country'] = dict(
+            name=self.random_country.name,
+            iso_code=self.random_country.iso_code
+        )
+
+        res = json.loads(response.content)
+        del res['id']
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(res, data)
+
+    def test_create_new_address_incorrect_state_province(self):
+        """
+        Ensure we can't create a new address if the StateProvince is not
+        in the Country.
+        """
+        data = dict(
+            address_line1='random address 2',
+            postal_code='RAN DOM',
+            city='random city',
+            state_province=self.random_state_province.iso_code,
+            country=self.random_country2.iso_code,
+        )
+
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.post(
+            reverse('location:addresses'),
+            data,
+            format='json',
+        )
+
+        res = json.loads(response.content)
+
+        err = {
+            'detail': 'The StateProvince should be linked to the Country'
+        }
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(res, err)
 
     def test_create_new_address_without_permission(self):
         """

@@ -4,14 +4,7 @@ from . import models
 
 
 class CountryBasicSerializer(serializers.ModelSerializer):
-
-    """
-
-    This class represents the Country model serializer.
-
-    A serializer will format the object prior to the interaction with the user.
-
-    """
+    """This class represents the Country model serializer."""
 
     class Meta:
         model = models.Country
@@ -22,14 +15,7 @@ class CountryBasicSerializer(serializers.ModelSerializer):
 
 
 class StateProvinceBasicSerializer(serializers.ModelSerializer):
-
-    """
-
-    This class represents the StateProvince model serializer.
-
-    A serializer will format the object prior to the interaction with the user.
-
-    """
+    """This class represents the StateProvince model serializer."""
 
     def to_representation(self, instance):
         data = dict()
@@ -52,14 +38,7 @@ class StateProvinceBasicSerializer(serializers.ModelSerializer):
 
 
 class AddressBasicSerializer(serializers.ModelSerializer):
-
-    """
-
-    This class represents the Address model serializer.
-
-    A serializer will format the object prior to the interaction with the user.
-
-    """
+    """This class represents the Address model serializer."""
 
     def to_representation(self, instance):
         data = dict()

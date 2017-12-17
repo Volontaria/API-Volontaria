@@ -27,5 +27,16 @@ urlpatterns = format_suffix_patterns(
             views.TaskTypesId.as_view(),
             name='tasktypes_id',
         ),
+        # Cells
+        url(
+            r'^cells$',
+            views.Cells.as_view(),
+            name='cells',
+        ),
+        url(
+            r'^cells/(?P<pk>\d+)$',
+            views.CellsId.as_view(),
+            name='cells_id',
+        ),
     ]
 )

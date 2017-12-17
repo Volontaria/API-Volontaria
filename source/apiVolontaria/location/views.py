@@ -1,11 +1,13 @@
 from rest_framework.response import Response
 from rest_framework import status, generics
 
+from django.core.exceptions import ValidationError
+
 from . import serializers
 
 from .models import Address, Country, StateProvince
 
-# Create your views here.
+
 class Addresses(generics.ListCreateAPIView):
     """
     get:
@@ -21,7 +23,11 @@ class Addresses(generics.ListCreateAPIView):
 
     def post(self, request, *args, **kwargs):
         if self.request.user.has_perm('add_address'):
-            return self.create(request, *args, **kwargs)
+            try:
+                return self.create(request, *args, **kwargs)
+            except ValidationError as err:
+                content = dict(detail=err.message)
+                return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
         content = {
             'detail': "You are not authorized to create a new address.",
@@ -47,7 +53,11 @@ class AddressesId(generics.RetrieveUpdateDestroyAPIView):
 
     def patch(self, request, *args, **kwargs):
         if self.request.user.has_perm('update_address'):
-            return self.update(request, *args, **kwargs)
+            try:
+                return self.update(request, *args, **kwargs)
+            except ValidationError as err:
+                content = dict(detail=err.message)
+                return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
         content = {
             'detail': "You are not authorized to update an address.",
