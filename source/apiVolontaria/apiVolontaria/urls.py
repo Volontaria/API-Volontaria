@@ -46,6 +46,11 @@ urlpatterns = [
         r'^volunteer/',
         include('volunteer.urls', namespace="volunteer"),
     ),
+    # Volunteer
+    url(
+        r'^location/',
+        include('location.urls', namespace="location"),
+    ),
     # DOCUMENTATION SWAGGER
     url(
         r'^documentation/',

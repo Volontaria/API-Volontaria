@@ -1,9 +1,10 @@
+import re
+
 from rest_framework import serializers
 
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 
-import re
 from django.core import exceptions
 
 from .models import ActivationToken

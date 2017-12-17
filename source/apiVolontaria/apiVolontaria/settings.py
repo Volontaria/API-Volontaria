@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'apiVolontaria',
     'volunteer',
+    'location',
 ]
 
 MIDDLEWARE = [
