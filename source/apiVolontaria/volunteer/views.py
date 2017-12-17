@@ -1,5 +1,4 @@
-from rest_framework import generics, filters
-from rest_framework import status
+from rest_framework import generics, filters, status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
@@ -128,5 +127,73 @@ class TaskTypesId(generics.RetrieveUpdateDestroyAPIView):
 
         content = {
             'detail': "You are not authorized to delete a tasktype.",
+        }
+        return Response(content, status=status.HTTP_403_FORBIDDEN)
+
+
+class Cells(generics.ListCreateAPIView):
+
+    """
+
+    get:
+    Return a list of all the existing Cells.
+
+    post:
+    Create a new Cell.
+
+    """
+
+    serializer_class = serializers.CellBasicSerializer
+
+    def get_queryset(self):
+        return models.Cell.objects.filter()
+
+    def post(self, request, *args, **kwargs):
+        if self.request.user.has_perm('volunteer.add_cell'):
+            return self.create(request, *args, **kwargs)
+
+        content = {
+            'detail': "You are not authorized to create a new cell.",
+        }
+        return Response(content, status=status.HTTP_403_FORBIDDEN)
+
+
+class CellsId(generics.RetrieveUpdateDestroyAPIView):
+
+    """
+
+    This class holds the methods available to individual Cells.
+
+    get:
+    Return the detail of a specific Cell.
+
+    patch:
+    Update a specific Cell.
+
+    delete:
+    Delete a specific Cell.
+
+    """
+
+    serializer_class = serializers.CellBasicSerializer
+
+    def get_queryset(self):
+        return models.Cell.objects.filter()
+
+    def patch(self, request, *args, **kwargs):
+        if self.request.user.has_perm('volunteer.update_cell'):
+            return self.update(request, *args, **kwargs)
+
+        content = {
+            'detail': "You are not authorized to update a cell.",
+        }
+        return Response(content, status=status.HTTP_403_FORBIDDEN)
+
+    def delete(self, request, *args, **kwargs):
+        if self.request.user.has_perm('volunteer.delete_cell'):
+            return self.destroy(request, *args, **kwargs)
+
+        content = {
+            'detail': "You are not authorized to delete a cell.",
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)

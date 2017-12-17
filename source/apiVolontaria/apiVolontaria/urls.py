@@ -46,7 +46,7 @@ urlpatterns = [
         r'^volunteer/',
         include('volunteer.urls', namespace="volunteer"),
     ),
-    # Volunteer
+    # Location
     url(
         r'^location/',
         include('location.urls', namespace="location"),

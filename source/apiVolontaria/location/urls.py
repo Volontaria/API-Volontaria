@@ -23,7 +23,7 @@ urlpatterns = format_suffix_patterns(
             name='stateprovinces',
         ),
         url(
-            r'^stateprovinces/(?P<pk>\d+)$',
+            r'^stateprovinces/(?P<pk>[a-zA-Z]+)$',
             views.StateProvincesId.as_view(),
             name='stateprovinces_id',
         ),
@@ -34,7 +34,7 @@ urlpatterns = format_suffix_patterns(
             name='countries',
         ),
         url(
-            r'^countries/(?P<pk>\d+)$',
+            r'^countries/(?P<pk>[a-zA-Z]+)$',
             views.CountriesId.as_view(),
             name='countries_id',
         ),
