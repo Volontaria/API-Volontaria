@@ -6,6 +6,8 @@ from django.contrib.auth import authenticate
 import re
 from django.core import exceptions
 
+from .models import ActivationToken
+
 
 class AuthCustomTokenSerializer(serializers.Serializer):
     login = serializers.CharField()
@@ -68,3 +70,36 @@ class AuthCustomTokenSerializer(serializers.Serializer):
         attrs['user'] = user
 
         return attrs
+
+
+class UserBasicSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'is_active',
+            'password',
+        )
+        read_only_fields = [
+            'id',
+        ]
+
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(required=True, write_only=True)
+
+    def create(self, validated_data):
+        user = User(**validated_data)
+
+        # Put user inactive by default
+        user.is_active = False
+        user.save()
+
+        # Create an ActivationToken to activate user in the future
+        ActivationToken.objects.create(user=user)
+
+        return user

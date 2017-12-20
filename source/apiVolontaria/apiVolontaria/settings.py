@@ -166,6 +166,12 @@ REST_FRAMEWORK_TEMPORARY_TOKENS = {
     'USE_AUTHENTICATION_BACKENDS': False,
 }
 
+# Activation Token
+
+ACTIVATION_TOKENS = {
+    'MINUTES': 2880,
+}
+
 try:
     from apiVolontaria.local_settings import *
 except ImportError:
