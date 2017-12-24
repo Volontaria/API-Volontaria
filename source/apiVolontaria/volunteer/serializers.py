@@ -184,3 +184,25 @@ class CellBasicSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id',
         ]
+
+
+class EventBasicSerializer(serializers.ModelSerializer):
+    """This class represents the Event model serializer."""
+
+    class Meta:
+        model = models.Event
+        fields = (
+            'id',
+            'start_date',
+            'end_date',
+            'nb_volunteers_needed',
+            'nb_volunteers_standby_needed',
+            'volunteers',
+            'volunteers_standby',
+            'cell',
+            'cycle',
+            'task_type',
+        )
+        read_only_fields = [
+            'id',
+        ]
