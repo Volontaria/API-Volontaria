@@ -197,3 +197,84 @@ class CellsId(generics.RetrieveUpdateDestroyAPIView):
             'detail': "You are not authorized to delete a cell.",
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
+
+
+class Events(generics.ListCreateAPIView):
+
+    """
+
+    get:
+    Return a list of all the existing Events.
+
+    post:
+    Create a new Event.
+
+    """
+
+    serializer_class = serializers.EventBasicSerializer
+
+    def get_queryset(self):
+        if self.request.user.has_perm('volunteer.add_event'):
+            return models.Event.objects.all()
+        else:
+            queryset = models.Event.objects.all()
+
+            list_exclude = list()
+            for event in queryset:
+                if not event.is_active:
+                    list_exclude.append(event)
+
+            queryset = queryset.\
+                exclude(pk__in=[event.pk for event in list_exclude])
+
+            return queryset
+
+    def post(self, request, *args, **kwargs):
+        if self.request.user.has_perm('volunteer.add_event'):
+            return self.create(request, *args, **kwargs)
+
+        content = {
+            'detail': "You are not authorized to create a new event.",
+        }
+        return Response(content, status=status.HTTP_403_FORBIDDEN)
+
+
+class EventsId(generics.RetrieveUpdateDestroyAPIView):
+
+    """
+
+    This class holds the methods available to individual Events.
+
+    get:
+    Return the detail of a specific Event.
+
+    patch:
+    Update a specific Event.
+
+    delete:
+    Delete a specific Event.
+
+    """
+
+    serializer_class = serializers.EventBasicSerializer
+
+    def get_queryset(self):
+        return models.Event.objects.filter()
+
+    def patch(self, request, *args, **kwargs):
+        if self.request.user.has_perm('volunteer.update_event'):
+            return self.partial_update(request, *args, **kwargs)
+
+        content = {
+            'detail': "You are not authorized to update an event.",
+        }
+        return Response(content, status=status.HTTP_403_FORBIDDEN)
+
+    def delete(self, request, *args, **kwargs):
+        if self.request.user.has_perm('volunteer.delete_event'):
+            return self.destroy(request, *args, **kwargs)
+
+        content = {
+            'detail': "You are not authorized to delete an event.",
+        }
+        return Response(content, status=status.HTTP_403_FORBIDDEN)

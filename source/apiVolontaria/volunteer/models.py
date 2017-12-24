@@ -31,9 +31,14 @@ class Cycle(models.Model):
     @property
     def is_active(self):
         now = timezone.now()
-        if self.end_date > now > self.start_date:
+        if self.start_date and self.end_date:
+            if self.end_date > now > self.start_date:
+                return True
+            else:
+                return False
+        else:
+            # Without date, the cycle is active
             return True
-        return False
 
 
 class TaskType(models.Model):
@@ -182,7 +187,7 @@ class Event(models.Model):
         return '{0}, {1}, {2}, {3} - {4}'.format(
             self.cell,
             self.cycle,
-            self.tasktype,
+            self.task_type,
             str(self.start_date),
             str(self.end_date),
         )
