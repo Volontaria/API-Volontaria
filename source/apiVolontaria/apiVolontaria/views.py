@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 
 from . import serializers
 from .models import TemporaryToken, ActivationToken
+from imailing.Mailing import IMailing
 
 
 class ObtainTemporaryAuthToken(ObtainAuthToken):
@@ -115,6 +116,25 @@ class Users(generics.ListCreateAPIView):
             self.authentication_classes = ()
         return [auth() for auth in self.authentication_classes]
 
+    def post(self, request, *args, **kwargs):
+        user = self.create(request, *args, **kwargs)
+
+        if(user):
+            SETTINGS_MAIL = settings.SETTINGS_SENDINBLUE
+            # Get an instance of your service
+            # Change "Sendgrid" by "SendinBlue" if you want to change the service to use
+            email = IMailing.create_instance("SendinBlue", SETTINGS_MAIL["API_KEY"])
+
+            # Send your email
+            result = email.send_templated_email(
+                email_from=SETTINGS_MAIL['EMAIL_FROM'],
+                template_id=SETTINGS_MAIL["TEMPLATE_ID"],
+                list_to=SETTINGS_MAIL["RECEIVERS"],
+                context=SETTINGS_MAIL["CONTEXT"],
+            )
+
+        return user
+
 
 class UsersId(generics.RetrieveAPIView):
     """
@@ -164,6 +184,21 @@ class UsersActivation(APIView):
 
             # We return the user
             serializer = serializers.UserBasicSerializer(user)
+
+            # Send email activation
+            SETTINGS_SENDGRID = settings.SETTINGS_SENDGRID
+            # Get an instance of your service
+            # Change "Sendgrid" by "SendinBlue" if you want to change the service to use
+            email = IMailing.create_instance("SendinBlue", SETTINGS_SENDGRID["API_KEY"])
+
+            # Send your email
+            result = email.send_templated_email(
+                email_from=SETTINGS_SENDGRID['EMAIL_FROM'],
+                template_id=SETTINGS_SENDGRID["TEMPLATE_ID"],
+                list_to=SETTINGS_SENDGRID["RECEIVERS"],
+                context=SETTINGS_SENDGRID["CONTEXT"],
+            )
+
             return Response(serializer.data)
 
         # There is no reference to this token
