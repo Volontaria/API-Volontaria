@@ -173,6 +173,34 @@ ACTIVATION_TOKENS = {
     'MINUTES': 2880,
 }
 
+# Email config
+
+## Settings used for SendinBlue
+SETTINGS_SENDINBLUE = {
+    "API_KEY": "API_KEY",
+    "TEMPLATE_ID": 1,
+    "EMAIL_FROM": 'email_from',
+    "RECEIVERS": [
+        'email_send'
+    ],
+    "CONTEXT": {
+        'LINK_BUTTON': 'http://volontaria.github.io',
+    }
+}
+
+## Settings used for Sendgrid
+SETTINGS_SENDGRID = {
+    "API_KEY": 'API_KEY',
+    "TEMPLATE_ID": 'b3fd9b50-a20f-468b-b657-6c661afff5b6',
+    "EMAIL_FROM": 'email_from',
+    "RECEIVERS": [
+        'email_send',
+    ],
+    "CONTEXT": {
+        '-urlButton-': 'http://volontaria.github.io',
+    }
+}
+
 try:
     from apiVolontaria.local_settings import *
 except ImportError:
