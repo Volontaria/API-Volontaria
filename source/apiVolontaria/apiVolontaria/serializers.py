@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate
 
 from django.core import exceptions
 
-from .models import ActivationToken
+from .models import ActivationToken, Profile
 
 
 class AuthCustomTokenSerializer(serializers.Serializer):
@@ -85,6 +85,8 @@ class UserBasicSerializer(serializers.ModelSerializer):
             'last_name',
             'is_active',
             'password',
+            'phone',
+            'mobile',
         )
         read_only_fields = [
             'id',
@@ -93,15 +95,34 @@ class UserBasicSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True, write_only=True)
 
+    phone = serializers.CharField(
+        source='profile.phone',
+        required=False,
+    )
+    mobile = serializers.CharField(
+        source='profile.mobile',
+        required=False,
+    )
+
     def create(self, validated_data):
+        profile_data = None
+        if 'profile' in validated_data.keys():
+            profile_data = validated_data.pop('profile')
+
         user = User(**validated_data)
 
         # Hash the user's password
         user.set_password(validated_data['password'])
-
         # Put user inactive by default
         user.is_active = False
+
         user.save()
+
+        if profile_data:
+            Profile.objects.create(
+                user=user,
+                **profile_data
+            )
 
         # Create an ActivationToken to activate user in the future
         ActivationToken.objects.create(user=user)

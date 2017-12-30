@@ -31,6 +31,31 @@ class UsersTests(APITestCase):
             'username': 'John',
             'email': 'John@mailinator.com',
             'password': 'test123!',
+            'phone': '1234567890',
+        }
+
+        response = self.client.post(
+            reverse('users'),
+            data,
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(json.loads(response.content)['phone'], '1234567890')
+
+        user = User.objects.get(username="John")
+        activation_token = ActivationToken.objects.filter(user=user)
+
+        self.assertEqual(1, len(activation_token))
+
+    def test_create_new_user_without_profile_attributes(self):
+        """
+        Ensure we can create a new user without profile attributes.
+        """
+        data = {
+            'username': 'John',
+            'email': 'John@mailinator.com',
+            'password': 'test123!',
         }
 
         response = self.client.post(
@@ -122,7 +147,7 @@ class UsersTests(APITestCase):
 
         # Check the system doesn't return attributes not expected
         attributes = ['id', 'username', 'email', 'first_name',
-                      'last_name', 'is_active']
+                      'last_name', 'is_active', 'phone', 'mobile']
         for key in first_user.keys():
             self.assertTrue(
                 key in attributes,

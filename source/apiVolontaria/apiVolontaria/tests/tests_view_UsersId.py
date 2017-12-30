@@ -78,7 +78,7 @@ class UsersIdTests(APITestCase):
 
         # Check the system doesn't return attributes not expected
         attributes = ['id', 'username', 'email', 'first_name',
-                      'last_name', 'is_active']
+                      'last_name', 'is_active', 'phone', 'mobile']
         for key in content.keys():
             self.assertTrue(
                 key in attributes,
@@ -116,7 +116,7 @@ class UsersIdTests(APITestCase):
 
         # Check the system doesn't return attributes not expected
         attributes = ['id', 'username', 'email', 'first_name',
-                      'last_name', 'is_active']
+                      'last_name', 'is_active', 'phone', 'mobile']
         for key in content.keys():
             self.assertTrue(
                 key in attributes,
