@@ -127,7 +127,11 @@ class UsersId(generics.RetrieveAPIView):
         return User.objects.filter()
 
     def get(self, request, *args, **kwargs):
-        if self.request.user.has_perm('apiVolontaria.get_user'):
+        if 'profile' in self.kwargs.keys():
+            self.kwargs['pk'] = self.request.user.id
+            return self.retrieve(request, *args, **kwargs)
+
+        elif self.request.user.has_perm('apiVolontaria.get_user'):
             return self.retrieve(request, *args, **kwargs)
 
         content = {

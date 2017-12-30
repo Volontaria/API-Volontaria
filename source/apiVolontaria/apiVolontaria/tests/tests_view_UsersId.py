@@ -96,3 +96,41 @@ class UsersIdTests(APITestCase):
 
         # Check the status code
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_retrieve_profile(self):
+        """
+        Ensure we can retrieve our profile without id.
+        """
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(
+            reverse(
+                'profile',
+            )
+        )
+
+        content = json.loads(response.content)
+
+        # Check id of the user
+        self.assertEqual(content['id'], 1)
+
+        # Check the system doesn't return attributes not expected
+        attributes = ['id', 'username', 'email', 'first_name',
+                      'last_name', 'is_active']
+        for key in content.keys():
+            self.assertTrue(
+                key in attributes,
+                'Attribute "{0}" is not expected but is '
+                'returned by the system.'.format(key)
+            )
+            attributes.remove(key)
+
+        # Ensure the system returns all expected attributes
+        self.assertTrue(
+            len(attributes) == 0,
+            'The system failed to return some '
+            'attributes : {0}'.format(attributes)
+        )
+
+        # Check the status code
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
