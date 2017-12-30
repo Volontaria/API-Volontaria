@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
@@ -7,6 +8,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 import binascii
 import os
+import re
 
 
 class ActivationToken(models.Model):
@@ -86,3 +88,55 @@ class TemporaryToken(Token):
         """Expires a token by setting its expiration date to now."""
         self.expires = timezone.now()
         self.save()
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='profile',
+    )
+    phone = models.CharField(
+        verbose_name="Phone number",
+        blank=True,
+        null=True,
+        max_length=17,
+    )
+    mobile = models.CharField(
+        verbose_name="Mobile number",
+        blank=True,
+        null=True,
+        max_length=17,
+    )
+
+    def clean(self):
+        reg = re.compile('^(\+\d{1,2})?\d{9,10}$')
+        if self.phone:
+            self.phone = self.phone\
+                .replace(" ", "")\
+                .replace("-", "")\
+                .replace(".", "")\
+                .replace("(", "")\
+                .replace(")", "")
+            if not reg.match(self.phone):
+                raise ValidationError(
+                    'The phone field need to be in a valid format'
+                )
+        if self.mobile:
+            self.mobile = self.mobile\
+                .replace(" ", "")\
+                .replace("-", "")\
+                .replace(".", "")\
+                .replace("(", "")\
+                .replace(")", "")
+            if not reg.match(self.mobile):
+                raise ValidationError(
+                    'The mobile field need to be in a valid format'
+                )
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super(Profile, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return str(self.user)
