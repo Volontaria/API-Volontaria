@@ -101,9 +101,9 @@ class EventsTests(APITestCase):
         end_date_str = end_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
         data = {
-            'cell': self.cell.id,
-            'cycle': self.cycle.id,
-            'task_type': self.task_type.id,
+            'cell_id': self.cell.id,
+            'cycle_id': self.cycle.id,
+            'task_type_id': self.task_type.id,
             'start_date': start_date,
             'end_date': end_date,
         }
@@ -117,13 +117,12 @@ class EventsTests(APITestCase):
         )
 
         content = json.loads(response.content)
-
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(content['start_date'], start_date_str)
         self.assertEqual(content['end_date'], end_date_str)
-        self.assertEqual(content['cycle'], self.cycle.id)
-        self.assertEqual(content['cell'], self.cell.id)
-        self.assertEqual(content['task_type'], self.task_type.id)
+        self.assertEqual(content['cycle']['id'], self.cycle.id)
+        self.assertEqual(content['cell']['id'], self.cell.id)
+        self.assertEqual(content['task_type']['id'], self.task_type.id)
         self.assertEqual(content['nb_volunteers_needed'], 0)
         self.assertEqual(content['nb_volunteers_standby_needed'], 0)
 

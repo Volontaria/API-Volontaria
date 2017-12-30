@@ -189,6 +189,28 @@ class CellBasicSerializer(serializers.ModelSerializer):
 class EventBasicSerializer(serializers.ModelSerializer):
     """This class represents the Event model serializer."""
 
+    cell = CellBasicSerializer(read_only=True)
+    cycle = CycleBasicSerializer(read_only=True)
+    task_type = TaskTypeBasicSerializer(read_only=True)
+
+    cell_id = serializers.PrimaryKeyRelatedField(
+        queryset=models.Cell.objects.all(),
+        source='cell',
+        write_only=True,
+    )
+
+    cycle_id = serializers.PrimaryKeyRelatedField(
+        queryset=models.Cycle.objects.all(),
+        source='cycle',
+        write_only=True,
+    )
+
+    task_type_id = serializers.PrimaryKeyRelatedField(
+        queryset=models.TaskType.objects.all(),
+        source='task_type',
+        write_only=True,
+    )
+
     class Meta:
         model = models.Event
         fields = (
@@ -202,6 +224,9 @@ class EventBasicSerializer(serializers.ModelSerializer):
             'cell',
             'cycle',
             'task_type',
+            'cell_id',
+            'cycle_id',
+            'task_type_id',
         )
         read_only_fields = [
             'id',

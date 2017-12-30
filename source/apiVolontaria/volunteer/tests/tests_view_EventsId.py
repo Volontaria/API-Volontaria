@@ -44,11 +44,21 @@ class EventsIdTests(APITestCase):
             name="my cell",
             address=self.address,
         )
+        self.second_cell = Cell.objects.create(
+            name="my second cell",
+            address=self.address,
+        )
         self.cycle = Cycle.objects.create(
             name="my cycle",
         )
+        self.second_cycle = Cycle.objects.create(
+            name="my second cycle",
+        )
         self.task_type = TaskType.objects.create(
             name="my tasktype",
+        )
+        self.second_task_type = TaskType.objects.create(
+            name="my second tasktype",
         )
 
         start_date = timezone.now()
@@ -87,27 +97,6 @@ class EventsIdTests(APITestCase):
         """
         Ensure we can retrieve an event.
         """
-
-        start_date_str = self.event.start_date.\
-            strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        end_date_str = self.event.end_date.\
-            strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-
-        data = {
-            'id': self.event.id,
-            'cell': self.event.cell.id,
-            'cycle': self.event.cycle.id,
-            'task_type': self.event.task_type.id,
-            'start_date': start_date_str,
-            'end_date': end_date_str,
-            'nb_volunteers_needed':
-                self.event.nb_volunteers_needed,
-            'nb_volunteers_standby_needed':
-                self.event.nb_volunteers_standby_needed,
-            'volunteers': [],
-            'volunteers_standby': [],
-        }
-
         self.client.force_authenticate(user=self.user)
 
         response = self.client.get(
@@ -117,34 +106,32 @@ class EventsIdTests(APITestCase):
             )
         )
 
-        self.assertEqual(json.loads(response.content), data)
+        result = json.loads(response.content)
+        self.assertEqual(result['id'], self.event.id)
+        self.assertEqual(result['cell']['id'], self.event.cell.id)
+        self.assertEqual(result['cycle']['id'], self.event.cycle.id)
+        self.assertEqual(result['task_type']['id'], self.event.task_type.id)
+        self.assertEqual(
+            result['nb_volunteers_needed'],
+            self.event.nb_volunteers_needed
+        )
+        self.assertEqual(
+            result['nb_volunteers_standby_needed'],
+            self.event.nb_volunteers_standby_needed
+        )
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_update_event_with_permission(self):
         """
         Ensure we can update a specific event.
         """
-        start_date_str = self.event.start_date.\
-            strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        end_date_str = self.event.end_date.\
-            strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-
-        data = {
-            'id': self.event.id,
-            'cell': self.event.cell.id,
-            'cycle': self.event.cycle.id,
-            'task_type': self.event.task_type.id,
-            'start_date': start_date_str,
-            'end_date': end_date_str,
-            'nb_volunteers_needed': 10,
-            'nb_volunteers_standby_needed':
-                self.event.nb_volunteers_standby_needed,
-            'volunteers': [],
-            'volunteers_standby': [],
-        }
 
         data_post = {
             "nb_volunteers_needed": 10,
+            "cell_id": self.second_cell.id,
+            "cycle_id": self.second_cycle.id,
+            "task_type_id": self.second_task_type.id,
         }
 
         self.client.force_authenticate(user=self.admin)
@@ -158,7 +145,25 @@ class EventsIdTests(APITestCase):
             format='json',
         )
 
-        self.assertEqual(json.loads(response.content), data)
+        result = json.loads(response.content)
+        self.assertEqual(result['id'], self.event.id)
+        self.assertEqual(
+            result['cell']['id'],
+            self.second_cell.id,
+        )
+        self.assertEqual(
+            result['cycle']['id'],
+            self.second_cycle.id,
+        )
+        self.assertEqual(
+            result['task_type']['id'],
+            self.second_task_type.id,
+        )
+        self.assertEqual(result['nb_volunteers_needed'], 10)
+        self.assertEqual(
+            result['nb_volunteers_standby_needed'],
+            self.event.nb_volunteers_standby_needed,
+        )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
