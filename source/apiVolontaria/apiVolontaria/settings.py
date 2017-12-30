@@ -173,6 +173,18 @@ ACTIVATION_TOKENS = {
     'MINUTES': 2880,
 }
 
+# Email config
+# SERVICES [SendinBlue, SendGrid]
+# SETTINGS_IMAILING = {
+#     "SERVICE": "SERVICES",
+#     "API_KEY": "API_KEY",
+#     "EMAIL_FROM": 'EMAIL_FROM',
+#     "TEMPLATES": {
+#         "INSCRIPTION": "template_1"
+#     }
+# }
+
+
 try:
     from apiVolontaria.local_settings import *
 except ImportError:

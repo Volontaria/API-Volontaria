@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 
 from . import serializers
 from .models import TemporaryToken, ActivationToken
+from imailing.Mailing import IMailing
 
 
 class ObtainTemporaryAuthToken(ObtainAuthToken):
@@ -115,6 +116,42 @@ class Users(generics.ListCreateAPIView):
             self.authentication_classes = ()
         return [auth() for auth in self.authentication_classes]
 
+    def post(self, request, *args, **kwargs):
+        response = self.create(request, *args, **kwargs)
+        # get token for user save and send key this token with a mail
+        user = User.objects.get(username=request.data["username"])
+
+        if response.status_code == status.HTTP_201_CREATED:
+            try:
+                SERVICE_MAIL = settings.SETTINGS_IMAILING
+            except AttributeError:
+                user.is_active = True
+                user.save()
+                return response
+
+            # Get the token of the saved user and send it with an email
+            activate_token = ActivationToken.objects.get(user=user).key
+
+            # Send email with a SETTINGS_IMAILING
+            email = IMailing.\
+                create_instance(SERVICE_MAIL["SERVICE"],
+                                SERVICE_MAIL["API_KEY"])
+            response_send_mail = email.send_templated_email(
+                email_from=SERVICE_MAIL['EMAIL_FROM'],
+                template_id=SERVICE_MAIL["TEMPLATES"]["INSCRIPTION"],
+                list_to=[request.data["email"]],
+                context={"-token-": str(activate_token)},
+            )
+
+            if response_send_mail["code"] == "failure":
+                content = {
+                    'detail': "The user was created but, no email was sent. "
+                              "Contact the adminsitration to get activated",
+                }
+                return Response(content, status=status.HTTP_201_CREATED)
+
+        return response
+
 
 class UsersId(generics.RetrieveAPIView):
     """
@@ -164,6 +201,7 @@ class UsersActivation(APIView):
 
             # We return the user
             serializer = serializers.UserBasicSerializer(user)
+
             return Response(serializer.data)
 
         # There is no reference to this token
