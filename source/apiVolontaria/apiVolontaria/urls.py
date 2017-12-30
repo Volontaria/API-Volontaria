@@ -41,6 +41,14 @@ urlpatterns = [
         UsersId.as_view(),
         name='users_id',
     ),
+    url(
+        r'^profile$',
+        UsersId.as_view(),
+        kwargs=dict(
+            profile=True,
+        ),
+        name='profile',
+    ),
     # Volunteer
     url(
         r'^volunteer/',
