@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 
 from . import serializers
 from .models import TemporaryToken, ActivationToken
+from imailing.Mailing import IMailing
 
 
 class ObtainTemporaryAuthToken(ObtainAuthToken):
@@ -115,6 +116,52 @@ class Users(generics.ListCreateAPIView):
             self.authentication_classes = ()
         return [auth() for auth in self.authentication_classes]
 
+    def post(self, request, *args, **kwargs):
+        response = self.create(request, *args, **kwargs)
+        # get token for user save and send key this token with a mail
+        user = User.objects.get(username=request.data["username"])
+
+        if response.status_code == status.HTTP_201_CREATED:
+            if settings.CONSTANT['AUTO_ACTIVATE_USER'] is True:
+                user.is_active = True
+                user.save()
+
+            if settings.CONSTANT['EMAIL_SERVICE'] is True:
+                MAIL_SERVICE = settings.SETTINGS_IMAILING
+                FRONTEND_SETTINGS = settings.CONSTANT['FRONTEND_INTEGRATION']
+
+                # Get the token of the saved user and send it with an email
+                activate_token = ActivationToken.objects.get(user=user).key
+
+                # Setup the url for the activation button in the email
+                activation_url = FRONTEND_SETTINGS['ACTIVATION_URL'].replace(
+                    "{{token}}",
+                    activate_token
+                )
+
+                # Send email with a SETTINGS_IMAILING
+                email = IMailing.\
+                    create_instance(MAIL_SERVICE["SERVICE"],
+                                    MAIL_SERVICE["API_KEY"])
+                response_send_mail = email.send_templated_email(
+                    email_from=MAIL_SERVICE["EMAIL_FROM"],
+                    template_id=MAIL_SERVICE["TEMPLATES"]["CONFIRM_SIGN_UP"],
+                    list_to=[request.data["email"]],
+                    context={
+                        "activation_url": activation_url,
+                        },
+                )
+
+                if response_send_mail["code"] == "failure":
+                    content = {
+                        'detail': "The account was created but no email was "
+                                  "sent. If your account is not activated, "
+                                  "contact the administration.",
+                    }
+                    return Response(content, status=status.HTTP_201_CREATED)
+
+        return response
+
 
 class UsersId(generics.RetrieveAPIView):
     """
@@ -168,6 +215,7 @@ class UsersActivation(APIView):
 
             # We return the user
             serializer = serializers.UserBasicSerializer(user)
+
             return Response(serializer.data)
 
         # There is no reference to this token
