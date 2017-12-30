@@ -214,6 +214,7 @@ class Events(generics.ListCreateAPIView):
     """
 
     serializer_class = serializers.EventBasicSerializer
+    filter_fields = ['volunteers']
 
     def get_queryset(self):
         if self.request.user.has_perm('volunteer.add_event'):
