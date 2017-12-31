@@ -5,20 +5,30 @@ from rest_framework.test import APIClient, APITestCase
 
 from django.urls import reverse
 from django.utils import timezone
+from django.contrib.auth.models import Permission
 
 from apiVolontaria.factories import UserFactory, AdminFactory
 from location.models import Address, StateProvince, Country
-from ..models import Cell, Event, Cycle, TaskType
+from ..models import Cell, Event, Cycle, TaskType, Participation
 
 
-class EventsTests(APITestCase):
+class ParticipationsTests(APITestCase):
 
     def setUp(self):
         self.client = APIClient()
 
+        add_participation_permission = Permission.objects.get(
+            name='Can add participation'
+        )
+
         self.user = UserFactory()
         self.user.set_password('Test123!')
+        self.user.user_permissions.add(add_participation_permission)
         self.user.save()
+
+        self.user2 = UserFactory()
+        self.user2.set_password('Test123!')
+        self.user2.save()
 
         self.admin = AdminFactory()
         self.admin.set_password('Test123!')
@@ -80,56 +90,65 @@ class EventsTests(APITestCase):
             end_date=end_date,
         )
 
-        self.event_inactive = Event.objects.create(
+        self.event2 = Event.objects.create(
             cell=self.cell,
-            cycle=self.cycle_inactive,
+            cycle=self.cycle,
             task_type=self.task_type,
             start_date=start_date,
             end_date=end_date,
         )
 
-    def test_create_new_event_with_permission(self):
-        """
-        Ensure we can create a new event if we have the permission.
-        """
-        start_date = timezone.now()
-        end_date = start_date + timezone.timedelta(
-            minutes=100,
+        subscription_date = timezone.now()
+
+        self.participation = Participation.objects.create(
+            standby=True,
+            subscription_date=subscription_date,
+            user=self.user,
+            event=self.event2,
         )
 
-        start_date_str = start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        end_date_str = end_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        self.participation2 = Participation.objects.create(
+            standby=True,
+            subscription_date=subscription_date,
+            user=self.user2,
+            event=self.event2,
+        )
+
+    def test_create_new_participation_with_permission(self):
+        """
+        Ensure we can create a new participation if we have the permission.
+        """
+        subscription_date = timezone.now()
+
+        subscription_date_str = subscription_date.strftime(
+            "%Y-%m-%dT%H:%M:%S.%fZ"
+        )
 
         data = {
-            'cell_id': self.cell.id,
-            'cycle_id': self.cycle.id,
-            'task_type_id': self.task_type.id,
-            'start_date': start_date,
-            'end_date': end_date,
+            'event': self.event.id,
+            'user': self.user.id,
+            'standby': False,
+            'subscription_date': subscription_date,
         }
 
-        self.client.force_authenticate(user=self.admin)
+        self.client.force_authenticate(user=self.user)
 
         response = self.client.post(
-            reverse('volunteer:events'),
+            reverse('volunteer:participations'),
             data,
             format='json',
         )
 
         content = json.loads(response.content)
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(content['start_date'], start_date_str)
-        self.assertEqual(content['end_date'], end_date_str)
-        self.assertEqual(content['cycle']['id'], self.cycle.id)
-        self.assertEqual(content['cell']['id'], self.cell.id)
-        self.assertEqual(content['task_type']['id'], self.task_type.id)
-        self.assertEqual(content['nb_volunteers_needed'], 0)
-        self.assertEqual(content['nb_volunteers_standby_needed'], 0)
+        self.assertEqual(content['subscription_date'], subscription_date_str)
+        self.assertEqual(content['user'], self.user.id)
+        self.assertEqual(content['event'], self.event.id)
+        self.assertEqual(content['standby'], False)
 
         # Check the system doesn't return attributes not expected
-        attributes = ['id', 'start_date', 'end_date', 'nb_volunteers_needed',
-                      'nb_volunteers_standby_needed', 'volunteers', 'cell',
-                      'cycle', 'task_type']
+        attributes = ['id', 'subscription_date', 'user', 'event', 'standby']
 
         for key in content.keys():
             self.assertTrue(
@@ -146,44 +165,102 @@ class EventsTests(APITestCase):
             'attributes : {0}'.format(attributes),
         )
 
-    def test_create_new_event_without_permission(self):
+    def test_create_duplicate_participation_with_permission(self):
         """
-        Ensure we can't create a new event if we don't have the permission.
+        Ensure we can't create a duplicated participation.
         """
-        start_date = timezone.now()
-        end_date = start_date + timezone.timedelta(
-            minutes=100,
-        )
+        subscription_date = timezone.now()
 
         data = {
-            'cell': self.cell.id,
-            'cycle': self.cycle.id,
-            'task_type': self.task_type.id,
-            'start_date': start_date,
-            'end_date': end_date,
+            'event': self.event2.id,
+            'user': self.user.id,
+            'standby': False,
+            'subscription_date': subscription_date,
         }
 
-        self.client.force_authenticate(user=self.user)
+        self.client.force_authenticate(user=self.admin)
 
         response = self.client.post(
-            reverse('volunteer:events'),
+            reverse('volunteer:participations'),
+            data,
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        content = {
+            'non_field_errors': [
+                'The fields event, user must make a unique set.'
+                ]
+            }
+        self.assertEqual(json.loads(response.content), content)
+
+    def test_create_new_participation_without_permission(self):
+        """
+        Ensure we can't create a new participation if we don't have the
+        permission.
+        """
+        subscription_date = timezone.now()
+
+        data = {
+            'event': self.event.id,
+            'user': self.user.id,
+            'standby': False,
+            'subscription_date': subscription_date,
+        }
+
+        self.client.force_authenticate(user=self.user2)
+
+        response = self.client.post(
+            reverse('volunteer:participations'),
             data,
             format='json',
         )
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-        content = {"detail": "You are not authorized to create a new event."}
+        content = {
+            "detail": "You are not authorized to create a new participation."
+        }
         self.assertEqual(json.loads(response.content), content)
 
-    def test_list_events_with_permissions(self):
+    def test_create_new_participation_with_permission_other_user(self):
         """
-        Ensure we can list all events.
+        Ensure we can't create a new participation for another user even if we
+        have the permission.
+        """
+        subscription_date = timezone.now()
+
+        data = {
+            'event': self.event.id,
+            'user': self.user2.id,
+            'standby': False,
+            'subscription_date': subscription_date,
+        }
+
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.post(
+            reverse('volunteer:participations'),
+            data,
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        content = {
+            'detail': "Invalid user id.",
+        }
+        self.assertEqual(json.loads(response.content), content)
+
+    def test_list_participations_with_permissions(self):
+        """
+        Ensure we can list all participations.
         """
         self.client.force_authenticate(user=self.admin)
 
         response = self.client.get(
-            reverse('volunteer:events'),
+            reverse('volunteer:participations'),
             format='json',
         )
 
@@ -192,9 +269,7 @@ class EventsTests(APITestCase):
         self.assertEqual(content['count'], 2)
 
         # Check the system doesn't return attributes not expected
-        attributes = ['id', 'start_date', 'end_date', 'nb_volunteers_needed',
-                      'nb_volunteers_standby_needed', 'volunteers', 'cell',
-                      'cycle', 'task_type']
+        attributes = ['id', 'user', 'event', 'subscription_date', 'standby']
 
         for key in content['results'][0].keys():
             self.assertTrue(
@@ -213,24 +288,23 @@ class EventsTests(APITestCase):
 
     def test_list_events_without_permissions(self):
         """
-        Ensure we can list only active event (is_active property)
-        if we don't have some permissions.
+        Ensure we can only list our own participations if we don't have the
+        permission to list all of them.
         """
         self.client.force_authenticate(user=self.user)
 
         response = self.client.get(
-            reverse('volunteer:events'),
+            reverse('volunteer:participations'),
             format='json',
         )
 
         content = json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(content['count'], 1)
+        self.assertEqual(content['results'][0]['id'], self.participation.id)
 
         # Check the system doesn't return attributes not expected
-        attributes = ['id', 'start_date', 'end_date', 'nb_volunteers_needed',
-                      'nb_volunteers_standby_needed', 'volunteers', 'cell',
-                      'cycle', 'task_type']
+        attributes = ['id', 'user', 'event', 'subscription_date', 'standby']
 
         for key in content['results'][0].keys():
             self.assertTrue(

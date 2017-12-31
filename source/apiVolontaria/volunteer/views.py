@@ -309,7 +309,9 @@ class Participations(generics.ListCreateAPIView):
                     list_exclude.append(participation)
 
             queryset = queryset.\
-                exclude(pk__in=[participation.pk for participation in list_exclude])
+                exclude(
+                    pk__in=[participation.pk for participation in list_exclude]
+                )
 
             return queryset
 
@@ -362,7 +364,9 @@ class ParticipationsId(generics.RetrieveUpdateDestroyAPIView):
                     list_exclude.append(participation)
 
             queryset = queryset.\
-                exclude(pk__in=[participation.pk for participation in list_exclude])
+                exclude(
+                    pk__in=[participation.pk for participation in list_exclude]
+                )
 
             return queryset
 
