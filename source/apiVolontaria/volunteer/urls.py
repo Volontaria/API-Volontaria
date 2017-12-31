@@ -49,5 +49,16 @@ urlpatterns = format_suffix_patterns(
             views.EventsId.as_view(),
             name='events_id',
         ),
+        # Participations
+        url(
+            r'^participations$',
+            views.Participations.as_view(),
+            name='participations',
+        ),
+        url(
+            r'^participations/(?P<pk>\d+)$',
+            views.ParticipationsId.as_view(),
+            name='participations_id',
+        ),
     ]
 )
