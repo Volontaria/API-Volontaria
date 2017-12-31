@@ -2,9 +2,7 @@ from rest_framework import serializers
 
 from django.db import IntegrityError
 
-from location.serializers import (AddressBasicSerializer,
-                                  StateProvinceBasicSerializer,
-                                  CountryBasicSerializer)
+from location.serializers import AddressBasicSerializer
 from location.models import Address, StateProvince, Country
 from . import models
 
@@ -220,13 +218,29 @@ class EventBasicSerializer(serializers.ModelSerializer):
             'nb_volunteers_needed',
             'nb_volunteers_standby_needed',
             'volunteers',
-            'volunteers_standby',
             'cell',
             'cycle',
             'task_type',
             'cell_id',
             'cycle_id',
             'task_type_id',
+        )
+        read_only_fields = [
+            'id',
+        ]
+
+
+class ParticipationBasicSerializer(serializers.ModelSerializer):
+    """This class represents the Participation model serializer."""
+
+    class Meta:
+        model = models.Participation
+        fields = (
+            'id',
+            'event',
+            'user',
+            'standby',
+            'subscription_date',
         )
         read_only_fields = [
             'id',

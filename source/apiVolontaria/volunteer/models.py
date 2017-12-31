@@ -128,13 +128,7 @@ class Event(models.Model):
         verbose_name="Volunteers",
         related_name="events",
         blank=True,
-    )
-
-    volunteers_standby = models.ManyToManyField(
-        User,
-        verbose_name="Volunteers on hold",
-        related_name="events_standby",
-        blank=True,
+        through='Participation',
     )
 
     cell = models.ForeignKey(
@@ -199,3 +193,32 @@ class Event(models.Model):
     @property
     def is_active(self):
         return self.cycle.is_active
+
+
+class Participation(models.Model):
+    """This class represents the Participation model."""
+
+    class Meta:
+        verbose_name_plural = 'Participations'
+        unique_together = ('event', 'user')
+
+    event = models.ForeignKey(Event, related_name='participation')
+    user = models.ForeignKey(User, related_name='participation')
+
+    standby = models.BooleanField(
+        verbose_name="Standby",
+    )
+
+    subscription_date = models.DateTimeField(
+        verbose_name="Subscription date",
+        blank=False,
+        null=False,
+    )
+
+    def __str__(self):
+        return '{0}, {1}, {2}, {3}'.format(
+            self.user,
+            self.event,
+            self.standby,
+            str(self.subscription_date),
+        )

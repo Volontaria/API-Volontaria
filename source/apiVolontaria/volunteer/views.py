@@ -1,5 +1,6 @@
 from rest_framework import generics, filters, status
 from rest_framework.response import Response
+
 from django.shortcuts import get_object_or_404
 
 from . import models, serializers
@@ -276,5 +277,125 @@ class EventsId(generics.RetrieveUpdateDestroyAPIView):
 
         content = {
             'detail': "You are not authorized to delete an event.",
+        }
+        return Response(content, status=status.HTTP_403_FORBIDDEN)
+
+
+class Participations(generics.ListCreateAPIView):
+
+    """
+
+    This view handles the link between User and Events (participations)
+
+    get:
+    Return a list of all the existing Participations.
+
+    post:
+    Create a new Participation.
+
+    """
+
+    serializer_class = serializers.ParticipationBasicSerializer
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return models.Participation.objects.all()
+        elif self.request.user.has_perm('volunteer.add_participation'):
+            queryset = models.Participation.objects.all()
+
+            list_exclude = list()
+            for participation in queryset:
+                if participation.user != self.request.user:
+                    list_exclude.append(participation)
+
+            queryset = queryset.\
+                exclude(pk__in=[participation.pk for participation in list_exclude])
+
+            return queryset
+
+    def post(self, request, *args, **kwargs):
+        if self.request.user.is_superuser:
+            return self.create(request, *args, **kwargs)
+        elif self.request.user.has_perm('volunteer.add_participation'):
+            if request.data['user'] == self.request.user.id:
+                return self.create(request, *args, **kwargs)
+
+            content = {
+                'detail': "Invalid user id.",
+            }
+            return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+        content = {
+            'detail': "You are not authorized to create a new participation.",
+        }
+        return Response(content, status=status.HTTP_403_FORBIDDEN)
+
+
+class ParticipationsId(generics.RetrieveUpdateDestroyAPIView):
+
+    """
+
+    This view handles the link between User and Events (participations)
+
+    get:
+    Return the detail of a specific Participation.
+
+    patch:
+    Update a specific Participation.
+
+    delete:
+    Delete a specific Participation.
+
+    """
+
+    serializer_class = serializers.ParticipationBasicSerializer
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return models.Participation.objects.filter()
+        else:
+            queryset = models.Participation.objects.filter()
+
+            list_exclude = list()
+            for participation in queryset:
+                if participation.user != self.request.user:
+                    list_exclude.append(participation)
+
+            queryset = queryset.\
+                exclude(pk__in=[participation.pk for participation in list_exclude])
+
+            return queryset
+
+    def patch(self, request, *args, **kwargs):
+        if self.request.user.is_superuser:
+            return self.partial_update(request, *args, **kwargs)
+        elif self.request.user.has_perm('volunteer.change_participation'):
+            queryset = models.Participation.objects.filter()
+            for participation in queryset:
+                # Check if the participation belongs to the calling user
+                if participation.user == self.request.user:
+                    return self.partial_update(request, *args, **kwargs)
+                # If not, return without updating the participation
+                return
+
+        content = {
+            'detail': "You are not authorized to update a participation.",
+        }
+        return Response(content, status=status.HTTP_403_FORBIDDEN)
+
+    def delete(self, request, *args, **kwargs):
+        if self.request.user.is_superuser:
+            return self.destroy(request, *args, **kwargs)
+        elif self.request.user.has_perm('volunteer.delete_participation'):
+            queryset = models.Participation.objects.filter()
+            for participation in queryset:
+                # Check if the participation belongs to the calling user
+                if participation.user == self.request.user:
+                    return self.destroy(request, *args, **kwargs)
+                # If not, return without deleting the participation
+                return
+
+        content = {
+            'detail': "You are not authorized to delete a participation.",
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
