@@ -2,7 +2,6 @@ from django.contrib.auth.models import User
 from django.db import models, IntegrityError
 from django.utils import timezone
 
-
 from location.models import Address
 
 
@@ -196,7 +195,14 @@ class Event(models.Model):
 
 
 class Participation(models.Model):
-    """This class represents the Participation model."""
+    """
+
+    This class represents the Participation model.
+
+    A Participation object is used to join Users and Events together
+    (M2M relationship) and store informations concerning that association.
+
+    """
 
     class Meta:
         verbose_name_plural = 'Participations'
@@ -211,8 +217,7 @@ class Participation(models.Model):
 
     subscription_date = models.DateTimeField(
         verbose_name="Subscription date",
-        blank=False,
-        null=False,
+        auto_now=True,
     )
 
     def __str__(self):

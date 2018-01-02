@@ -1,5 +1,7 @@
 import json
 
+from unittest import mock
+
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
@@ -17,17 +19,8 @@ class ParticipationsIdTests(APITestCase):
     def setUp(self):
         self.client = APIClient()
 
-        update_participation_permission = Permission.objects.get(
-            name='Can change participation'
-        )
-        delete_participation_permission = Permission.objects.get(
-            name='Can delete participation'
-        )
-
         self.user = UserFactory()
         self.user.set_password('Test123!')
-        self.user.user_permissions.add(update_participation_permission)
-        self.user.user_permissions.add(delete_participation_permission)
         self.user.save()
 
         self.user2 = UserFactory()
@@ -88,19 +81,21 @@ class ParticipationsIdTests(APITestCase):
 
         subscription_date = timezone.now()
 
-        self.participation = Participation.objects.create(
-            standby=True,
-            subscription_date=subscription_date,
-            user=self.user,
-            event=self.event2,
-        )
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = subscription_date
+            self.participation = Participation.objects.create(
+                standby=True,
+                subscription_date=subscription_date,
+                user=self.user,
+                event=self.event2,
+            )
 
-        self.participation2 = Participation.objects.create(
-            standby=True,
-            subscription_date=subscription_date,
-            user=self.user2,
-            event=self.event2,
-        )
+            self.participation2 = Participation.objects.create(
+                standby=True,
+                subscription_date=subscription_date,
+                user=self.user2,
+                event=self.event2,
+            )
 
     def test_retrieve_participation_id_not_exist(self):
         """
@@ -124,8 +119,6 @@ class ParticipationsIdTests(APITestCase):
     def test_retrieve_participation(self):
         """
         Ensure we can retrieve a participation.
-
-        For now, a user can only retrieve his own participations.
         """
 
         subscription_date_str = self.participation.subscription_date.\
@@ -151,34 +144,15 @@ class ParticipationsIdTests(APITestCase):
         self.assertEqual(json.loads(response.content), data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_retrieve_participation_with_permission_other_user(self):
-        """
-        Ensure we can't retrieve a participation or know it exists.
-
-        For now, a user can only retrieve his own participations.
-        """
-
-        self.client.force_authenticate(user=self.user)
-
-        response = self.client.get(
-            reverse(
-                'volunteer:participations_id',
-                kwargs={'pk': self.participation2.id},
-            ),
-            format='json',
-        )
-
-        content = {"detail": "Not found."}
-
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(json.loads(response.content), content)
-
     def test_update_participation_with_permission(self):
         """
-        Ensure we can update a specific participation.
+        Ensure we can update a specific participation if the caller owns it.
         """
-        subscription_date_str = self.participation.subscription_date.\
-            strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        subscription_date = timezone.now()
+
+        subscription_date_str = subscription_date.strftime(
+            "%Y-%m-%dT%H:%M:%S.%fZ"
+        )
 
         data = dict(
             id=self.participation.id,
@@ -194,47 +168,22 @@ class ParticipationsIdTests(APITestCase):
 
         self.client.force_authenticate(user=self.user)
 
-        response = self.client.patch(
-            reverse(
-                'volunteer:participations_id',
-                kwargs={'pk': self.participation.id},
-            ),
-            data_post,
-            format='json',
-        )
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = subscription_date
+            response = self.client.patch(
+                reverse(
+                    'volunteer:participations_id',
+                    kwargs={'pk': self.participation.id},
+                ),
+                data_post,
+                format='json',
+            )
 
         self.assertEqual(json.loads(response.content), data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_update_participation_without_permission(self):
-        """
-        Ensure we can't update a specific participation without permission.
-        """
-        data_post = {
-            "standby": False,
-
-        }
-
-        self.client.force_authenticate(user=self.user2)
-
-        response = self.client.patch(
-            reverse(
-                'volunteer:participations_id',
-                kwargs={'pk': self.participation2.id},
-            ),
-            data_post,
-            format='json',
-        )
-
-        content = {
-            'detail': "You are not authorized to update a participation."
-        }
-        self.assertEqual(json.loads(response.content), content)
-
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_update_participation_with_permission_other_user(self):
         """
         Ensure we can't update a specific participation of another user.
         """
@@ -254,11 +203,11 @@ class ParticipationsIdTests(APITestCase):
         )
 
         content = {
-            'detail': "Not found."
+            'detail': "You do not have permission to perform this action.",
         }
         self.assertEqual(json.loads(response.content), content)
 
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_update_participation_that_doesnt_exist(self):
         """
@@ -287,7 +236,7 @@ class ParticipationsIdTests(APITestCase):
 
     def test_delete_participation_with_permission(self):
         """
-        Ensure we can delete a specific participation.
+        Ensure we can delete a specific participation if the caller owns it.
         """
         self.client.force_authenticate(user=self.user)
 
@@ -302,9 +251,9 @@ class ParticipationsIdTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-    def test_delete_participation_with_permission_other_user(self):
+    def test_delete_participation_without_permission(self):
         """
-        Ensure we can't delete a specific participation of another user.
+        Ensure we can't delete a specific participation without owning it.
         """
 
         self.client.force_authenticate(user=self.user)
@@ -317,27 +266,7 @@ class ParticipationsIdTests(APITestCase):
         )
 
         content = {
-            'detail': "Not found."
-        }
-        self.assertEqual(json.loads(response.content), content)
-
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-    def test_delete_participation_without_permission(self):
-        """
-        Ensure we can't delete a specific participation without permission.
-        """
-        self.client.force_authenticate(user=self.user2)
-
-        response = self.client.delete(
-            reverse(
-                'volunteer:participations_id',
-                kwargs={'pk': self.participation2.id},
-            ),
-        )
-
-        content = {
-            'detail': "You are not authorized to delete a participation."
+            'detail': "You do not have permission to perform this action.",
         }
         self.assertEqual(json.loads(response.content), content)
 

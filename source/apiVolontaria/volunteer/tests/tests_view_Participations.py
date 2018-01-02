@@ -1,5 +1,7 @@
 import json
 
+from unittest import mock
+
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
@@ -17,13 +19,8 @@ class ParticipationsTests(APITestCase):
     def setUp(self):
         self.client = APIClient()
 
-        add_participation_permission = Permission.objects.get(
-            name='Can add participation'
-        )
-
         self.user = UserFactory()
         self.user.set_password('Test123!')
-        self.user.user_permissions.add(add_participation_permission)
         self.user.save()
 
         self.user2 = UserFactory()
@@ -71,7 +68,7 @@ class ParticipationsTests(APITestCase):
         self.cycle_inactive = Cycle.objects.create(
             name="my cycle",
             start_date=start_date,
-            end_date=end_date
+            end_date=end_date,
         )
 
         # Some date INSIDE the cycle range
@@ -100,28 +97,28 @@ class ParticipationsTests(APITestCase):
 
         subscription_date = timezone.now()
 
-        self.participation = Participation.objects.create(
-            standby=True,
-            subscription_date=subscription_date,
-            user=self.user,
-            event=self.event2,
-        )
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = subscription_date
+            self.participation = Participation.objects.create(
+                standby=True,
+                user=self.user,
+                event=self.event2,
+            )
 
-        self.participation2 = Participation.objects.create(
-            standby=True,
-            subscription_date=subscription_date,
-            user=self.user2,
-            event=self.event2,
-        )
+            self.participation2 = Participation.objects.create(
+                standby=True,
+                user=self.user2,
+                event=self.event2,
+            )
 
-    def test_create_new_participation_with_permission(self):
+    def test_create_new_participation(self):
         """
-        Ensure we can create a new participation if we have the permission.
+        Ensure we can create a new participation.
         """
         subscription_date = timezone.now()
 
         subscription_date_str = subscription_date.strftime(
-            "%Y-%m-%dT%H:%M:%S.%fZ"
+            "%Y-%m-%dT%H:%M:%S.%fZ",
         )
 
         data = {
@@ -133,11 +130,13 @@ class ParticipationsTests(APITestCase):
 
         self.client.force_authenticate(user=self.user)
 
-        response = self.client.post(
-            reverse('volunteer:participations'),
-            data,
-            format='json',
-        )
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = subscription_date
+            response = self.client.post(
+                reverse('volunteer:participations'),
+                data,
+                format='json',
+            )
 
         content = json.loads(response.content)
 
@@ -165,7 +164,7 @@ class ParticipationsTests(APITestCase):
             'attributes : {0}'.format(attributes),
         )
 
-    def test_create_duplicate_participation_with_permission(self):
+    def test_create_duplicate_participation(self):
         """
         Ensure we can't create a duplicated participation.
         """
@@ -173,87 +172,29 @@ class ParticipationsTests(APITestCase):
 
         data = {
             'event': self.event2.id,
-            'user': self.user.id,
             'standby': False,
-            'subscription_date': subscription_date,
         }
 
-        self.client.force_authenticate(user=self.admin)
+        self.client.force_authenticate(user=self.user)
 
-        response = self.client.post(
-            reverse('volunteer:participations'),
-            data,
-            format='json',
-        )
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = subscription_date
+            response = self.client.post(
+                reverse('volunteer:participations'),
+                data,
+                format='json',
+            )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
         content = {
             'non_field_errors': [
-                'The fields event, user must make a unique set.'
-                ]
-            }
-        self.assertEqual(json.loads(response.content), content)
-
-    def test_create_new_participation_without_permission(self):
-        """
-        Ensure we can't create a new participation if we don't have the
-        permission.
-        """
-        subscription_date = timezone.now()
-
-        data = {
-            'event': self.event.id,
-            'user': self.user.id,
-            'standby': False,
-            'subscription_date': subscription_date,
-        }
-
-        self.client.force_authenticate(user=self.user2)
-
-        response = self.client.post(
-            reverse('volunteer:participations'),
-            data,
-            format='json',
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-        content = {
-            "detail": "You are not authorized to create a new participation."
+                'The fields event, user must make a unique set.',
+            ],
         }
         self.assertEqual(json.loads(response.content), content)
 
-    def test_create_new_participation_with_permission_other_user(self):
-        """
-        Ensure we can't create a new participation for another user even if we
-        have the permission.
-        """
-        subscription_date = timezone.now()
-
-        data = {
-            'event': self.event.id,
-            'user': self.user2.id,
-            'standby': False,
-            'subscription_date': subscription_date,
-        }
-
-        self.client.force_authenticate(user=self.user)
-
-        response = self.client.post(
-            reverse('volunteer:participations'),
-            data,
-            format='json',
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-        content = {
-            'detail': "Invalid user id.",
-        }
-        self.assertEqual(json.loads(response.content), content)
-
-    def test_list_participations_with_permissions(self):
+    def test_list_participations(self):
         """
         Ensure we can list all participations.
         """
@@ -286,15 +227,19 @@ class ParticipationsTests(APITestCase):
             'attributes : {0}'.format(attributes),
         )
 
-    def test_list_events_without_permissions(self):
+    def test_list_participations_filtered(self):
         """
-        Ensure we can only list our own participations if we don't have the
-        permission to list all of them.
+        Ensure we can filter permissions by user.
         """
         self.client.force_authenticate(user=self.user)
 
-        response = self.client.get(
+        url = "{0}?username={1}".format(
             reverse('volunteer:participations'),
+            self.user.username,
+        )
+
+        response = self.client.get(
+            url,
             format='json',
         )
 

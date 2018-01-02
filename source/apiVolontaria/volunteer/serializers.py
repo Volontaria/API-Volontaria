@@ -227,11 +227,19 @@ class EventBasicSerializer(serializers.ModelSerializer):
         )
         read_only_fields = [
             'id',
+            'subscription_date',
         ]
 
 
 class ParticipationBasicSerializer(serializers.ModelSerializer):
     """This class represents the Participation model serializer."""
+
+    # Explicitly declare the BooleanField to make it "required"
+    standby = serializers.BooleanField()
+    user = serializers.PrimaryKeyRelatedField(
+        read_only=True,
+        default=serializers.CurrentUserDefault(),
+    )
 
     class Meta:
         model = models.Participation
