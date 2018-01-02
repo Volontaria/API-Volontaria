@@ -63,4 +63,14 @@ class Migration(migrations.Migration):
             name='participation',
             unique_together=set([('event', 'user')]),
         ),
+        migrations.RenameField(
+            model_name='event',
+            old_name='volunteers_new',
+            new_name='volunteers',
+        ),
+        migrations.AlterField(
+            model_name='participation',
+            name='subscription_date',
+            field=models.DateTimeField(auto_now=True, verbose_name='Subscription date'),
+        ),
     ]

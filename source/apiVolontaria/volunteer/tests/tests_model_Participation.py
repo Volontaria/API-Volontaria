@@ -1,3 +1,5 @@
+from unittest import mock
+
 from rest_framework.test import APIClient, APITransactionTestCase
 
 from django.db import IntegrityError
@@ -8,7 +10,7 @@ from location.models import Address, StateProvince, Country
 from ..models import Cell, TaskType, Cycle, Event, Participation
 
 
-class EventTests(APITransactionTestCase):
+class ParticipationTests(APITransactionTestCase):
 
     def setUp(self):
         self.client = APIClient()
@@ -64,12 +66,13 @@ class EventTests(APITransactionTestCase):
 
         subscription_date = timezone.now()
 
-        participation = Participation.objects.create(
-            standby=True,
-            subscription_date=subscription_date,
-            user=self.user,
-            event=self.event,
-        )
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = subscription_date
+            participation = Participation.objects.create(
+                standby=True,
+                user=self.user,
+                event=self.event,
+            )
 
         self.assertEqual(participation.standby, True)
         self.assertEqual(participation.subscription_date, subscription_date)
@@ -114,20 +117,6 @@ class EventTests(APITransactionTestCase):
             IntegrityError,
             Participation.objects.create,
             subscription_date=subscription_date,
-            user=self.user,
-            event=self.event,
-        )
-
-    def test_create_participation_missing_subscription_date(self):
-        """
-        Ensure we can't create a new participation without required
-        subscription_date
-        """
-
-        self.assertRaises(
-            IntegrityError,
-            Participation.objects.create,
-            standby=True,
             user=self.user,
             event=self.event,
         )
