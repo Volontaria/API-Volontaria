@@ -96,6 +96,9 @@ class UserBasicSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = User(**validated_data)
 
+        # Hash the user's password
+        user.set_password(validated_data['password'])
+
         # Put user inactive by default
         user.is_active = False
         user.save()
