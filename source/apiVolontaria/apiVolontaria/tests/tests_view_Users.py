@@ -45,6 +45,7 @@ class UsersTests(APITestCase):
         activation_token = ActivationToken.objects.filter(user=user)
 
         self.assertEqual(1, len(activation_token))
+        self.assertTrue(user.check_password(data['password']))
 
     def test_create_new_user_without_username(self):
         """
