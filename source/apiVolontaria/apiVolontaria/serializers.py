@@ -2,6 +2,7 @@ import re
 
 from rest_framework import serializers
 
+from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 
@@ -85,15 +86,24 @@ class UserBasicSerializer(serializers.ModelSerializer):
             'last_name',
             'is_active',
             'password',
+            'new_password',
             'phone',
             'mobile',
         )
-        read_only_fields = [
-            'id',
-        ]
+        write_only_fields = (
+            'password',
+            'new_password',
+        )
+        read_only_fields = (
+            'is_staff',
+            'is_superuser',
+            'is_active',
+            'date_joined',
+        )
 
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(required=False, write_only=True)
 
     phone = serializers.CharField(
         source='profile.phone',
@@ -113,6 +123,7 @@ class UserBasicSerializer(serializers.ModelSerializer):
 
         # Hash the user's password
         user.set_password(validated_data['password'])
+
         # Put user inactive by default
         user.is_active = False
 
@@ -128,3 +139,28 @@ class UserBasicSerializer(serializers.ModelSerializer):
         ActivationToken.objects.create(user=user)
 
         return user
+
+    def update(self, instance, validated_data):
+        if 'new_password' in validated_data.keys():
+            old_pw = validated_data.pop('password')
+            new_pw = validated_data.pop('new_password')
+
+            if instance.check_password(old_pw):
+                instance.set_password(new_pw)
+            else:
+                msg = "Bad password"
+                raise serializers.ValidationError(msg)
+
+        if 'profile' in validated_data.keys():
+            profile_data = validated_data.pop('profile')
+            profile = Profile.objects.get_or_create(user=instance)
+            profile[0].__dict__.update(profile_data)
+            try:
+                profile[0].save()
+            except ValidationError as err:
+                raise serializers.ValidationError(err.message)
+
+        return super(
+            UserBasicSerializer,
+            self
+        ).update(instance, validated_data)
