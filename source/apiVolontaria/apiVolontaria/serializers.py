@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, password_validation
 
 from django.core import exceptions
 
@@ -142,10 +142,19 @@ class UserBasicSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         if 'new_password' in validated_data.keys():
-            old_pw = validated_data.pop('password')
+            try:
+                old_pw = validated_data.pop('password')
+            except KeyError:
+                raise serializers.ValidationError(
+                    'Missing "password" field. Cannot update password.'
+                )
             new_pw = validated_data.pop('new_password')
 
             if instance.check_password(old_pw):
+                try:
+                    password_validation.validate_password(password=new_pw)
+                except ValidationError as err:
+                    raise serializers.ValidationError(err.messages)
                 instance.set_password(new_pw)
             else:
                 msg = "Bad password"
@@ -155,10 +164,7 @@ class UserBasicSerializer(serializers.ModelSerializer):
             profile_data = validated_data.pop('profile')
             profile = Profile.objects.get_or_create(user=instance)
             profile[0].__dict__.update(profile_data)
-            try:
-                profile[0].save()
-            except ValidationError as err:
-                raise serializers.ValidationError(err.message)
+            profile[0].save()
 
         return super(
             UserBasicSerializer,

@@ -167,8 +167,6 @@ class UsersId(generics.RetrieveUpdateAPIView):
     """
     get:
     Return the detail of a specific user.
-    put:
-    Update a user.
     patch:
     Partially update a user.
     """
