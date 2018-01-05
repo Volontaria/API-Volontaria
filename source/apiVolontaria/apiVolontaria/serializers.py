@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
+from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import authenticate, password_validation
 
 from django.core import exceptions
@@ -13,51 +14,26 @@ from .models import ActivationToken, Profile
 
 class AuthCustomTokenSerializer(serializers.Serializer):
     login = serializers.CharField()
-
-    password = serializers.CharField()
-
-    def validate_email(self, email):
-        if len(email) > 6:
-            if re.match(
-                    '[A-Za-z0-1\.-]+'
-                    '@[A-Za-z0-1\.-]+'
-                    '\.[A-Za-z0-1]{2,4}',
-                    email
-            ):
-                return 1
-        return 0
+    password = serializers.CharField(style={'input_type': 'password'})
 
     def validate(self, attrs):
-        email_or_username = attrs.get('login')
+        login = attrs.get('login')
         password = attrs.get('password')
 
-        if email_or_username and password:
-            # Check if user sent email
-            if self.validate_email(email_or_username):
-                email_exist = User.objects.filter(
-                    email=email_or_username,
-                )
+        if login and password:
+            user_obj = User.objects.filter(email=login)
+            if user_obj:
+                login = user_obj.username
 
-                if not email_exist.count():
-                    # Email is not use
-                    msg = "This email doesn't have account"
-                    raise exceptions.ValidationError(msg)
+            user = authenticate(request=self.context.get('request'),
+                                username=login, password=password)
 
-                email_or_username = email_exist[0].username
-            else:
-                user_exist = User.objects.filter(
-                    username=email_or_username
-                ).count()
-
-                if not user_exist:
-                    # User doesn't exist
-                    msg = "This username doesn't have account"
-                    raise exceptions.ValidationError(msg)
-
-            user = authenticate(
-                username=email_or_username,
-                password=password
-            )
+            if not user:
+                msg = _('Unable to log in with provided credentials.')
+                raise serializers.ValidationError(msg, code='authorization')
+        else:
+            msg = _('Must include "username" and "password".')
+            raise serializers.ValidationError(msg, code='authorization')
 
         attrs['user'] = user
 
