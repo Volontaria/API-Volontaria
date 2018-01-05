@@ -1,3 +1,5 @@
+import json
+
 from rest_framework.test import APIClient
 
 from django.urls import reverse
@@ -93,5 +95,56 @@ class ObtainTemporaryAuthTokenTests(APITestCase):
 
         tokens = TemporaryToken.objects.filter(
             user__username='John'
+        ).count()
+        self.assertEqual(0, tokens)
+
+    def test_authenticate_inactive(self):
+        """
+        Ensure we can't authenticate if user is inactive
+        """
+        data = {
+            'login': self.user.username,
+            'password': 'Test123!'
+        }
+
+        User.objects.filter(id=self.user.id).update(is_active=False)
+
+        response = self.client.post(self.url, data, format='json')
+
+        content = {
+            "non_field_errors": [
+                "Unable to log in with provided credentials."
+                ]
+            }
+
+        self.assertEqual(json.loads(response.content), content)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        tokens = TemporaryToken.objects.filter(
+            user__username=self.user.username
+        ).count()
+        self.assertEqual(0, tokens)
+
+    def test_authenticate_missing_parameter(self):
+        """
+        Ensure we can't authenticate if "login" is not provided.
+        """
+        data = {
+            'password': 'Test123!'
+        }
+
+        response = self.client.post(self.url, data, format='json')
+
+        content = {
+            'login': [
+                'This field is required.'
+                ]
+            }
+
+        self.assertEqual(json.loads(response.content), content)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        tokens = TemporaryToken.objects.filter(
+            user__username=self.user.username
         ).count()
         self.assertEqual(0, tokens)
