@@ -59,16 +59,6 @@ class AuthCustomTokenSerializer(serializers.Serializer):
                 password=password
             )
 
-            if user:
-                if not user.is_active:
-                    # User is inactive
-                    msg = "This user is inactive"
-                    raise exceptions.ValidationError(msg)
-            else:
-                # Bad password
-                msg = "Bad password"
-                raise exceptions.ValidationError(msg)
-
         attrs['user'] = user
 
         return attrs
