@@ -163,10 +163,14 @@ class Users(generics.ListCreateAPIView):
         return response
 
 
-class UsersId(generics.RetrieveAPIView):
+class UsersId(generics.RetrieveUpdateAPIView):
     """
     get:
     Return the detail of a specific user.
+    put:
+    Update a user.
+    patch:
+    Partially update a user.
     """
     serializer_class = serializers.UserBasicSerializer
 
@@ -185,6 +189,25 @@ class UsersId(generics.RetrieveAPIView):
             'detail': "You are not authorized to get detail of a given user.",
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
+
+    def patch(self, request, *args, **kwargs):
+        if 'profile' in self.kwargs.keys():
+            self.kwargs['pk'] = self.request.user.id
+            return self.partial_update(request, *args, **kwargs)
+
+        elif self.request.user.has_perm('apiVolontaria.change_user'):
+            return self.partial_update(request, *args, **kwargs)
+
+        content = {
+            'detail': "You are not authorized to update a given user.",
+        }
+        return Response(content, status=status.HTTP_403_FORBIDDEN)
+
+    def put(self, request, *args, **kwargs):
+        content = {
+            "detail": "Method \"PUT\" not allowed."
+        }
+        return Response(content, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class UsersActivation(APIView):
