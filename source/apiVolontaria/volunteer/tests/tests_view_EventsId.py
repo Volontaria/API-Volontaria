@@ -119,6 +119,14 @@ class EventsIdTests(APITestCase):
             result['nb_volunteers_standby_needed'],
             self.event.nb_volunteers_standby_needed
         )
+        self.assertEqual(
+            result['nb_volunteers'],
+            self.event.nb_volunteers
+        )
+        self.assertEqual(
+            result['nb_volunteers_standby'],
+            self.event.nb_volunteers_standby
+        )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -163,6 +171,14 @@ class EventsIdTests(APITestCase):
         self.assertEqual(
             result['nb_volunteers_standby_needed'],
             self.event.nb_volunteers_standby_needed,
+        )
+        self.assertEqual(
+            result['nb_volunteers'],
+            self.event.nb_volunteers
+        )
+        self.assertEqual(
+            result['nb_volunteers_standby'],
+            self.event.nb_volunteers_standby
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
