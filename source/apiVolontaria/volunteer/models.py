@@ -193,6 +193,14 @@ class Event(models.Model):
     def is_active(self):
         return self.cycle.is_active
 
+    @property
+    def nb_volunteers(self):
+        return self.volunteers.filter(participation__standby=False).count()
+
+    @property
+    def nb_volunteers_standby(self):
+        return self.volunteers.filter(participation__standby=True).count()
+
 
 class Participation(models.Model):
     """
