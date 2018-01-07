@@ -216,7 +216,9 @@ class EventBasicSerializer(serializers.ModelSerializer):
             'start_date',
             'end_date',
             'nb_volunteers_needed',
+            'nb_volunteers',
             'nb_volunteers_standby_needed',
+            'nb_volunteers_standby',
             'volunteers',
             'cell',
             'cycle',
@@ -228,6 +230,8 @@ class EventBasicSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id',
             'subscription_date',
+            'nb_volunteers',
+            'nb_volunteers_standby',
         ]
 
 

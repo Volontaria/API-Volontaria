@@ -17,6 +17,10 @@ class EventTests(APITransactionTestCase):
         self.user.set_password('Test123!')
         self.user.save()
 
+        self.user2 = UserFactory()
+        self.user2.set_password('Test123!')
+        self.user2.save()
+
         self.admin = AdminFactory()
         self.admin.set_password('Test123!')
         self.admin.save()
@@ -342,9 +346,21 @@ class EventTests(APITransactionTestCase):
             end_date=end_date,
         )
 
-        participation = Participation.objects.create(
-            standby=False,
+        Participation.objects.create(
+            standby=True,
             user=self.user,
+            event=event,
+        )
+
+        Participation.objects.create(
+            standby=True,
+            user=self.user2,
+            event=event,
+        )
+
+        Participation.objects.create(
+            standby=False,
+            user=self.admin,
             event=event,
         )
 
@@ -372,10 +388,22 @@ class EventTests(APITransactionTestCase):
             end_date=end_date,
         )
 
-        participation = Participation.objects.create(
+        Participation.objects.create(
             standby=True,
             user=self.user,
             event=event,
         )
 
-        self.assertEqual(event.nb_volunteers_standby, 1)
+        Participation.objects.create(
+            standby=True,
+            user=self.user2,
+            event=event,
+        )
+
+        Participation.objects.create(
+            standby=False,
+            user=self.admin,
+            event=event,
+        )
+
+        self.assertEqual(event.nb_volunteers_standby, 2)
