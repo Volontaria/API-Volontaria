@@ -125,11 +125,14 @@ class EventsTests(APITestCase):
         self.assertEqual(content['task_type']['id'], self.task_type.id)
         self.assertEqual(content['nb_volunteers_needed'], 0)
         self.assertEqual(content['nb_volunteers_standby_needed'], 0)
+        self.assertEqual(content['nb_volunteers'], 0)
+        self.assertEqual(content['nb_volunteers_standby'], 0)
 
         # Check the system doesn't return attributes not expected
         attributes = ['id', 'start_date', 'end_date', 'nb_volunteers_needed',
                       'nb_volunteers_standby_needed', 'volunteers', 'cell',
-                      'cycle', 'task_type']
+                      'cycle', 'task_type', 'nb_volunteers_standby',
+                      'nb_volunteers']
 
         for key in content.keys():
             self.assertTrue(
@@ -194,7 +197,8 @@ class EventsTests(APITestCase):
         # Check the system doesn't return attributes not expected
         attributes = ['id', 'start_date', 'end_date', 'nb_volunteers_needed',
                       'nb_volunteers_standby_needed', 'volunteers', 'cell',
-                      'cycle', 'task_type']
+                      'cycle', 'task_type', 'nb_volunteers_standby',
+                      'nb_volunteers']
 
         for key in content['results'][0].keys():
             self.assertTrue(
@@ -230,7 +234,8 @@ class EventsTests(APITestCase):
         # Check the system doesn't return attributes not expected
         attributes = ['id', 'start_date', 'end_date', 'nb_volunteers_needed',
                       'nb_volunteers_standby_needed', 'volunteers', 'cell',
-                      'cycle', 'task_type']
+                      'cycle', 'task_type', 'nb_volunteers_standby',
+                      'nb_volunteers']
 
         for key in content['results'][0].keys():
             self.assertTrue(

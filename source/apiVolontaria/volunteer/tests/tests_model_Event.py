@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from apiVolontaria.factories import UserFactory, AdminFactory
 from location.models import Address, StateProvince, Country
-from ..models import Cell, TaskType, Cycle, Event
+from ..models import Cell, TaskType, Cycle, Event, Participation
 
 
 class EventTests(APITransactionTestCase):
@@ -320,3 +320,62 @@ class EventTests(APITransactionTestCase):
             end_date=end_date,
             task_type=self.task_type,
         )
+
+    def test_nb_volunteers_property(self):
+        """
+        Ensure we get the correct number of volunteers that are signed up
+        """
+        start_date = timezone.now()
+        end_date = start_date
+
+        cycle = Cycle.objects.create(
+            name="my cycle",
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        event = Event.objects.create(
+            cell=self.cell,
+            cycle=cycle,
+            task_type=self.task_type,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        participation = Participation.objects.create(
+            standby=False,
+            user=self.user,
+            event=event,
+        )
+
+        self.assertEqual(event.nb_volunteers, 1)
+
+    def test_nb_volunteers_standby_property(self):
+        """
+        Ensure we get the correct number of volunteers that are signed up and
+        on hold.
+        """
+        start_date = timezone.now()
+        end_date = start_date
+
+        cycle = Cycle.objects.create(
+            name="my cycle",
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        event = Event.objects.create(
+            cell=self.cell,
+            cycle=cycle,
+            task_type=self.task_type,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        participation = Participation.objects.create(
+            standby=True,
+            user=self.user,
+            event=event,
+        )
+
+        self.assertEqual(event.nb_volunteers_standby, 1)
