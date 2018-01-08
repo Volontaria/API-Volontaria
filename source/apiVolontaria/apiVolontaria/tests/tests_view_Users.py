@@ -1,9 +1,12 @@
 import json
 
+from unittest import mock
+
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
 from django.urls import reverse
+from django.test.utils import override_settings
 from django.contrib.auth.models import User
 
 from ..models import ActivationToken
@@ -131,6 +134,144 @@ class UsersTests(APITestCase):
 
         content = {"password": ["This field is required."]}
         self.assertEqual(json.loads(response.content), content)
+
+    @override_settings(
+        CONSTANT={
+            "EMAIL_SERVICE": True,
+            "AUTO_ACTIVATE_USER": False,
+            "FRONTEND_INTEGRATION": {
+                "ACTIVATION_URL": "fake_url",
+            }
+        }
+    )
+    @mock.patch('apiVolontaria.views.IMailing')
+    def test_create_user_activation_email(self, imailing):
+        """
+        Ensure that the activation email is sent when user signs up.
+        """
+
+        data = {
+            'username': 'John',
+            'email': 'John@mailinator.com',
+            'password': 'test123!',
+            'phone': '1234567890',
+        }
+
+        instance_imailing = imailing.create_instance.return_value
+        instance_imailing.send_templated_email.return_value = {
+            "code": "success",
+        }
+
+        response = self.client.post(
+            reverse('users'),
+            data,
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(json.loads(response.content)['phone'], '1234567890')
+
+        user = User.objects.get(username="John")
+        activation_token = ActivationToken.objects.filter(user=user)
+
+        self.assertFalse(user.is_active)
+        self.assertEqual(1, len(activation_token))
+
+    @override_settings(
+        CONSTANT={
+            "EMAIL_SERVICE": True,
+            "AUTO_ACTIVATE_USER": False,
+            "FRONTEND_INTEGRATION": {
+                "ACTIVATION_URL": "fake_url",
+            }
+        }
+    )
+    @mock.patch('apiVolontaria.views.IMailing')
+    def test_create_user_activation_email_failure(self, imailing):
+        """
+        Ensure that the user is notified that no email was sent.
+        """
+
+        data = {
+            'username': 'John',
+            'email': 'John@mailinator.com',
+            'password': 'test123!',
+            'phone': '1234567890',
+        }
+
+        instance_imailing = imailing.create_instance.return_value
+        instance_imailing.send_templated_email.return_value = {
+            "code": "failure",
+        }
+
+        response = self.client.post(
+            reverse('users'),
+            data,
+            format='json',
+        )
+
+        content = {
+            'detail': "The account was created but no email was "
+                      "sent. If your account is not activated, "
+                      "contact the administration.",
+        }
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(json.loads(response.content), content)
+
+        user = User.objects.get(username="John")
+        activation_token = ActivationToken.objects.filter(user=user)
+
+        self.assertFalse(user.is_active)
+        self.assertEqual(1, len(activation_token))
+
+    @override_settings(
+        CONSTANT={
+            "EMAIL_SERVICE": True,
+            "AUTO_ACTIVATE_USER": True,
+            "FRONTEND_INTEGRATION": {
+                "ACTIVATION_URL": "fake_url",
+            }
+        }
+    )
+    @mock.patch('apiVolontaria.views.IMailing')
+    def test_create_user_auto_activate(self, imailing):
+        """
+        Ensure that the user is automatically activated.
+        """
+
+        data = {
+            'username': 'John',
+            'email': 'John@mailinator.com',
+            'password': 'test123!',
+            'phone': '1234567890',
+        }
+
+        instance_imailing = imailing.create_instance.return_value
+        instance_imailing.send_templated_email.return_value = {
+            "code": "failure",
+        }
+
+        response = self.client.post(
+            reverse('users'),
+            data,
+            format='json',
+        )
+
+        content = {
+            'detail': "The account was created but no email was "
+                      "sent. If your account is not activated, "
+                      "contact the administration.",
+        }
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(json.loads(response.content), content)
+
+        user = User.objects.get(username="John")
+        activation_token = ActivationToken.objects.filter(user=user)
+
+        self.assertTrue(user.is_active)
+        self.assertEqual(1, len(activation_token))
 
     def test_list_users(self):
         """
