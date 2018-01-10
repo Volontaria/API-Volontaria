@@ -1,14 +1,19 @@
 # coding: utf-8
-
-from django.core.exceptions import ValidationError
-from django.db import models
-from django.utils import timezone
-from rest_framework.authtoken.models import Token
-from django.conf import settings
-from django.contrib.auth.models import User
 import binascii
 import os
 import re
+
+from django.db import models
+from django.utils import timezone
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
+
+from rest_framework.authtoken.models import Token
+
+# Make the "email" field of users unique in the database
+# Implemented in custom migration "9999_user_email_unique.py"
+User._meta.get_field('email')._unique = True
 
 
 class ActivationToken(models.Model):
