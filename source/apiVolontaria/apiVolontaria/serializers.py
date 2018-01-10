@@ -1,5 +1,3 @@
-import re
-
 from rest_framework import serializers
 
 from django.core.exceptions import ValidationError
@@ -21,9 +19,12 @@ class AuthCustomTokenSerializer(serializers.Serializer):
         password = attrs.get('password')
 
         if login and password:
-            user_obj = User.objects.filter(email=login)
-            if user_obj:
-                login = user_obj.username
+            try:
+                user_obj = User.objects.get(email=login)
+                if user_obj:
+                    login = user_obj.username
+            except User.DoesNotExist:
+                pass
 
             user = authenticate(request=self.context.get('request'),
                                 username=login, password=password)
@@ -32,7 +33,7 @@ class AuthCustomTokenSerializer(serializers.Serializer):
                 msg = _('Unable to log in with provided credentials.')
                 raise serializers.ValidationError(msg, code='authorization')
         else:
-            msg = _('Must include "username" and "password".')
+            msg = _('Must include "login" and "password".')
             raise serializers.ValidationError(msg, code='authorization')
 
         attrs['user'] = user
