@@ -135,6 +135,37 @@ class UsersTests(APITestCase):
         content = {"password": ["This field is required."]}
         self.assertEqual(json.loads(response.content), content)
 
+    def test_create_new_user_duplicate_email(self):
+        """
+        Ensure we can't create a new user with an already existing email
+        """
+
+        data = {
+            'username': 'John',
+            'email': 'John@mailinator.com',
+            'password': 'test123!',
+            'phone': '1234567890',
+        }
+
+        user = UserFactory()
+        user.email = data['email']
+        user.save()
+
+        response = self.client.post(
+            reverse('users'),
+            data,
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        content = {
+            'email': [
+                "An account for the specified email address already exists."
+            ]
+        }
+        self.assertEqual(json.loads(response.content), content)
+
     @override_settings(
         CONSTANT={
             "EMAIL_SERVICE": True,

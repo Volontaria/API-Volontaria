@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
@@ -68,7 +69,18 @@ class UserBasicSerializer(serializers.ModelSerializer):
             'date_joined',
         )
 
-    email = serializers.EmailField(required=True)
+    email = serializers.EmailField(
+        required=True,
+        validators=[
+            UniqueValidator(
+                queryset=User.objects.all(),
+                message=_(
+                    "An account for the specified email "
+                    "address already exists."
+                ),
+            ),
+        ],
+    )
     password = serializers.CharField(required=True, write_only=True)
     new_password = serializers.CharField(required=False, write_only=True)
 
