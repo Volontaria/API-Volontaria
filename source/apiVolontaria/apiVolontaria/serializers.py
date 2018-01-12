@@ -94,6 +94,15 @@ class UserBasicSerializer(serializers.ModelSerializer):
     )
 
     def create(self, validated_data):
+        try:
+            password_validation.validate_password(
+                password=validated_data['password']
+            )
+        except ValidationError as err:
+            raise serializers.ValidationError({
+                "password": err.messages
+                })
+
         profile_data = None
         if 'profile' in validated_data.keys():
             profile_data = validated_data.pop('profile')
@@ -133,7 +142,9 @@ class UserBasicSerializer(serializers.ModelSerializer):
                 try:
                     password_validation.validate_password(password=new_pw)
                 except ValidationError as err:
-                    raise serializers.ValidationError(err.messages)
+                    raise serializers.ValidationError({
+                        "password": err.messages
+                        })
                 instance.set_password(new_pw)
             else:
                 msg = "Bad password"
