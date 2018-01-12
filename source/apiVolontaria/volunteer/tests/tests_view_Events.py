@@ -242,6 +242,47 @@ class EventsTests(APITestCase):
             content['results'][2]['start_date']
         )
 
+    def test_list_events_with_filter(self):
+        """
+        Ensure we can list event filtered by cycle.
+        """
+        self.client.force_authenticate(user=self.admin)
+
+        url = "{0}?cycle={1}".format(
+            reverse('volunteer:events'),
+            self.cycle_inactive.id,
+        )
+
+        response = self.client.get(
+            url,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(content['count'], 2)
+
+        # Check the system doesn't return attributes not expected
+        attributes = ['id', 'start_date', 'end_date', 'nb_volunteers_needed',
+                      'nb_volunteers_standby_needed', 'volunteers', 'cell',
+                      'cycle', 'task_type', 'nb_volunteers_standby',
+                      'nb_volunteers']
+
+        for key in content['results'][0].keys():
+            self.assertTrue(
+                key in attributes,
+                'Attribute "{0}" is not expected but is '
+                'returned by the system.'.format(key),
+            )
+            attributes.remove(key)
+
+        # Ensure the system returns all expected attributes
+        self.assertTrue(
+            len(attributes) == 0,
+            'The system failed to return some '
+            'attributes : {0}'.format(attributes),
+        )
+
     def test_list_events_without_permissions(self):
         """
         Ensure we can list only active event (is_active property)
