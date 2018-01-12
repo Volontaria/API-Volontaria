@@ -100,6 +100,7 @@ class Event(models.Model):
     """
     class Meta:
         verbose_name_plural = 'Events'
+        ordering = ('start_date',)
 
     start_date = models.DateTimeField(
         verbose_name="Begin date",
