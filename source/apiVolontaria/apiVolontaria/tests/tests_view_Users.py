@@ -156,6 +156,32 @@ class UsersTests(APITestCase):
         content = {"password": ['This password is entirely numeric.']}
         self.assertEqual(json.loads(response.content), content)
 
+    def test_create_new_user_invalid_phone(self):
+        """
+        Ensure we can't create a new user with an invalid phone number
+        """
+        data = {
+            'username': 'John',
+            'email': 'John@mailinator.com',
+            'password': '19274682736',
+            'phone': '12345',
+            'mobile': '23445dfg'
+        }
+
+        response = self.client.post(
+            reverse('users'),
+            data,
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        content = {
+            "phone": ['Invalid format.'],
+            "mobile": ['Invalid format.']
+        }
+        self.assertEqual(json.loads(response.content), content)
+
     def test_create_new_user_duplicate_email(self):
         """
         Ensure we can't create a new user with an already existing email
