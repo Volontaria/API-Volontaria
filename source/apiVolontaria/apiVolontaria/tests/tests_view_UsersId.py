@@ -312,7 +312,7 @@ class UsersIdTests(APITestCase):
             format='json',
         )
 
-        content = ['This password is entirely numeric.']
+        content = {'password': ['This password is entirely numeric.']}
         self.assertEqual(json.loads(response.content), content)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
