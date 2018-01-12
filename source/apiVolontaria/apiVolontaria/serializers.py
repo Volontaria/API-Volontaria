@@ -1,3 +1,5 @@
+import re
+
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
@@ -9,6 +11,16 @@ from django.contrib.auth import authenticate, password_validation
 from django.core import exceptions
 
 from .models import ActivationToken, Profile
+
+
+# Validator for phone numbers
+def phone_number(phone):
+    reg = re.compile('^(\+\d{1,2})?\d{9,10}$')
+    char_list = " -.()"
+    for i in char_list:
+        phone = phone.replace(i, '')
+    if not reg.match(phone):
+        raise serializers.ValidationError("Invalid format.")
 
 
 class AuthCustomTokenSerializer(serializers.Serializer):
@@ -87,10 +99,12 @@ class UserBasicSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(
         source='profile.phone',
         required=False,
+        validators=[phone_number],
     )
     mobile = serializers.CharField(
         source='profile.mobile',
         required=False,
+        validators=[phone_number],
     )
 
     def create(self, validated_data):
