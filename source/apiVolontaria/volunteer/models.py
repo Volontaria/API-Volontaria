@@ -30,14 +30,11 @@ class Cycle(models.Model):
     @property
     def is_active(self):
         now = timezone.now()
+        # Cycle is active if it has not ended yet (even if it has not started)
         if self.start_date and self.end_date:
-            if self.end_date > now > self.start_date:
-                return True
-            else:
-                return False
-        else:
-            # Without date, the cycle is active
-            return True
+            return self.end_date > now
+        # Without date, the cycle is active
+        return True
 
 
 class TaskType(models.Model):
