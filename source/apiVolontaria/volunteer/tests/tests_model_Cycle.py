@@ -13,11 +13,11 @@ class CycleTests(APITestCase):
         """
         Ensure we can create a new cycle with just required arguments
         """
-        token = Cycle.objects.create(
+        cycle = Cycle.objects.create(
             name='my cycle'
         )
 
-        self.assertEquals(token.name, 'my cycle')
+        self.assertEquals(cycle.name, 'my cycle')
 
     def test_is_active_property_true(self):
         """
@@ -63,3 +63,18 @@ class CycleTests(APITestCase):
 
         # Event has ended
         self.assertEqual(cycle.is_active, False)
+
+    def test_str_method(self):
+        """
+        Validate the string representation of cycles
+        """
+        start_date = timezone.now()
+        end_date = start_date
+
+        cycle = Cycle.objects.create(
+            name='my cycle',
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        self.assertEqual(str(cycle), cycle.name)
