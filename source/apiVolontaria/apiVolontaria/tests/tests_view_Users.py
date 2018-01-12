@@ -135,6 +135,27 @@ class UsersTests(APITestCase):
         content = {"password": ["This field is required."]}
         self.assertEqual(json.loads(response.content), content)
 
+    def test_create_new_user_weak_password(self):
+        """
+        Ensure we can't create a new user with a weak password
+        """
+        data = {
+            'username': 'John',
+            'email': 'John@mailinator.com',
+            'password': '19274682736',
+        }
+
+        response = self.client.post(
+            reverse('users'),
+            data,
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        content = {"password": ['This password is entirely numeric.']}
+        self.assertEqual(json.loads(response.content), content)
+
     def test_create_new_user_duplicate_email(self):
         """
         Ensure we can't create a new user with an already existing email
