@@ -34,7 +34,19 @@ class CycleTests(APITestCase):
             end_date=end_date,
         )
 
-        self.assertEquals(cycle.is_active, True)
+        start_date += timezone.timedelta(days=1)
+        end_date += timezone.timedelta(days=1)
+
+        cycle_2 = Cycle.objects.create(
+            name='my cycle',
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        # Event in progress
+        self.assertEqual(cycle.is_active, True)
+        # Event to come
+        self.assertEqual(cycle_2.is_active, True)
 
     def test_is_active_property_false(self):
         """
@@ -49,4 +61,5 @@ class CycleTests(APITestCase):
             end_date=end_date,
         )
 
-        self.assertEquals(cycle.is_active, False)
+        # Event has ended
+        self.assertEqual(cycle.is_active, False)
