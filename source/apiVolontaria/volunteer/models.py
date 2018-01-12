@@ -36,6 +36,9 @@ class Cycle(models.Model):
         # Without date, the cycle is active
         return True
 
+    def __str__(self):
+        return '{}'.format(self.name)
+
 
 class TaskType(models.Model):
 
@@ -59,6 +62,9 @@ class TaskType(models.Model):
         verbose_name="Name",
         max_length=100,
     )
+
+    def __str__(self):
+        return '{}'.format(self.name)
 
 
 class Cell(models.Model):
