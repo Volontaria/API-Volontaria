@@ -66,7 +66,7 @@ class EventsTests(APITestCase):
 
         # Some date INSIDE the cycle range
         start_date = start_date + timezone.timedelta(
-            minutes=1,
+            minutes=2,
         )
         end_date = end_date - timezone.timedelta(
             minutes=1,
@@ -81,6 +81,19 @@ class EventsTests(APITestCase):
         )
 
         self.event_inactive = Event.objects.create(
+            cell=self.cell,
+            cycle=self.cycle_inactive,
+            task_type=self.task_type,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        # Decrement start_date for event_2
+        start_date = start_date - timezone.timedelta(
+            minutes=1,
+        )
+
+        self.event_2 = Event.objects.create(
             cell=self.cell,
             cycle=self.cycle_inactive,
             task_type=self.task_type,
@@ -181,7 +194,7 @@ class EventsTests(APITestCase):
 
     def test_list_events_with_permissions(self):
         """
-        Ensure we can list all events.
+        Ensure we can list all events. (ordered by start_date by default)
         """
         self.client.force_authenticate(user=self.admin)
 
@@ -192,7 +205,7 @@ class EventsTests(APITestCase):
 
         content = json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(content['count'], 2)
+        self.assertEqual(content['count'], 3)
 
         # Check the system doesn't return attributes not expected
         attributes = ['id', 'start_date', 'end_date', 'nb_volunteers_needed',
@@ -213,6 +226,20 @@ class EventsTests(APITestCase):
             len(attributes) == 0,
             'The system failed to return some '
             'attributes : {0}'.format(attributes),
+        )
+
+        # Make sure the events are ordered in ascending start_date
+        self.assertTrue(
+            content['results'][0]['start_date'] <=
+            content['results'][1]['start_date']
+        )
+        self.assertTrue(
+            content['results'][0]['start_date'] <=
+            content['results'][2]['start_date']
+        )
+        self.assertTrue(
+            content['results'][1]['start_date'] <=
+            content['results'][2]['start_date']
         )
 
     def test_list_events_without_permissions(self):
