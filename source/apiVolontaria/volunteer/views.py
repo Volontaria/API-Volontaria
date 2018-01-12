@@ -216,11 +216,12 @@ class Events(generics.ListCreateAPIView):
     """
 
     serializer_class = serializers.EventBasicSerializer
-    filter_fields = ['volunteers']
+    filter_fields = ['volunteers', 'cycle']
 
     def get_queryset(self):
+
         if self.request.user.has_perm('volunteer.add_event'):
-            return models.Event.objects.all()
+            queryset = models.Event.objects.all()
         else:
             queryset = models.Event.objects.all()
 
@@ -232,7 +233,7 @@ class Events(generics.ListCreateAPIView):
             queryset = queryset.\
                 exclude(pk__in=[event.pk for event in list_exclude])
 
-            return queryset
+        return queryset
 
     def post(self, request, *args, **kwargs):
         if self.request.user.has_perm('volunteer.add_event'):
