@@ -46,7 +46,7 @@ class CyclesId(generics.RetrieveUpdateDestroyAPIView):
 
     def patch(self, request, *args, **kwargs):
         if self.request.user.has_perm('volunteer.update_cycle'):
-            return self.update(request, *args, **kwargs)
+            return self.partial_update(request, *args, **kwargs)
         else:
             content = {
                 'detail': "You are not authorized to update a cycle.",
@@ -114,7 +114,7 @@ class TaskTypesId(generics.RetrieveUpdateDestroyAPIView):
 
     def patch(self, request, *args, **kwargs):
         if self.request.user.has_perm('volunteer.update_tasktype'):
-            return self.update(request, *args, **kwargs)
+            return self.partial_update(request, *args, **kwargs)
 
         content = {
             'detail': "You are not authorized to update a tasktype.",
@@ -182,7 +182,7 @@ class CellsId(generics.RetrieveUpdateDestroyAPIView):
 
     def patch(self, request, *args, **kwargs):
         if self.request.user.has_perm('volunteer.update_cell'):
-            return self.update(request, *args, **kwargs)
+            return self.partial_update(request, *args, **kwargs)
 
         content = {
             'detail': "You are not authorized to update a cell.",
