@@ -54,7 +54,7 @@ class AddressesId(generics.RetrieveUpdateDestroyAPIView):
     def patch(self, request, *args, **kwargs):
         if self.request.user.has_perm('update_address'):
             try:
-                return self.update(request, *args, **kwargs)
+                return self.partial_update(request, *args, **kwargs)
             except ValidationError as err:
                 content = dict(detail=err.message)
                 return Response(content, status=status.HTTP_400_BAD_REQUEST)
@@ -115,7 +115,7 @@ class CountriesId(generics.RetrieveUpdateDestroyAPIView):
 
     def patch(self, request, *args, **kwargs):
         if self.request.user.has_perm('update_country'):
-            return self.update(request, *args, **kwargs)
+            return self.partial_update(request, *args, **kwargs)
 
         content = {
             'detail': "You are not authorized to update a country.",
@@ -173,7 +173,7 @@ class StateProvincesId(generics.RetrieveUpdateDestroyAPIView):
 
     def patch(self, request, *args, **kwargs):
         if self.request.user.has_perm('update_stateprovince'):
-            return self.update(request, *args, **kwargs)
+            return self.partial_update(request, *args, **kwargs)
 
         content = {
             'detail': "You are not authorized to update a stateprovince.",
