@@ -407,3 +407,43 @@ class EventTests(APITransactionTestCase):
         )
 
         self.assertEqual(event.nb_volunteers_standby, 2)
+
+    def test_is_started_property_false(self):
+        """
+        Ensure we have False if the event is not started
+        """
+        start_date = timezone.now() + timezone.timedelta(
+            minutes=100
+        )
+        end_date = start_date + timezone.timedelta(
+            minutes=100
+        )
+
+        event = Event.objects.create(
+            cell=self.cell,
+            cycle=self.cycle,
+            task_type=self.task_type,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        self.assertEqual(event.is_started, False)
+
+    def test_is_started_property_true(self):
+        """
+        Ensure we have True if the event is started
+        """
+        start_date = timezone.now()
+        end_date = start_date + timezone.timedelta(
+            minutes=100
+        )
+
+        event = Event.objects.create(
+            cell=self.cell,
+            cycle=self.cycle,
+            task_type=self.task_type,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        self.assertEqual(event.is_started, True)

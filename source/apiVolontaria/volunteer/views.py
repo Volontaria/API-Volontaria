@@ -6,6 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from .permissions import IsOwnerOrReadOnly
 from . import models, serializers
 
+from django.utils.translation import ugettext_lazy as _
+
 
 class Cycles(generics.ListCreateAPIView):
     """
@@ -339,3 +341,15 @@ class ParticipationsId(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return models.Participation.objects.filter()
+
+    def delete(self, request, *args, **kwargs):
+        participation = self.get_object()
+        if not participation.event.is_started:
+            return self.destroy(request, *args, **kwargs)
+        else:
+            content = {
+                'detail': _("You can't delete a participation if the "
+                            "associated event is already started"),
+            }
+
+            return Response(content, status=status.HTTP_403_FORBIDDEN)
