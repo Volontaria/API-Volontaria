@@ -190,6 +190,10 @@ class Event(models.Model):
         )
 
     @property
+    def is_started(self):
+        return self.start_date <= timezone.now()
+
+    @property
     def is_expired(self):
         return self.end_date <= timezone.now()
 

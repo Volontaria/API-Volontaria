@@ -58,7 +58,9 @@ class ParticipationsIdTests(APITestCase):
             name="my tasktype",
         )
 
-        start_date = timezone.now()
+        start_date = timezone.now() + timezone.timedelta(
+            minutes=100,
+        )
         end_date = start_date + timezone.timedelta(
             minutes=100,
         )
@@ -250,6 +252,48 @@ class ParticipationsIdTests(APITestCase):
         self.assertEqual(response.content, b'')
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_delete_participation_but_event_already_started(self):
+        """
+        Ensure we can't delete a specific participation if
+        the event is already started.
+        """
+        self.client.force_authenticate(user=self.user)
+
+        start_date = timezone.now()
+        end_date = start_date + timezone.timedelta(
+            minutes=100,
+        )
+
+        event = Event.objects.create(
+            cell=self.cell,
+            cycle=self.cycle,
+            task_type=self.task_type,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        participation = Participation.objects.create(
+            standby=True,
+            user=self.user,
+            event=event,
+        )
+
+        response = self.client.delete(
+            reverse(
+                'volunteer:participations_id',
+                kwargs={'pk': participation.id},
+            ),
+        )
+
+        content = {
+            'detail': "You can't delete a participation if the "
+                      "associated event is already started",
+        }
+
+        self.assertEqual(json.loads(response.content), content)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_delete_participation_without_permission(self):
         """
