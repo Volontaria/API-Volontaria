@@ -59,6 +59,12 @@ class ParticipationTests(APITransactionTestCase):
             end_date=event_start_date + timezone.timedelta(minutes=100),
         )
 
+        self.participation = Participation.objects.create(
+            standby=True,
+            user=self.admin,
+            event=self.event,
+        )
+
     def test_create_participation(self):
         """
         Ensure we can create a new participation with just required arguments
@@ -119,4 +125,34 @@ class ParticipationTests(APITransactionTestCase):
             subscription_date=subscription_date,
             user=self.user,
             event=self.event,
+        )
+
+    def test_start_date_property(self):
+        """
+        Check start_date property
+        """
+
+        self.assertEqual(
+            self.participation.start_date,
+            self.participation.event.start_date
+        )
+
+    def test_end_date_property(self):
+        """
+        Check end_date property
+        """
+
+        self.assertEqual(
+            self.participation.end_date,
+            self.participation.event.end_date
+        )
+
+    def test_cell_property(self):
+        """
+        Check cell property
+        """
+
+        self.assertEqual(
+            self.participation.cell,
+            self.participation.event.cell.name
         )

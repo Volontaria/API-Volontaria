@@ -239,3 +239,15 @@ class Participation(models.Model):
             self.standby,
             str(self.subscription_date),
         )
+
+    @property
+    def start_date(self):
+        return self.event.start_date
+
+    @property
+    def end_date(self):
+        return self.event.end_date
+
+    @property
+    def cell(self):
+        return self.event.cell.name
