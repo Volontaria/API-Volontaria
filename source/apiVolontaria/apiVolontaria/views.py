@@ -148,7 +148,7 @@ class Users(generics.ListCreateAPIView):
                     template_id=MAIL_SERVICE["TEMPLATES"]["CONFIRM_SIGN_UP"],
                     list_to=[request.data["email"]],
                     context={
-                        "activation_url": activation_url,
+                        "ACTIVATIONURL": activation_url,
                         },
                 )
 
