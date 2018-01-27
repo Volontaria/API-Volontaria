@@ -6,7 +6,10 @@ from rest_framework.permissions import IsAuthenticated
 from .permissions import IsOwnerOrReadOnly
 from . import models, serializers
 
+from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
+
+from imailing.Mailing import IMailing
 
 
 class Cycles(generics.ListCreateAPIView):
@@ -308,6 +311,55 @@ class Participations(generics.ListCreateAPIView):
         if username is not None:
             queryset = queryset.filter(user__username=username)
         return queryset
+
+    def post(self, request, *args, **kwargs):
+        response = self.create(request, *args, **kwargs)
+
+        participation = models.Participation.objects.get(
+            user=self.request.user,
+            event__id=request.data["event_id"],
+        )
+
+        # If it's a success
+        if response.status_code == status.HTTP_201_CREATED:
+            # If we have a configured service of email
+            if settings.CONSTANT['EMAIL_SERVICE'] is True:
+                # If we want to confirm participation creation with an email
+                if settings.CONSTANT['SEND_EMAIL_CONFIRM_CREATE_PARTICIPATION']:
+
+                    MAIL_SERVICE = settings.SETTINGS_IMAILING
+
+                    # Send email with a SETTINGS_IMAILING
+                    email = IMailing.create_instance(
+                        MAIL_SERVICE["SERVICE"],
+                        MAIL_SERVICE["API_KEY"],
+                    )
+
+                    # These variables need to be humanize to be
+                    # copy/paste in the templated email
+                    start_date = participation.event.start_date.strftime('%A %d %B %Y')
+                    start_time = participation.event.start_date.strftime('%H:%M')
+                    address = participation.event.cell.address.str()
+
+                    response_send_mail = email.send_templated_email(
+                        email_from=MAIL_SERVICE["EMAIL_FROM"],
+                        template_id=MAIL_SERVICE["TEMPLATES"]["CONFIRM_SIGN_UP"],
+                        list_to=[request.data["email"]],
+                        context={
+                            "start_date": start_date,
+                            "start_time": start_time,
+                            "address": address,
+                        },
+                    )
+
+                    if response_send_mail["code"] == "failure":
+                        content = {
+                            'detail': _("The participation has been created "
+                                        "but no email was sent."),
+                        }
+                        return Response(content, status=status.HTTP_201_CREATED)
+
+        return response
 
     # A user can only create participations for himself
     # This auto-fills the 'user' field of the Participation object.
