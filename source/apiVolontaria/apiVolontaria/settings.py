@@ -181,6 +181,7 @@ ACTIVATION_TOKENS = {
 CONSTANT = {
     "EMAIL_SERVICE": False,
     "AUTO_ACTIVATE_USER": False,
+    "SEND_EMAIL_CONFIRM_CREATE_PARTICIPATION": False,
     "FRONTEND_INTEGRATION": {
         "ACTIVATION_URL": "example.com/activate?activation_token={{token}}",
     },
@@ -193,7 +194,8 @@ SETTINGS_IMAILING = {
     "API_KEY": "example_api_key",
     "EMAIL_FROM": "admin@example.com",
     "TEMPLATES": {
-        "CONFIRM_SIGN_UP": "example_template_id"
+        "CONFIRM_SIGN_UP": "example_template_id",
+        "CONFIRM_CREATE_PARTICIPATION": "example_template_id",
     }
 }
 
