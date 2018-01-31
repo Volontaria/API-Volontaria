@@ -74,7 +74,7 @@ class ObtainTemporaryAuthToken(ObtainAuthToken):
                 data = {'token': token.key}
                 return Response(data)
             else:
-                error = _('Could not authenticate user')
+                error = _("Could not authenticate user.")
                 return Response(
                     {'error': error},
                     status=status.HTTP_400_BAD_REQUEST
@@ -101,7 +101,7 @@ class Users(generics.ListCreateAPIView):
             return self.list(request, *args, **kwargs)
 
         content = {
-            'detail': "You are not authorized to list users.",
+            'detail': _("You are not authorized to list users."),
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
 
@@ -154,9 +154,9 @@ class Users(generics.ListCreateAPIView):
 
                 if response_send_mail["code"] == "failure":
                     content = {
-                        'detail': "The account was created but no email was "
-                                  "sent. If your account is not activated, "
-                                  "contact the administration.",
+                        'detail': _("The account was created but no email was "
+                                    "sent. If your account is not "
+                                    "activated, contact the administration."),
                     }
                     return Response(content, status=status.HTTP_201_CREATED)
 
@@ -184,7 +184,8 @@ class UsersId(generics.RetrieveUpdateAPIView):
             return self.retrieve(request, *args, **kwargs)
 
         content = {
-            'detail': "You are not authorized to get detail of a given user.",
+            'detail': _("You are not authorized to get "
+                        "detail of a given user."),
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
 
@@ -197,13 +198,13 @@ class UsersId(generics.RetrieveUpdateAPIView):
             return self.partial_update(request, *args, **kwargs)
 
         content = {
-            'detail': "You are not authorized to update a given user.",
+            'detail': _("You are not authorized to update a given user."),
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
 
     def put(self, request, *args, **kwargs):
         content = {
-            "detail": "Method \"PUT\" not allowed."
+            "detail": _("Method \"PUT\" not allowed.")
         }
         return Response(content, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -250,8 +251,8 @@ class UsersActivation(APIView):
             )
         # We have multiple token with the same key (impossible)
         else:
-            error = 'The system have a problem, please contact us, ' \
-                    'it is not your fault.'
+            error = _("The system have a problem, please contact us, "
+                "it is not your fault.")
             return Response(
                 {'detail': error},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR

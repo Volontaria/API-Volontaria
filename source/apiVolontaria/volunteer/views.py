@@ -27,7 +27,7 @@ class Cycles(generics.ListCreateAPIView):
             return self.create(request, *args, **kwargs)
         else:
             content = {
-                'detail': "You are not authorized to create a new cycle.",
+                'detail': _("You are not authorized to create a new cycle."),
             }
             return Response(content, status=status.HTTP_403_FORBIDDEN)
 
@@ -53,7 +53,7 @@ class CyclesId(generics.RetrieveUpdateDestroyAPIView):
             return self.partial_update(request, *args, **kwargs)
         else:
             content = {
-                'detail': "You are not authorized to update a cycle.",
+                'detail': _("You are not authorized to update a cycle."),
             }
             return Response(content, status=status.HTTP_403_FORBIDDEN)
 
@@ -62,7 +62,7 @@ class CyclesId(generics.RetrieveUpdateDestroyAPIView):
             return self.destroy(request, *args, **kwargs)
         else:
             content = {
-                'detail': "You are not authorized to delete a cycle.",
+                'detail': _("You are not authorized to delete a cycle."),
             }
             return Response(content, status=status.HTTP_403_FORBIDDEN)
 
@@ -89,7 +89,7 @@ class TaskTypes(generics.ListCreateAPIView):
             return self.create(request, *args, **kwargs)
 
         content = {
-            'detail': "You are not authorized to create a new tasktype.",
+            'detail': _("You are not authorized to create a new tasktype."),
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
 
@@ -121,7 +121,7 @@ class TaskTypesId(generics.RetrieveUpdateDestroyAPIView):
             return self.partial_update(request, *args, **kwargs)
 
         content = {
-            'detail': "You are not authorized to update a tasktype.",
+            'detail': _("You are not authorized to update a tasktype."),
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
 
@@ -130,7 +130,7 @@ class TaskTypesId(generics.RetrieveUpdateDestroyAPIView):
             return self.destroy(request, *args, **kwargs)
 
         content = {
-            'detail': "You are not authorized to delete a tasktype.",
+            'detail': _("You are not authorized to delete a tasktype."),
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
 
@@ -157,7 +157,7 @@ class Cells(generics.ListCreateAPIView):
             return self.create(request, *args, **kwargs)
 
         content = {
-            'detail': "You are not authorized to create a new cell.",
+            'detail': _("You are not authorized to create a new cell."),
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
 
@@ -189,7 +189,7 @@ class CellsId(generics.RetrieveUpdateDestroyAPIView):
             return self.partial_update(request, *args, **kwargs)
 
         content = {
-            'detail': "You are not authorized to update a cell.",
+            'detail': _("You are not authorized to update a cell."),
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
 
@@ -198,7 +198,7 @@ class CellsId(generics.RetrieveUpdateDestroyAPIView):
             return self.destroy(request, *args, **kwargs)
 
         content = {
-            'detail': "You are not authorized to delete a cell.",
+            'detail': _("You are not authorized to delete a cell."),
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
 
@@ -239,7 +239,7 @@ class Events(generics.ListCreateAPIView):
             return self.create(request, *args, **kwargs)
 
         content = {
-            'detail': "You are not authorized to create a new event.",
+            'detail': _("You are not authorized to create a new event."),
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
 
