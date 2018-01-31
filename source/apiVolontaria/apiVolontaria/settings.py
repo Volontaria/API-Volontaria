@@ -159,6 +159,12 @@ REST_FRAMEWORK = {
 
 CORS_ORIGIN_ALLOW_ALL = True
 
+# Rest framework docs (live API) settings
+
+REST_FRAMEWORK_DOCS = {
+    'HIDE_DOCS': True
+}
+
 
 # Temporary Token
 
