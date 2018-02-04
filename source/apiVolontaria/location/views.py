@@ -2,6 +2,7 @@ from rest_framework.response import Response
 from rest_framework import status, generics
 
 from django.core.exceptions import ValidationError
+from django.utils.translation import ugettext_lazy as _
 
 from . import serializers
 
@@ -30,7 +31,7 @@ class Addresses(generics.ListCreateAPIView):
                 return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
         content = {
-            'detail': "You are not authorized to create a new address.",
+            'detail': _("You are not authorized to create a new address."),
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
 
@@ -60,7 +61,7 @@ class AddressesId(generics.RetrieveUpdateDestroyAPIView):
                 return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
         content = {
-            'detail': "You are not authorized to update an address.",
+            'detail': _("You are not authorized to update an address."),
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
 
@@ -69,7 +70,7 @@ class AddressesId(generics.RetrieveUpdateDestroyAPIView):
             return self.destroy(request, *args, **kwargs)
 
         content = {
-            'detail': "You are not authorized to delete an address.",
+            'detail': _("You are not authorized to delete an address."),
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
 
@@ -92,7 +93,7 @@ class Countries(generics.ListCreateAPIView):
             return self.create(request, *args, **kwargs)
 
         content = {
-            'detail': "You are not authorized to create a new country.",
+            'detail': _("You are not authorized to create a new country."),
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
 
@@ -118,7 +119,7 @@ class CountriesId(generics.RetrieveUpdateDestroyAPIView):
             return self.partial_update(request, *args, **kwargs)
 
         content = {
-            'detail': "You are not authorized to update a country.",
+            'detail': _("You are not authorized to update a country."),
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
 
@@ -127,7 +128,7 @@ class CountriesId(generics.RetrieveUpdateDestroyAPIView):
             return self.destroy(request, *args, **kwargs)
 
         content = {
-            'detail': "You are not authorized to delete a country.",
+            'detail': _("You are not authorized to delete a country."),
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
 
@@ -150,7 +151,8 @@ class StateProvinces(generics.ListCreateAPIView):
             return self.create(request, *args, **kwargs)
 
         content = {
-            'detail': "You are not authorized to create a new stateprovince.",
+            'detail': _("You are not authorized to create a "
+                        "new stateprovince."),
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
 
@@ -176,7 +178,7 @@ class StateProvincesId(generics.RetrieveUpdateDestroyAPIView):
             return self.partial_update(request, *args, **kwargs)
 
         content = {
-            'detail': "You are not authorized to update a stateprovince.",
+            'detail': _("You are not authorized to update a stateprovince."),
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
 
@@ -185,6 +187,6 @@ class StateProvincesId(generics.RetrieveUpdateDestroyAPIView):
             return self.destroy(request, *args, **kwargs)
 
         content = {
-            'detail': "You are not authorized to delete a stateprovince.",
+            'detail': _("You are not authorized to delete a stateprovince."),
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
