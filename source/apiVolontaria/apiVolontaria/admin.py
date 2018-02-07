@@ -20,6 +20,13 @@ class UserAdmin(admin.ModelAdmin):
         'is_active',
     ]
 
+    search_fields = [
+        'username',
+        'first_name',
+        'last_name',
+        'email',
+    ]
+
 
 admin.site.register(models.TemporaryToken)
 admin.site.register(models.Profile)
