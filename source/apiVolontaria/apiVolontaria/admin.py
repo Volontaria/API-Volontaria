@@ -1,10 +1,11 @@
 from django.contrib import admin
 from django.contrib.auth.models import User
+from django.contrib.auth.admin import UserAdmin
 
 from . import models
 
 
-class UserAdmin(admin.ModelAdmin):
+class CustomUserAdmin(UserAdmin):
     list_display = [
         'username',
         'email',
@@ -31,4 +32,4 @@ class UserAdmin(admin.ModelAdmin):
 admin.site.register(models.TemporaryToken)
 admin.site.register(models.Profile)
 admin.site.unregister(User)
-admin.site.register(User, UserAdmin)
+admin.site.register(User, CustomUserAdmin)
