@@ -5,6 +5,13 @@ from django.contrib.auth.admin import UserAdmin
 from . import models
 
 
+class ProfileInline(admin.StackedInline):
+    model = models.Profile
+    can_delete = False
+    verbose_name_plural = 'Profile'
+    fk_name = 'user'
+
+
 class CustomUserAdmin(UserAdmin):
     list_display = [
         'username',
@@ -27,6 +34,8 @@ class CustomUserAdmin(UserAdmin):
         'last_name',
         'email',
     ]
+
+    inlines = (ProfileInline, )
 
 
 admin.site.register(models.TemporaryToken)
