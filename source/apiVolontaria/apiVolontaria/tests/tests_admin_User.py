@@ -1,61 +1,50 @@
-from rest_framework.test import APIClient
-
 from rest_framework.test import APITestCase
 
-from apiVolontaria.models import TemporaryToken
-from apiVolontaria.factories import UserFactory
-from django.utils import timezone
+from django.contrib.auth.models import User
+from django.contrib.admin.sites import AdminSite
+from django.contrib.admin.options import ModelAdmin
+
+from ..admin import CustomUserAdmin
+from ..models import Profile
+from ..factories import UserFactory
 
 
-class TemporaryTokenTests(APITestCase):
+class AdminUserTests(APITestCase):
 
     def setUp(self):
         self.user = UserFactory()
+        self.other_user = UserFactory()
 
-    def test_expired_property_false(self):
-        """
-        Ensure that expired() returns False when the token is not expired
-        """
-        token = TemporaryToken.objects.create(
-            user=self.user
+        Profile.objects.create(
+            user=self.user,
+            mobile='5149803840',
+            phone='+15149803840',
         )
 
-        token.expires = timezone.now() + timezone.timedelta(
-            minutes=100
+        Profile.objects.create(
+            user=self.other_user,
+            mobile='5146903840',
+            phone='+15146903840',
         )
 
-        self.assertEquals(token.expired, False)
+        self.site = AdminSite()
 
-    def test_expired_property_true(self):
+    def test_get_mobile(self):
         """
-        Ensure that expired() returns True when the token is expired
+        Ensure we display the good mobile number in the user's admin panel
         """
-        token = TemporaryToken.objects.create(
-            user=self.user
+        admin = CustomUserAdmin(User, self.site)
+        self.assertEqual(
+            admin.get_mobile(self.user),
+            self.user.profile.mobile,
         )
 
-        token.expires = timezone.now() - timezone.timedelta(seconds=1)
-
-        # It's already not equal because time is
-        # passed since the last line of code
-        self.assertEquals(True, token.expired)
-
-    def test_expire_function_true(self):
+    def test_get_phone(self):
         """
-        Ensure that expire() sets the token as "expired"
+        Ensure we display the good phone number in the user's admin panel
         """
-        token = TemporaryToken.objects.create(
-            user=self.user
+        admin = CustomUserAdmin(User, self.site)
+        self.assertEqual(
+            admin.get_phone(self.user),
+            self.user.profile.phone,
         )
-
-        token.expires = timezone.now() + timezone.timedelta(
-            minutes=100
-        )
-
-        # The token is not expired, 100 minutes remain
-        self.assertEquals(False, token.expired)
-
-        token.expire()
-
-        # The token is expired because we ask for
-        self.assertEquals(True, token.expired)
