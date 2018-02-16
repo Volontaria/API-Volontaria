@@ -65,6 +65,7 @@ class UserBasicSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'is_active',
+            'is_superuser',
             'password',
             'new_password',
             'phone',
