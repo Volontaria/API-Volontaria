@@ -78,8 +78,17 @@ class UsersIdTests(APITestCase):
         self.assertEqual(content['id'], 1)
 
         # Check the system doesn't return attributes not expected
-        attributes = ['id', 'username', 'email', 'first_name',
-                      'last_name', 'is_active', 'phone', 'mobile']
+        attributes = [
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'is_active',
+            'phone',
+            'mobile',
+            'is_superuser',
+        ]
         for key in content.keys():
             self.assertTrue(
                 key in attributes,
@@ -116,8 +125,17 @@ class UsersIdTests(APITestCase):
         self.assertEqual(content['id'], 1)
 
         # Check the system doesn't return attributes not expected
-        attributes = ['id', 'username', 'email', 'first_name',
-                      'last_name', 'is_active', 'phone', 'mobile']
+        attributes = [
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'is_active',
+            'phone',
+            'mobile',
+            'is_superuser',
+        ]
         for key in content.keys():
             self.assertTrue(
                 key in attributes,
@@ -165,8 +183,17 @@ class UsersIdTests(APITestCase):
         self.assertEqual(content['id'], 1)
 
         # Check the system doesn't return attributes not expected
-        attributes = ['id', 'username', 'email', 'first_name',
-                      'last_name', 'is_active', 'phone', 'mobile']
+        attributes = [
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'is_active',
+            'phone',
+            'mobile',
+            'is_superuser',
+        ]
         for key in content.keys():
             self.assertTrue(
                 key in attributes,
@@ -245,8 +272,17 @@ class UsersIdTests(APITestCase):
         self.assertEqual(content['id'], 1)
 
         # Check the system doesn't return attributes not expected
-        attributes = ['id', 'username', 'email', 'first_name',
-                      'last_name', 'is_active', 'phone', 'mobile']
+        attributes = [
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'is_active',
+            'phone',
+            'mobile',
+            'is_superuser',
+        ]
         for key in content.keys():
             self.assertTrue(
                 key in attributes,

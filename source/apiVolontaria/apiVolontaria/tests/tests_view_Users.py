@@ -365,8 +365,17 @@ class UsersTests(APITestCase):
         self.assertEqual(first_user['id'], self.user.id)
 
         # Check the system doesn't return attributes not expected
-        attributes = ['id', 'username', 'email', 'first_name',
-                      'last_name', 'is_active', 'phone', 'mobile']
+        attributes = [
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'is_active',
+            'phone',
+            'mobile',
+            'is_superuser',
+        ]
         for key in first_user.keys():
             self.assertTrue(
                 key in attributes,
