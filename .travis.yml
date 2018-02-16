@@ -13,6 +13,9 @@ install:
   - pip install coveralls
   - pip install pycodestyle
 
+before_script:
+  - python source/apiVolontaria/manage.py migrate
+
 script:
   - coverage run --omit=*.virtualenvs*,*virtualenv* source/apiVolontaria/manage.py test source/apiVolontaria/
   - pycodestyle --count --show-source --exclude=migrations source/apiVolontaria

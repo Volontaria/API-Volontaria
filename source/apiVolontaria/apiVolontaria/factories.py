@@ -10,16 +10,16 @@ class UserFactory(factory.DjangoModelFactory):
 
     first_name = factory.Faker('first_name')
     last_name = factory.Faker('last_name')
-    username = factory.Sequence('John{0}'.format)
-    email = factory.Sequence('john{0}@volontaria.com'.format)
+    username = factory.Faker('email')
+    email = factory.Faker('email')
     password = 'Test123!'
 
     @classmethod
-    def _prepare(cls, create, **kwargs):
+    def _create(cls, model_class, *args, **kwargs):
         if 'password' in kwargs.keys():
             password = kwargs.pop('password', None)
 
-        user = super(UserFactory, cls)._prepare(create, **kwargs)
+        user = super(UserFactory, cls)._create(model_class, *args, **kwargs)
 
         if password:
             user.set_password(password)
@@ -40,11 +40,11 @@ class AdminFactory(factory.DjangoModelFactory):
     is_superuser = True
 
     @classmethod
-    def _prepare(cls, create, **kwargs):
+    def _create(cls, model_class, *args, **kwargs):
         if 'password' in kwargs.keys():
             password = kwargs.pop('password', None)
 
-        user = super(AdminFactory, cls)._prepare(create, **kwargs)
+        user = super(AdminFactory, cls)._create(model_class, *args, **kwargs)
 
         if password:
             user.set_password(password)
