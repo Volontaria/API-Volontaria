@@ -9,9 +9,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import authenticate, password_validation
 
 from django.core import exceptions
-
 from volunteer.models import Cell
-from .models import ActivationToken, Profile
+from .models import ActionToken, Profile
 
 
 # Validator for phone numbers
@@ -167,8 +166,11 @@ class UserBasicSerializer(serializers.ModelSerializer):
                 **profile_data
             )
 
-        # Create an ActivationToken to activate user in the future
-        ActivationToken.objects.create(user=user)
+        # Create an ActionToken to activate user in the future
+        ActionToken.objects.create(
+            user=user,
+            type='account_activation',
+        )
 
         return user
 
@@ -224,3 +226,14 @@ class UserPublicSerializer(serializers.ModelSerializer):
             'last_name',
             'email',
         )
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+
+    username = serializers.CharField(required=True)
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+
+    token = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)

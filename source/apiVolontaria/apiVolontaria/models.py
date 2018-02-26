@@ -5,19 +5,33 @@ import re
 
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 
 from rest_framework.authtoken.models import Token
 
+from .managers import ActionTokenManager
+
 # Make the "email" field of users unique in the database
 # Implemented in custom migration "9999_user_email_unique.py"
 User._meta.get_field('email')._unique = True
 
 
-class ActivationToken(models.Model):
-    """Class of Token to allow User to activate his account."""
+ACTIONS_TYPE = [
+    ('account_activation', _('Account activation')),
+    ('password_change', _('Password change')),
+]
+
+
+class ActionToken(models.Model):
+    """
+    Class of Token to allow User to do some action.
+
+    Generally, the token is sent by email and serves
+    as a "right" to do a specific action.
+    """
 
     key = models.CharField(
         verbose_name="Key",
@@ -25,7 +39,16 @@ class ActivationToken(models.Model):
         primary_key=True
     )
 
-    user = models.OneToOneField(
+    type = models.CharField(
+        verbose_name='Type of action',
+        max_length=100,
+        choices=ACTIONS_TYPE,
+        null=False,
+        blank=False,
+        default=None,
+    )
+
+    user = models.ForeignKey(
         User,
         related_name='activation_token',
         on_delete=models.CASCADE,
@@ -42,13 +65,15 @@ class ActivationToken(models.Model):
         blank=True,
     )
 
+    objects = ActionTokenManager()
+
     def save(self, *args, **kwargs):
         if not self.key:
             self.key = self.generate_key()
             self.expires = timezone.now() + timezone.timedelta(
                 minutes=settings.ACTIVATION_TOKENS['MINUTES']
             )
-        return super(ActivationToken, self).save(*args, **kwargs)
+        return super(ActionToken, self).save(*args, **kwargs)
 
     @staticmethod
     def generate_key():

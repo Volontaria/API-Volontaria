@@ -1,11 +1,11 @@
 from rest_framework.test import APITestCase
 from django.utils import timezone
 
-from ..models import ActivationToken
+from ..models import ActionToken
 from ..factories import UserFactory
 
 
-class ActivationTokenTests(APITestCase):
+class ActionTokenTests(APITestCase):
 
     def setUp(self):
         self.user = UserFactory()
@@ -14,8 +14,9 @@ class ActivationTokenTests(APITestCase):
         """
         Ensure that expired() returns False when the token is not expired
         """
-        token = ActivationToken.objects.create(
-            user=self.user
+        token = ActionToken.objects.create(
+            user=self.user,
+            type='account_activation',
         )
 
         token.expires = timezone.now() + timezone.timedelta(
@@ -28,8 +29,9 @@ class ActivationTokenTests(APITestCase):
         """
         Ensure that expired() returns True when the token is expired
         """
-        token = ActivationToken.objects.create(
-            user=self.user
+        token = ActionToken.objects.create(
+            user=self.user,
+            type='account_activation',
         )
 
         token.expires = timezone.now() - timezone.timedelta(seconds=1)
@@ -42,8 +44,9 @@ class ActivationTokenTests(APITestCase):
         """
         Ensure that expire() sets the token as "expired"
         """
-        token = ActivationToken.objects.create(
-            user=self.user
+        token = ActionToken.objects.create(
+            user=self.user,
+            type='account_activation',
         )
 
         token.expires = timezone.now() + timezone.timedelta(

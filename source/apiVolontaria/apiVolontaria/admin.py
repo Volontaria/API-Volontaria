@@ -39,6 +39,7 @@ class CustomUserAdmin(UserAdmin):
 
 
 admin.site.register(models.TemporaryToken)
+admin.site.register(models.ActionToken)
 admin.site.register(models.Profile)
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)

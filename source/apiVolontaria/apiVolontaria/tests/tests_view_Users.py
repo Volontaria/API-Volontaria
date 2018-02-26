@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.test.utils import override_settings
 from django.contrib.auth.models import User
 
-from ..models import ActivationToken
+from ..models import ActionToken
 from ..factories import UserFactory, AdminFactory
 
 
@@ -49,7 +49,10 @@ class UsersTests(APITestCase):
         self.assertEqual(json.loads(response.content)['phone'], '1234567890')
 
         user = User.objects.get(username="John")
-        activation_token = ActivationToken.objects.filter(user=user)
+        activation_token = ActionToken.objects.filter(
+            user=user,
+            type='account_activation',
+        )
 
         self.assertEqual(1, len(activation_token))
 
@@ -77,7 +80,6 @@ class UsersTests(APITestCase):
             ]
         }
         self.assertEqual(json.loads(response.content), content)
-
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_new_user_without_username(self):
@@ -269,7 +271,10 @@ class UsersTests(APITestCase):
         self.assertEqual(json.loads(response.content)['phone'], '1234567890')
 
         user = User.objects.get(username="John")
-        activation_token = ActivationToken.objects.filter(user=user)
+        activation_token = ActionToken.objects.filter(
+            user=user,
+            type='account_activation',
+        )
 
         self.assertFalse(user.is_active)
         self.assertEqual(1, len(activation_token))
@@ -319,7 +324,10 @@ class UsersTests(APITestCase):
         self.assertEqual(json.loads(response.content), content)
 
         user = User.objects.get(username="John")
-        activation_token = ActivationToken.objects.filter(user=user)
+        activation_token = ActionToken.objects.filter(
+            user=user,
+            type='account_activation',
+        )
 
         self.assertFalse(user.is_active)
         self.assertEqual(1, len(activation_token))
@@ -369,7 +377,10 @@ class UsersTests(APITestCase):
         self.assertEqual(json.loads(response.content), content)
 
         user = User.objects.get(username="John")
-        activation_token = ActivationToken.objects.filter(user=user)
+        activation_token = ActionToken.objects.filter(
+            user=user,
+            type='account_activation',
+        )
 
         self.assertTrue(user.is_active)
         self.assertEqual(1, len(activation_token))

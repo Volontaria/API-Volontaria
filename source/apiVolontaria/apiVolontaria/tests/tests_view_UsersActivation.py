@@ -6,8 +6,8 @@ from rest_framework.test import APIClient, APITestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
 
-from ..factories import UserFactory, AdminFactory
-from ..models import ActivationToken
+from ..factories import UserFactory
+from ..models import ActionToken
 
 
 class UsersActivationTests(APITestCase):
@@ -20,11 +20,14 @@ class UsersActivationTests(APITestCase):
         self.user.is_active = False
         self.user.save()
 
-        self.activation_token = ActivationToken.objects.create(user=self.user)
+        self.activation_token = ActionToken.objects.create(
+            user=self.user,
+            type='account_activation',
+        )
 
     def test_activate_user(self):
         """
-        Ensure we can activate a user by using an ActivationToken.
+        Ensure we can activate a user by using an ActionToken.
         """
         self.client.force_authenticate(user=self.user)
 
@@ -48,14 +51,17 @@ class UsersActivationTests(APITestCase):
         self.assertTrue(user_sync.is_active)
 
         # The token has been removed
-        tokens = ActivationToken.objects.filter(user=user_sync)
+        tokens = ActionToken.objects.filter(
+            user=user_sync,
+            type='account_activation',
+        )
         self.assertTrue(len(tokens) == 0)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_activate_user_with_bad_token(self):
         """
-        Ensure we can't activate a user without a good ActivationToken.
+        Ensure we can't activate a user without a good ActionToken.
         """
         self.client.force_authenticate(user=self.user)
 

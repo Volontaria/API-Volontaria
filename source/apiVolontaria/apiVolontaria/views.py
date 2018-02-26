@@ -1,4 +1,5 @@
-from django.contrib.auth import authenticate
+from django.core.exceptions import ValidationError
+from django.contrib.auth import authenticate, password_validation
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.utils import timezone
@@ -6,11 +7,12 @@ from django.utils.translation import ugettext_lazy as _
 
 from rest_framework import generics, status
 from rest_framework.authtoken.views import ObtainAuthToken
+
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from . import serializers
-from .models import TemporaryToken, ActivationToken
+from .models import TemporaryToken, ActionToken
 from imailing.Mailing import IMailing
 
 
@@ -131,7 +133,10 @@ class Users(generics.ListCreateAPIView):
                 FRONTEND_SETTINGS = settings.CONSTANT['FRONTEND_INTEGRATION']
 
                 # Get the token of the saved user and send it with an email
-                activate_token = ActivationToken.objects.get(user=user).key
+                activate_token = ActionToken.objects.get(
+                    user=user,
+                    type='account_activation',
+                ).key
 
                 # Setup the url for the activation button in the email
                 activation_url = FRONTEND_SETTINGS['ACTIVATION_URL'].replace(
@@ -223,7 +228,10 @@ class UsersActivation(APIView):
         """
         activation_token = request.data.get('activation_token')
 
-        token = ActivationToken.objects.filter(key=activation_token)
+        token = ActionToken.objects.filter(
+            key=activation_token,
+            type='account_activation',
+        )
 
         # There is only one reference, we will set the user active
         if len(token) == 1:
@@ -252,6 +260,147 @@ class UsersActivation(APIView):
         # We have multiple token with the same key (impossible)
         else:
             error = _("The system have a problem, please contact us, "
+                      "it is not your fault.")
+            return Response(
+                {'detail': error},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class ResetPassword(APIView):
+    """
+    post:
+    Create a new token allowing user to change his password.
+    """
+    permission_classes = ()
+    authentication_classes = ()
+
+    def post(self, request, *args, **kwargs):
+        if settings.CONSTANT['EMAIL_SERVICE'] is not True:
+            # Without email this functionality is not provided
+            return Response(status=status.HTTP_501_NOT_IMPLEMENTED)
+
+        # Valid params
+        serializer = serializers.ResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # get user from the username given in data
+        try:
+            user = User.objects.get(username=request.data["username"])
+        except Exception:
+            content = {
+                'detail': _("No account with this username."),
+            }
+            return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+        # remove old tokens to change password
+        tokens = ActionToken.objects.filter(
+            type='password_change',
+            user=user,
+        )
+
+        for token in tokens:
+            token.expire()
+
+        # create the new token
+        token = ActionToken.objects.create(
+            type='password_change',
+            user=user,
+        )
+
+        # Send the new token by e-mail to the user
+        MAIL_SERVICE = settings.SETTINGS_IMAILING
+        FRONTEND_SETTINGS = settings.CONSTANT['FRONTEND_INTEGRATION']
+
+        button_url = FRONTEND_SETTINGS['FORGOT_PASSWORD_URL'].replace(
+            "{{token}}",
+            str(token)
+        )
+
+        email = IMailing.create_instance(
+            MAIL_SERVICE["SERVICE"],
+            MAIL_SERVICE["API_KEY"],
+        )
+
+        response_send_mail = email.send_templated_email(
+            email_from=MAIL_SERVICE["EMAIL_FROM"],
+            template_id=MAIL_SERVICE["TEMPLATES"]["FORGOT_PASSWORD"],
+            list_to=[user.email],
+            context={
+                "forgot_password_url": button_url,
+            },
+        )
+
+        if response_send_mail["code"] == "failure":
+            content = {
+                'detail': _("Your token has been created but no email "
+                            "has been sent. Please contact the "
+                            "administration."),
+            }
+            return Response(content, status=status.HTTP_201_CREATED)
+
+        else:
+            return Response(status=status.HTTP_201_CREATED)
+
+
+class ChangePassword(APIView):
+    """
+    post:
+    Get a token and a new password and change the password of
+    the token's owner.
+    """
+    authentication_classes = ()
+    permission_classes = ()
+    serializer_class = serializers.UserBasicSerializer
+
+    def post(self, request):
+        # Valid params
+        serializer = serializers.ChangePasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        token = request.data.get('token')
+        new_password = request.data.get('new_password')
+
+        tokens = ActionToken.objects.filter(
+            key=token,
+            type='password_change',
+            expired=False,
+        )
+
+        # There is only one reference, we will change the user password
+        if len(tokens) == 1:
+            user = tokens[0].user
+            try:
+                password_validation.validate_password(password=new_password)
+            except ValidationError as err:
+                content = {
+                    'detail': err,
+                }
+                return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+            user.set_password(new_password)
+            user.save()
+
+            # We expire the token used
+            tokens[0].expire()
+
+            # We return the user
+            serializer = serializers.UserBasicSerializer(user)
+
+            return Response(serializer.data)
+
+        # There is no reference to this token
+        elif len(tokens) == 0:
+            error = '{0} is not a valid token.'.format(token)
+
+            return Response(
+                {'detail': error},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # We have multiple token with the same key (impossible)
+        else:
+            error = _("The system has a problem, please contact us, "
                       "it is not your fault.")
             return Response(
                 {'detail': error},

@@ -194,6 +194,7 @@ CONSTANT = {
     "AUTO_ACTIVATE_USER": False,
     "FRONTEND_INTEGRATION": {
         "ACTIVATION_URL": "example.com/activate?activation_token={{token}}",
+        "FORGOT_PASSWORD_URL": "example.com/forgot_password?token={{token}}",
     },
 }
 
@@ -204,7 +205,8 @@ SETTINGS_IMAILING = {
     "API_KEY": "example_api_key",
     "EMAIL_FROM": "admin@example.com",
     "TEMPLATES": {
-        "CONFIRM_SIGN_UP": "example_template_id"
+        "CONFIRM_SIGN_UP": "example_template_id",
+        "FORGOT_PASSWORD": "example_template_id",
     }
 }
 
