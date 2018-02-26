@@ -16,7 +16,8 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 
-from .views import ObtainTemporaryAuthToken, Users, UsersId, UsersActivation
+from .views import (ObtainTemporaryAuthToken, Users, UsersId, UsersActivation,
+                    ResetPassword, ChangePassword)
 
 urlpatterns = [
     # Token authentification
@@ -24,6 +25,17 @@ urlpatterns = [
         r'^authentication$',
         ObtainTemporaryAuthToken.as_view(),
         name='token_api'
+    ),
+    # Forgot password
+    url(
+        r'^reset_password$',
+        ResetPassword.as_view(),
+        name='reset_password'
+    ),
+    url(
+        r'^change_password$',
+        ChangePassword.as_view(),
+        name='change_password'
     ),
     # Users
     url(
