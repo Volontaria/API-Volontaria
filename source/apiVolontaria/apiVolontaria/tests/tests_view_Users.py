@@ -35,6 +35,8 @@ class UsersTests(APITestCase):
             'email': 'John@mailinator.com',
             'password': 'test123!',
             'phone': '1234567890',
+            'first_name': 'Chuck',
+            'last_name': 'Norris',
         }
 
         response = self.client.post(
@@ -59,6 +61,8 @@ class UsersTests(APITestCase):
             'username': 'John',
             'email': 'John@mailinator.com',
             'password': 'test123!',
+            'first_name': 'Chuck',
+            'last_name': 'Norris',
         }
 
         response = self.client.post(
@@ -67,13 +71,14 @@ class UsersTests(APITestCase):
             format='json',
         )
 
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        content = {
+            'non_field_errors': [
+                'You must specify "phone" or "mobile" field.'
+            ]
+        }
+        self.assertEqual(json.loads(response.content), content)
 
-        user = User.objects.get(username="John")
-        activation_token = ActivationToken.objects.filter(user=user)
-
-        self.assertEqual(1, len(activation_token))
-        self.assertTrue(user.check_password(data['password']))
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_new_user_without_username(self):
         """
@@ -82,6 +87,8 @@ class UsersTests(APITestCase):
         data = {
             'email': 'John@mailinator.com',
             'password': 'test123!',
+            'first_name': 'Chuck',
+            'last_name': 'Norris',
         }
 
         response = self.client.post(
@@ -102,6 +109,8 @@ class UsersTests(APITestCase):
         data = {
             'username': 'John',
             'password': 'test123!',
+            'first_name': 'Chuck',
+            'last_name': 'Norris',
         }
 
         response = self.client.post(
@@ -122,6 +131,8 @@ class UsersTests(APITestCase):
         data = {
             'username': 'John',
             'email': 'John@mailinator.com',
+            'first_name': 'Chuck',
+            'last_name': 'Norris',
         }
 
         response = self.client.post(
@@ -143,6 +154,8 @@ class UsersTests(APITestCase):
             'username': 'John',
             'email': 'John@mailinator.com',
             'password': '19274682736',
+            'first_name': 'Chuck',
+            'last_name': 'Norris',
         }
 
         response = self.client.post(
@@ -165,7 +178,9 @@ class UsersTests(APITestCase):
             'email': 'John@mailinator.com',
             'password': '19274682736',
             'phone': '12345',
-            'mobile': '23445dfg'
+            'mobile': '23445dfg',
+            'first_name': 'Chuck',
+            'last_name': 'Norris',
         }
 
         response = self.client.post(
@@ -192,6 +207,8 @@ class UsersTests(APITestCase):
             'email': 'John@mailinator.com',
             'password': 'test123!',
             'phone': '1234567890',
+            'first_name': 'Chuck',
+            'last_name': 'Norris',
         }
 
         user = UserFactory()
@@ -233,6 +250,8 @@ class UsersTests(APITestCase):
             'email': 'John@mailinator.com',
             'password': 'test123!',
             'phone': '1234567890',
+            'first_name': 'Chuck',
+            'last_name': 'Norris',
         }
 
         instance_imailing = imailing.create_instance.return_value
@@ -275,6 +294,8 @@ class UsersTests(APITestCase):
             'email': 'John@mailinator.com',
             'password': 'test123!',
             'phone': '1234567890',
+            'first_name': 'Chuck',
+            'last_name': 'Norris',
         }
 
         instance_imailing = imailing.create_instance.return_value
@@ -323,6 +344,8 @@ class UsersTests(APITestCase):
             'email': 'John@mailinator.com',
             'password': 'test123!',
             'phone': '1234567890',
+            'first_name': 'Chuck',
+            'last_name': 'Norris',
         }
 
         instance_imailing = imailing.create_instance.return_value
