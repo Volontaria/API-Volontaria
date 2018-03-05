@@ -94,6 +94,9 @@ class UserBasicSerializer(serializers.ModelSerializer):
             ),
         ],
     )
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
+
     password = serializers.CharField(required=True, write_only=True)
     new_password = serializers.CharField(required=False, write_only=True)
 
@@ -119,8 +122,22 @@ class UserBasicSerializer(serializers.ModelSerializer):
                 })
 
         profile_data = None
+        error_profile = False
         if 'profile' in validated_data.keys():
             profile_data = validated_data.pop('profile')
+
+            if 'mobile' not in profile_data \
+                    and 'phone' not in profile_data:
+                error_profile = True
+        else:
+            error_profile = True
+
+        if error_profile:
+            raise serializers.ValidationError({
+                "non_field_errors": [
+                    'You must specify "phone" or "mobile" field.'
+                ],
+            })
 
         user = User(**validated_data)
 
