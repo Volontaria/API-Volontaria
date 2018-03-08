@@ -7,3 +7,4 @@ django-cors-headers==2.1.0
 Faker==0.8.11
 factory-boy==2.10.0
 imailing==1.0.0
+django-import-export==1.0.0
