@@ -63,8 +63,28 @@ class ParticipationAdmin(admin.ModelAdmin):
         return profile.mobile if profile else ''
 
 
+class EventAdmin(admin.ModelAdmin):
+    list_display = [
+        'task_type',
+        'cell',
+        'cycle',
+        'start_date',
+        'end_date',
+        'nb_volunteers_needed',
+        'nb_volunteers_standby_needed',
+    ]
+
+    list_filter = [
+        'cycle__name',
+        'cell__name',
+        'task_type__name',
+    ]
+    date_hierarchy = 'start_date'
+    ordering = ('start_date',)
+
+
 admin.site.register(models.Cycle)
 admin.site.register(models.TaskType)
 admin.site.register(models.Cell)
-admin.site.register(models.Event)
+admin.site.register(models.Event, EventAdmin)
 admin.site.register(models.Participation, ParticipationAdmin)
