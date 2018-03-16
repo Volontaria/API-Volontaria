@@ -192,3 +192,23 @@ class UserBasicSerializer(serializers.ModelSerializer):
             UserBasicSerializer,
             self
         ).update(instance, validated_data)
+
+
+class UserPublicSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'email',
+        )
+        read_only_fields = (
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'email',
+        )
