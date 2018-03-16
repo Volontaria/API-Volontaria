@@ -1,6 +1,11 @@
+# -*- coding: utf-8 -*-
+
+from datetime import timedelta
+from decimal import Decimal
 from django.contrib.auth.models import User
 from django.db import models, IntegrityError
 from django.utils import timezone
+from django.utils.translation import ugettext_lazy as _
 
 from location.models import Address
 
@@ -209,6 +214,10 @@ class Event(models.Model):
     def nb_volunteers_standby(self):
         return self.volunteers.filter(participation__standby=True).count()
 
+    @property
+    def duration(self):
+        return self.end_date - self.start_date
+
 
 class Participation(models.Model):
     """
@@ -219,6 +228,11 @@ class Participation(models.Model):
     (M2M relationship) and store informations concerning that association.
 
     """
+    PRESENCE_STATUS = (
+        ('I', _('Initialisation')),
+        ('A', _('Absent')),
+        ('P', _('Present')),
+    )
 
     class Meta:
         verbose_name_plural = 'Participations'
@@ -226,6 +240,18 @@ class Participation(models.Model):
 
     event = models.ForeignKey(Event, related_name='participation')
     user = models.ForeignKey(User, related_name='participation')
+
+    presence_duration_minutes = models.PositiveIntegerField(
+        default=None,
+        blank=True,
+        null=True
+    )
+
+    presence_status = models.CharField(
+        max_length=1,
+        choices=PRESENCE_STATUS,
+        default=PRESENCE_STATUS[0][0]
+    )
 
     standby = models.BooleanField(
         verbose_name="Standby",
@@ -255,3 +281,10 @@ class Participation(models.Model):
     @property
     def cell(self):
         return self.event.cell.name
+
+    @property
+    def duration(self):
+        if self.presence_duration_minutes:
+            return timedelta(minutes=self.presence_duration_minutes)
+        else:
+            return self.event.duration

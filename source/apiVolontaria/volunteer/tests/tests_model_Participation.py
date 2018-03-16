@@ -1,5 +1,7 @@
+from datetime import timedelta
 from unittest import mock
 
+from decimal import Decimal
 from rest_framework.test import APIClient, APITransactionTestCase
 
 from django.db import IntegrityError
@@ -63,6 +65,22 @@ class ParticipationTests(APITransactionTestCase):
             standby=True,
             user=self.admin,
             event=self.event,
+        )
+
+        self.event_2 = Event.objects.create(
+            cell=self.cell,
+            cycle=self.cycle,
+            task_type=self.task_type,
+            start_date=event_start_date,
+            end_date=event_start_date + timezone.timedelta(minutes=100),
+        )
+
+        self.participation_presence = Participation.objects.create(
+            standby=True,
+            user=self.admin,
+            event=self.event_2,
+            presence_status='P',
+            presence_duration_minutes=300,
         )
 
     def test_create_participation(self):
@@ -156,3 +174,22 @@ class ParticipationTests(APITransactionTestCase):
             self.participation.cell,
             self.participation.event.cell.name
         )
+
+    def test_duration_from_model(self):
+        """
+        Check duration
+        """
+
+        self.assertEqual(
+            self.participation_presence.duration,
+            timedelta(minutes=300)
+        )
+
+    def test_duration_from_event_property(self):
+        """
+        Check duration
+        """
+        self.assertEqual(self.participation.duration, timedelta(0, 6000))
+
+    def test_name(self):
+        self.assertIsNot(self.participation.__str__, None)
