@@ -20,7 +20,17 @@ class Cycles(generics.ListCreateAPIView):
     serializer_class = serializers.CycleBasicSerializer
 
     def get_queryset(self):
-        return models.Cycle.objects.filter()
+        if 'is_active' in self.request.GET.keys():
+            is_active = self.request.GET.get('is_active')
+            if is_active in ['True', 'true']:
+                is_active = True
+            elif is_active in ['False', 'false']:
+                is_active = False
+            else:
+                is_active = None
+            return models.Cycle.objects.filter(is_active=is_active)
+        else:
+            return models.Cycle.objects.all()
 
     def post(self, request, *args, **kwargs):
         if self.request.user.has_perm('volunteer.add_cycle'):
