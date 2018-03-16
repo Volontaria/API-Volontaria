@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from datetime import timedelta
-from decimal import Decimal
+
 from django.contrib.auth.models import User
 from django.db import models, IntegrityError
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from location.models import Address
+
+from .managers import CycleManager
 
 
 class Cycle(models.Model):
@@ -31,6 +33,8 @@ class Cycle(models.Model):
         blank=True,
         null=True
     )
+
+    objects = CycleManager()
 
     @property
     def is_active(self):
