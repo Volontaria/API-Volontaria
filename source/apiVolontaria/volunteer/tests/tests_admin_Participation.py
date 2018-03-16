@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.contrib.auth.models import User
 from django.utils import timezone
 from rest_framework.test import APITransactionTestCase
@@ -140,3 +142,7 @@ class ParticipationTests(APITransactionTestCase):
             self.admin.user__mobile(self.participation),
             self.profile.mobile
         )
+
+    def test_admin_events_duration(self):
+        duration = self.admin.event__duration(self.participation)
+        self.assertEqual(duration, timedelta(0, 2880))

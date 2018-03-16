@@ -1,3 +1,4 @@
+from decimal import Decimal
 from rest_framework.test import APIClient, APITransactionTestCase
 
 from django.db import IntegrityError
@@ -447,3 +448,22 @@ class EventTests(APITransactionTestCase):
         )
 
         self.assertEqual(event.is_started, True)
+
+    def test_duration(self):
+        """
+        Ensure we have True if the event is started
+        """
+        start_date = timezone.now()
+        end_date = start_date + timezone.timedelta(
+            minutes=100
+        )
+
+        event = Event.objects.create(
+            cell=self.cell,
+            cycle=self.cycle,
+            task_type=self.task_type,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        self.assertEqual(event.duration, end_date - start_date)

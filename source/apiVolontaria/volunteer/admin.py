@@ -13,6 +13,7 @@ class ParticipationAdmin(admin.ModelAdmin):
     ]
 
     list_display = [
+        'cell',
         'standby',
         'user__first_name',
         'user__last_name',
@@ -20,23 +21,23 @@ class ParticipationAdmin(admin.ModelAdmin):
         'user__phone',
         'user__mobile',
         'start_date',
-        'end_date',
-        'cell'
+        'event__duration',
+        'presence_status',
+        'presence_duration_minutes',
     ]
+
+    list_editable = (
+        'presence_duration_minutes',
+        'presence_status',
+    )
 
     ordering = ('event__start_date',)
 
     list_filter = [
-        'event__start_date',
         'event__cycle__name',
+        'event__cell',
         'event__task_type',
-    ]
-    date_hierarchy = 'event__start_date'
-
-    list_filter = [
-        'event__start_date',
-        'event__cycle__name',
-        'event__task_type',
+        'presence_status',
     ]
     date_hierarchy = 'event__start_date'
 
@@ -61,6 +62,10 @@ class ParticipationAdmin(admin.ModelAdmin):
     def user__mobile(obj):
         profile = Profile.objects.filter(user__pk=obj.user.pk).first()
         return profile.mobile if profile else ''
+
+    @staticmethod
+    def event__duration(obj):
+        return obj.event.duration
 
 
 class EventAdmin(admin.ModelAdmin):
