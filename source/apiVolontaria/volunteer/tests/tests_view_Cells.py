@@ -49,6 +49,26 @@ class CellsTests(APITestCase):
         Ensure we can create a new cell if we have the permission.
         The Address, Country and StateProvince do not exist in the DB.
         """
+        data_post = {
+            'name': 'Cell 3',
+            'address': {
+                'address_line1': "my address",
+                'postal_code': "RAN DOM",
+                'city': 'random city',
+                'state_province': {
+                    'iso_code': 'NS',
+                    'name': 'New State',
+                },
+                'country': {
+                    'iso_code': 'NC',
+                    'name': 'New Country',
+                },
+            },
+            'managers': [
+                self.user.id,
+            ],
+        }
+
         data = {
             'name': 'Cell 3',
             'address': {
@@ -64,6 +84,15 @@ class CellsTests(APITestCase):
                     'name': 'New Country',
                 },
             },
+            'managers': [
+                {
+                    'id': self.user.id,
+                    'username': self.user.username,
+                    'first_name': self.user.first_name,
+                    'last_name': self.user.last_name,
+                    'email': self.user.email,
+                },
+            ],
         }
 
         self.assertRaises(Address.DoesNotExist,
@@ -73,16 +102,16 @@ class CellsTests(APITestCase):
                              'city': 'random city'})
         self.assertRaises(Country.DoesNotExist,
                           Country.objects.get,
-                          **data['address']['country'])
+                          **data_post['address']['country'])
         self.assertRaises(StateProvince.DoesNotExist,
                           StateProvince.objects.get,
-                          **data['address']['state_province'])
+                          **data_post['address']['state_province'])
 
         self.client.force_authenticate(user=self.admin)
 
         response = self.client.post(
             reverse('volunteer:cells'),
-            data,
+            data_post,
             format='json',
         )
 
@@ -115,6 +144,7 @@ class CellsTests(APITestCase):
                     'name': 'New Country',
                 },
             },
+            'managers': [],
         }
 
         self.assertRaises(Country.DoesNotExist,
@@ -160,6 +190,7 @@ class CellsTests(APITestCase):
                     'name': 'Random Country',
                 },
             },
+            'managers': [],
         }
 
         self.client.force_authenticate(user=self.admin)
@@ -198,6 +229,7 @@ class CellsTests(APITestCase):
                     'name': 'Random Country',
                 },
             },
+            'managers': [],
         }
 
         self.client.force_authenticate(user=self.admin)
@@ -236,6 +268,7 @@ class CellsTests(APITestCase):
                     'name': 'Random Country',
                 },
             },
+            'managers': [],
         }
 
         self.client.force_authenticate(user=self.admin)
@@ -423,6 +456,7 @@ class CellsTests(APITestCase):
                         'name': self.random_country.name,
                     },
                 },
+                "managers": [],
             }
         ]
 
@@ -435,3 +469,42 @@ class CellsTests(APITestCase):
         self.assertEqual(response_parsed['results'], data)
         self.assertEqual(response_parsed['count'], 1)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_create_new_cell_with_bad_manager(self):
+        """
+        Ensure we can't create a new cell with a bad idea of manager
+        """
+        data_post = {
+            'name': 'Cell 3',
+            'address': {
+                'address_line1': "my address",
+                'postal_code': "RAN DOM",
+                'city': 'random city',
+                'state_province': {
+                    'iso_code': 'NS',
+                    'name': 'New State',
+                },
+                'country': {
+                    'iso_code': 'NC',
+                    'name': 'New Country',
+                },
+            },
+            'managers': [
+                7812,
+            ],
+        }
+
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.post(
+            reverse('volunteer:cells'),
+            data_post,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+        error = {
+            'message': 'Unknown user with this ID'
+        }
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(content, error)

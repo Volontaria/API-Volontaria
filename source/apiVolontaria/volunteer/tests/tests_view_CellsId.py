@@ -84,6 +84,7 @@ class CellsIdTests(APITestCase):
                     iso_code=self.random_country.iso_code,
                 ),
             ),
+            "managers": [],
         }
 
         self.client.force_authenticate(user=self.user)
@@ -124,6 +125,7 @@ class CellsIdTests(APITestCase):
                     iso_code=self.random_country.iso_code,
                 ),
             ),
+            "managers": [],
         }
 
         data_post = {
@@ -201,6 +203,152 @@ class CellsIdTests(APITestCase):
         self.assertEqual(json.loads(response.content), err)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_cell_managers(self):
+        """
+        Ensure we can update managers of a cells.
+        """
+        self.assertEqual(self.cell.managers.count(), 0)
+
+        data_post = {
+            "managers": [
+                self.user.id
+            ]
+        }
+
+        data = {
+            "id": self.cell.id,
+            "name": self.cell.name,
+            "address": {
+                "id": self.cell.address.id,
+                "address_line1": self.cell.address.address_line1,
+                "address_line2": '',
+                "postal_code": self.cell.address.postal_code,
+                "city": self.cell.address.city,
+                "state_province": {
+                    "name": self.cell.address.state_province.name,
+                    "iso_code": self.cell.address.state_province.iso_code,
+                },
+                "country": {
+                    "name": self.cell.address.country.name,
+                    "iso_code": self.cell.address.country.iso_code,
+                },
+            },
+            "managers": [
+                {
+                    "id": self.user.id,
+                    "username": self.user.username,
+                    "first_name": self.user.first_name,
+                    "last_name": self.user.last_name,
+                    "email": self.user.email,
+                },
+            ],
+        }
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.patch(
+            reverse(
+                'volunteer:cells_id',
+                kwargs={'pk': self.cell.id},
+            ),
+            data_post,
+            format='json',
+        )
+
+        self.assertEqual(json.loads(response.content), data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.cell.managers.count(), 1)
+
+    def test_update_multiple_cell_managers(self):
+        """
+        Ensure we can update multiple managers of a cells.
+        """
+        self.assertEqual(self.cell.managers.count(), 0)
+
+        data_post = {
+            "managers": [
+                self.user.id,
+                self.admin.id,
+            ]
+        }
+
+        data = {
+            "id": self.cell.id,
+            "name": self.cell.name,
+            "address": {
+                "id": self.cell.address.id,
+                "address_line1": self.cell.address.address_line1,
+                "address_line2": '',
+                "postal_code": self.cell.address.postal_code,
+                "city": self.cell.address.city,
+                "state_province": {
+                    "name": self.cell.address.state_province.name,
+                    "iso_code": self.cell.address.state_province.iso_code,
+                },
+                "country": {
+                    "name": self.cell.address.country.name,
+                    "iso_code": self.cell.address.country.iso_code,
+                },
+            },
+            "managers": [
+                {
+                    "id": self.user.id,
+                    "username": self.user.username,
+                    "first_name": self.user.first_name,
+                    "last_name": self.user.last_name,
+                    "email": self.user.email,
+                },
+                {
+                    "id": self.admin.id,
+                    "username": self.admin.username,
+                    "first_name": self.admin.first_name,
+                    "last_name": self.admin.last_name,
+                    "email": self.admin.email,
+                },
+            ],
+        }
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.patch(
+            reverse(
+                'volunteer:cells_id',
+                kwargs={'pk': self.cell.id},
+            ),
+            data_post,
+            format='json',
+        )
+
+        self.assertEqual(json.loads(response.content), data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.cell.managers.count(), 2)
+
+    def test_update_cell_with_empty_address(self):
+        """
+        Ensure we can't update a cells with an empty address.
+        """
+        data_post = {
+            "address": dict(),
+            "managers": [
+                self.user.id,
+                self.admin.id,
+            ]
+        }
+
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.patch(
+            reverse(
+                'volunteer:cells_id',
+                kwargs={'pk': self.cell.id},
+            ),
+            data_post,
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        content = {'message': "Please specify a complete valid address."}
+        self.assertEqual(json.loads(response.content), content)
 
     def test_update_cell_without_permission(self):
         """
@@ -308,3 +456,33 @@ class CellsIdTests(APITestCase):
         self.assertEqual(json.loads(response.content), content)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_cell_with_bad_manager(self):
+        """
+        Ensure we can't update a cell with a bad manager id.
+        """
+        self.assertEqual(self.cell.managers.count(), 0)
+
+        data_post = {
+            "managers": [
+                7812
+            ]
+        }
+
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.patch(
+            reverse(
+                'volunteer:cells_id',
+                kwargs={'pk': self.cell.id},
+            ),
+            data_post,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+        error = {
+            'message': 'Unknown user with this ID'
+        }
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(content, error)
