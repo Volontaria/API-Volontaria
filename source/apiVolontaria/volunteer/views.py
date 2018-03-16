@@ -59,7 +59,7 @@ class CyclesId(generics.RetrieveUpdateDestroyAPIView):
         return models.Cycle.objects.filter()
 
     def patch(self, request, *args, **kwargs):
-        if self.request.user.has_perm('volunteer.update_cycle'):
+        if self.request.user.has_perm('volunteer.change_cycle'):
             return self.partial_update(request, *args, **kwargs)
         else:
             content = {
@@ -127,7 +127,7 @@ class TaskTypesId(generics.RetrieveUpdateDestroyAPIView):
         return models.TaskType.objects.filter()
 
     def patch(self, request, *args, **kwargs):
-        if self.request.user.has_perm('volunteer.update_tasktype'):
+        if self.request.user.has_perm('volunteer.change_tasktype'):
             return self.partial_update(request, *args, **kwargs)
 
         content = {
@@ -195,7 +195,7 @@ class CellsId(generics.RetrieveUpdateDestroyAPIView):
         return models.Cell.objects.filter()
 
     def patch(self, request, *args, **kwargs):
-        if self.request.user.has_perm('volunteer.update_cell'):
+        if self.request.user.has_perm('volunteer.change_cell'):
             return self.partial_update(request, *args, **kwargs)
 
         content = {
@@ -278,7 +278,7 @@ class EventsId(generics.RetrieveUpdateDestroyAPIView):
         return models.Event.objects.filter()
 
     def patch(self, request, *args, **kwargs):
-        if self.request.user.has_perm('volunteer.update_event'):
+        if self.request.user.has_perm('volunteer.change_event'):
             return self.partial_update(request, *args, **kwargs)
 
         content = {
