@@ -88,6 +88,13 @@ class Cell(models.Model):
 
     address = models.ForeignKey(Address, blank=False)
 
+    managers = models.ManyToManyField(
+        User,
+        verbose_name="Managers",
+        related_name="managed_cell",
+        blank=True,
+    )
+
     def clean(self):
         if not self.name:
             raise IntegrityError("The Cell name cannot be empty.")
