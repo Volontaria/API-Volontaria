@@ -44,9 +44,16 @@ class EventsTests(APITestCase):
             name="my cell",
             address=self.address,
         )
+
+        self.second_cell = Cell.objects.create(
+            name="my second cell",
+            address=self.address,
+        )
+
         self.cycle = Cycle.objects.create(
             name="my cycle",
         )
+
         self.task_type = TaskType.objects.create(
             name="my tasktype",
         )
@@ -80,8 +87,24 @@ class EventsTests(APITestCase):
             end_date=end_date,
         )
 
+        self.event_second_cell = Event.objects.create(
+            cell=self.second_cell,
+            cycle=self.cycle,
+            task_type=self.task_type,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
         self.event_inactive = Event.objects.create(
             cell=self.cell,
+            cycle=self.cycle_inactive,
+            task_type=self.task_type,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        self.event_inactive_second_cel = Event.objects.create(
+            cell=self.second_cell,
             cycle=self.cycle_inactive,
             task_type=self.task_type,
             start_date=start_date,
@@ -95,6 +118,14 @@ class EventsTests(APITestCase):
 
         self.event_2 = Event.objects.create(
             cell=self.cell,
+            cycle=self.cycle_inactive,
+            task_type=self.task_type,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        self.event_2 = Event.objects.create(
+            cell=self.second_cell,
             cycle=self.cycle_inactive,
             task_type=self.task_type,
             start_date=start_date,
@@ -205,7 +236,7 @@ class EventsTests(APITestCase):
 
         content = json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(content['count'], 3)
+        self.assertEqual(content['count'], 6)
 
         # Check the system doesn't return attributes not expected
         attributes = ['id', 'start_date', 'end_date', 'nb_volunteers_needed',
@@ -242,7 +273,7 @@ class EventsTests(APITestCase):
             content['results'][2]['start_date']
         )
 
-    def test_list_events_with_filter(self):
+    def test_list_events_filter_by_cycle(self):
         """
         Ensure we can list event filtered by cycle.
         """
@@ -260,7 +291,7 @@ class EventsTests(APITestCase):
 
         content = json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(content['count'], 2)
+        self.assertEqual(content['count'], 4)
 
         # Check the system doesn't return attributes not expected
         attributes = ['id', 'start_date', 'end_date', 'nb_volunteers_needed',
@@ -283,6 +314,26 @@ class EventsTests(APITestCase):
             'attributes : {0}'.format(attributes),
         )
 
+    def test_list_events_filter_by_cell(self):
+        """
+        Ensure we can list event filtered by cycle.
+        """
+        self.client.force_authenticate(user=self.admin)
+
+        url = "{0}?cell={1}".format(
+            reverse('volunteer:events'),
+            self.cell.id,
+        )
+
+        response = self.client.get(
+            url,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(content['count'], 3)
+
     def test_list_events_without_permissions(self):
         """
         Ensure we can list only active event (is_active property)
@@ -297,7 +348,7 @@ class EventsTests(APITestCase):
 
         content = json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(content['count'], 1)
+        self.assertEqual(content['count'], 2)
 
         # Check the system doesn't return attributes not expected
         attributes = ['id', 'start_date', 'end_date', 'nb_volunteers_needed',
