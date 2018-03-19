@@ -216,7 +216,7 @@ class Events(generics.ListCreateAPIView):
     """
 
     serializer_class = serializers.EventBasicSerializer
-    filter_fields = ['volunteers', 'cycle']
+    filter_fields = ['volunteers', 'cycle', 'cell']
 
     def get_queryset(self):
 
