@@ -88,8 +88,18 @@ class EventAdmin(admin.ModelAdmin):
     ordering = ('start_date',)
 
 
+class CellAdmin(admin.ModelAdmin):
+    list_display = [
+        'name',
+    ]
+
+    filter_horizontal = [
+        'managers',
+    ]
+
+
 admin.site.register(models.Cycle)
 admin.site.register(models.TaskType)
-admin.site.register(models.Cell)
+admin.site.register(models.Cell, CellAdmin)
 admin.site.register(models.Event, EventAdmin)
 admin.site.register(models.Participation, ParticipationAdmin)
