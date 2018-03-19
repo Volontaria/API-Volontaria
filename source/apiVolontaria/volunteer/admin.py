@@ -1,5 +1,9 @@
+import csv
 from django.contrib import admin
 from import_export.admin import ImportExportActionModelAdmin
+from django.contrib import messages
+from django.http import HttpResponse
+from django.utils.translation import ugettext_lazy as _
 
 from volunteer.resources import ParticipationResource
 from . import models
@@ -91,6 +95,61 @@ class EventAdmin(admin.ModelAdmin):
     ordering = ('start_date',)
 
 
+class CycleAdmin(admin.ModelAdmin):
+
+    list_display = [
+        'name',
+        'start_date',
+        'end_date',
+    ]
+
+    date_hierarchy = 'start_date'
+
+    actions = ['generate_participation_report_csv', ]
+
+    def generate_participation_report_csv(self, request, queryset):
+        """
+        This function will take all the Participations generated from
+        a cycle and compile the time of every volunteer that has
+        participated
+        :param request: The request object of the admin
+        :param queryset: This is the admin panel queryset.
+        :return: This will return a CSV file
+        """
+        if len(queryset) != 1:
+            messages.error(request, _("You must select a cycle"))
+            return
+
+        # Take the first of the array
+        cycle = queryset[0]
+
+        data_dict = cycle.generate_participation_report_data()
+
+        if 'error' in data_dict:
+            messages.error(request, data_dict['error'])
+            return
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = \
+            'attachment; filename="%s.csv"' % cycle.name
+
+        writer = csv.writer(response)
+        writer.writerow(['first_name', 'last_name', 'email', 'total_time'])
+
+        for key, value in data_dict.items():
+            writer.writerow([
+                value['first_name'],
+                value['last_name'],
+                value['email'],
+                value['total_time'],
+            ])
+
+        return response
+
+    generate_participation_report_csv.short_description = \
+        _("Generate cycle Participation report")
+
+
 class CellAdmin(admin.ModelAdmin):
     list_display = [
         'name',
@@ -101,7 +160,7 @@ class CellAdmin(admin.ModelAdmin):
     ]
 
 
-admin.site.register(models.Cycle)
+admin.site.register(models.Cycle, CycleAdmin)
 admin.site.register(models.TaskType)
 admin.site.register(models.Cell, CellAdmin)
 admin.site.register(models.Event, EventAdmin)
