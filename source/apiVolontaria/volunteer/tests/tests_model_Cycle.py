@@ -1,6 +1,8 @@
 from rest_framework.test import APITestCase
 
-from volunteer.models import Cycle
+from apiVolontaria.factories import AdminFactory, UserFactory
+from location.models import Address, StateProvince, Country
+from volunteer.models import Cycle, Participation, TaskType, Event, Cell
 from django.utils import timezone
 
 
@@ -78,3 +80,98 @@ class CycleTests(APITestCase):
         )
 
         self.assertEqual(str(cycle), cycle.name)
+
+    def test_cycle_generate_report_data_error(self):
+        self.user = UserFactory()
+        self.user.set_password('Test123!')
+        self.user.save()
+
+        self.admin = AdminFactory()
+        self.admin.set_password('Test123!')
+        self.admin.save()
+
+        self.random_country = Country.objects.create(
+            name="random country",
+            iso_code="RC",
+        )
+        self.random_state_province = StateProvince.objects.create(
+            name="random state",
+            iso_code="RS",
+            country=self.random_country,
+        )
+        self.address = Address.objects.create(
+            address_line1='random address 1',
+            postal_code='RAN DOM',
+            city='random city',
+            state_province=self.random_state_province,
+            country=self.random_country,
+        )
+        self.cell = Cell.objects.create(
+            name="my cell",
+            address=self.address,
+        )
+        self.cycle = Cycle.objects.create(
+            name="my cycle",
+        )
+        self.task_type = TaskType.objects.create(
+            name="my tasktype",
+        )
+
+        event_start_date = timezone.now()
+        self.event = Event.objects.create(
+            cell=self.cell,
+            cycle=self.cycle,
+            task_type=self.task_type,
+            start_date=event_start_date,
+            end_date=event_start_date + timezone.timedelta(minutes=100),
+        )
+
+        self.participation = Participation.objects.create(
+            standby=True,
+            user=self.admin,
+            event=self.event,
+        )
+
+        self.event_2 = Event.objects.create(
+            cell=self.cell,
+            cycle=self.cycle,
+            task_type=self.task_type,
+            start_date=event_start_date,
+            end_date=event_start_date + timezone.timedelta(minutes=100),
+        )
+
+        self.participation_presence = Participation.objects.create(
+            standby=True,
+            user=self.admin,
+            event=self.event_2,
+            presence_status='P',
+            presence_duration_minutes=300,
+        )
+
+        # Test error case
+        test_data_error = {
+            'error':
+                'All of the Participations presence '
+                'status must be initialised.',
+        }
+
+        data = self.cycle.generate_participation_report_data()
+
+        self.assertEqual(data, test_data_error)
+
+        # Test normal case
+        self.participation.presence_status = 'A'
+        self.participation.save()
+
+        data = self.cycle.generate_participation_report_data()
+
+        test_data = {
+            2: {
+                'first_name': self.admin.first_name,
+                'last_name': self.admin.last_name,
+                'email': self.admin.email,
+                'total_time': 300,
+            }
+        }
+
+        self.assertEqual(data, test_data)

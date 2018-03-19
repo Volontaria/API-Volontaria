@@ -48,6 +48,58 @@ class Cycle(models.Model):
     def __str__(self):
         return '{}'.format(self.name)
 
+    def generate_participation_report_data(self):
+        """
+        This function will take all the Participations generated from
+        this cycle and compile the time of every volunteer that has
+        participated
+        :return: This will return dict like this example :
+        {
+            1:{
+                'first_name': 'John',
+                'last_name': 'Smith',
+                'email': 'john.smith@gmail.com',
+                'total_time': 300,
+            },
+            ...
+        }
+        """
+
+        # Select all the Event of this Cycle
+        events_in_cycle = Event.objects.filter(cycle=self)
+
+        # Select all the participation of this Cycle
+        participations = Participation.objects.filter(
+            event__in=events_in_cycle,
+        )
+
+        data_dict = dict()
+
+        for obj in participations:
+            # We don't want to generate report
+            # if some Participation are not initialised...
+            # There is a message in the admin for this case
+            if obj.presence_status == Participation.PRESENCE_STATUS[0][0]:
+                return {'error': _("All of the Participations presence "
+                        "status must be initialised.")}
+
+            # The status is present so we compute it in the report
+            if obj.presence_status == Participation.PRESENCE_STATUS[2][0]:
+                min_duration = int(obj.duration.total_seconds() / 60)
+
+                if obj.user.pk in data_dict:
+                    data_dict[obj.user.pk]['total_time'] += min_duration
+                else:
+                    dataline = {
+                        'first_name': obj.user.first_name,
+                        'last_name': obj.user.last_name,
+                        'email': obj.user.email,
+                        'total_time': min_duration,
+                    }
+                    data_dict[obj.user.pk] = dataline
+
+        return data_dict
+
 
 class TaskType(models.Model):
 
