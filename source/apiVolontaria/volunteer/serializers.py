@@ -5,7 +5,7 @@ from django.db import IntegrityError
 from location.serializers import AddressBasicSerializer
 from location.models import Address, StateProvince, Country
 
-from apiVolontaria.serializers import UserPublicSerializer
+from apiVolontaria.serializers import UserPublicSerializer, UserBasicSerializer
 from django.contrib.auth.models import User
 
 from . import models
@@ -306,7 +306,7 @@ class ParticipationBasicSerializer(serializers.ModelSerializer):
 
     # Explicitly declare the BooleanField to make it "required"
     standby = serializers.BooleanField()
-    user = serializers.PrimaryKeyRelatedField(
+    user = UserBasicSerializer(
         read_only=True,
         default=serializers.CurrentUserDefault(),
     )
