@@ -111,6 +111,12 @@ class ParticipationsTests(APITestCase):
                 event=self.event2,
             )
 
+            self.participation3 = Participation.objects.create(
+                standby=True,
+                user=self.user2,
+                event=self.event,
+            )
+
     def test_create_new_participation(self):
         """
         Ensure we can create a new participation.
@@ -207,7 +213,7 @@ class ParticipationsTests(APITestCase):
 
         content = json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(content['count'], 2)
+        self.assertEqual(content['count'], 3)
 
         # Check the system doesn't return attributes not expected
         attributes = ['id', 'user', 'event', 'subscription_date', 'standby']
@@ -227,9 +233,9 @@ class ParticipationsTests(APITestCase):
             'attributes : {0}'.format(attributes),
         )
 
-    def test_list_participations_filtered(self):
+    def test_list_participations_filtered_by_username(self):
         """
-        Ensure we can filter permissions by user.
+        Ensure we can filter permissions by username.
         """
         self.client.force_authenticate(user=self.user)
 
@@ -265,3 +271,23 @@ class ParticipationsTests(APITestCase):
             'The system failed to return some '
             'attributes : {0}'.format(attributes),
         )
+
+    def test_list_participations_filter_by_event(self):
+        """
+        Ensure we can list participations filtered by event.
+        """
+        self.client.force_authenticate(user=self.admin)
+
+        url = "{0}?event={1}".format(
+            reverse('volunteer:participations'),
+            self.event.id,
+        )
+
+        response = self.client.get(
+            url,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(content['count'], 1)
