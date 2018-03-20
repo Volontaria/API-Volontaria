@@ -302,6 +302,7 @@ class Participations(generics.ListCreateAPIView):
     """
 
     serializer_class = serializers.ParticipationBasicSerializer
+    filter_fields = ['event']
 
     def get_queryset(self):
         queryset = models.Participation.objects.all()
