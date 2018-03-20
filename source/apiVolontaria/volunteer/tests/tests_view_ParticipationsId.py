@@ -130,7 +130,6 @@ class ParticipationsIdTests(APITestCase):
             id=self.participation.id,
             standby=self.participation.standby,
             subscription_date=subscription_date_str,
-            user=self.participation.user.id,
             event=self.participation.event.id,
         )
 
@@ -143,7 +142,10 @@ class ParticipationsIdTests(APITestCase):
             )
         )
 
-        self.assertEqual(json.loads(response.content), data)
+        content = json.loads(response.content)
+        del content['user']
+        self.assertEqual(content, data)
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_update_participation_with_permission(self):
@@ -160,7 +162,6 @@ class ParticipationsIdTests(APITestCase):
             id=self.participation.id,
             standby=False,
             subscription_date=subscription_date_str,
-            user=self.participation.user.id,
             event=self.participation.event.id,
         )
 
@@ -181,7 +182,9 @@ class ParticipationsIdTests(APITestCase):
                 format='json',
             )
 
-        self.assertEqual(json.loads(response.content), data)
+        content = json.loads(response.content)
+        del content['user']
+        self.assertEqual(content, data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 

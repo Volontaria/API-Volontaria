@@ -148,7 +148,7 @@ class ParticipationsTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(content['subscription_date'], subscription_date_str)
-        self.assertEqual(content['user'], self.user.id)
+        self.assertEqual(content['user']['id'], self.user.id)
         self.assertEqual(content['event'], self.event.id)
         self.assertEqual(content['standby'], False)
 
