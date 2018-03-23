@@ -104,3 +104,6 @@ ENV/
 
 # Database
 *.sqlite3
+
+# Project
+local_settings.py
