@@ -126,11 +126,14 @@ class ParticipationsIdTests(APITestCase):
         subscription_date_str = self.participation.subscription_date.\
             strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
+        duration_minutes = self.participation.presence_duration_minutes
         data = dict(
             id=self.participation.id,
             standby=self.participation.standby,
             subscription_date=subscription_date_str,
             event=self.participation.event.id,
+            presence_duration_minutes=duration_minutes,
+            presence_status=self.participation.presence_status,
         )
 
         self.client.force_authenticate(user=self.user)
@@ -158,15 +161,105 @@ class ParticipationsIdTests(APITestCase):
             "%Y-%m-%dT%H:%M:%S.%fZ"
         )
 
+        duration_minutes = self.participation.presence_duration_minutes
         data = dict(
             id=self.participation.id,
             standby=False,
             subscription_date=subscription_date_str,
             event=self.participation.event.id,
+            presence_duration_minutes=duration_minutes,
+            presence_status=self.participation.presence_status,
         )
 
         data_post = {
             "standby": False,
+        }
+
+        self.client.force_authenticate(user=self.user)
+
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = subscription_date
+            response = self.client.patch(
+                reverse(
+                    'volunteer:participations_id',
+                    kwargs={'pk': self.participation.id},
+                ),
+                data_post,
+                format='json',
+            )
+
+        content = json.loads(response.content)
+        del content['user']
+        self.assertEqual(content, data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_participation_with_superuser(self):
+        """
+        Ensure we can update a specific participation if we are superuser.
+        """
+        subscription_date = timezone.now()
+
+        subscription_date_str = subscription_date.strftime(
+            "%Y-%m-%dT%H:%M:%S.%fZ",
+        )
+
+        data = dict(
+            id=self.participation.id,
+            standby=self.participation.standby,
+            subscription_date=subscription_date_str,
+            event=self.participation.event.id,
+            presence_duration_minutes=14,
+            presence_status='P',
+        )
+
+        data_post = {
+            "presence_status": 'P',
+            "presence_duration_minutes": 14,
+        }
+
+        self.client.force_authenticate(user=self.admin)
+
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = subscription_date
+            response = self.client.patch(
+                reverse(
+                    'volunteer:participations_id',
+                    kwargs={'pk': self.participation.id},
+                ),
+                data_post,
+                format='json',
+            )
+
+        content = json.loads(response.content)
+        del content['user']
+        self.assertEqual(content, data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_participation_status(self):
+        """
+        Ensure we can update our own participation status if we're user.
+        """
+        subscription_date = timezone.now()
+
+        subscription_date_str = subscription_date.strftime(
+            "%Y-%m-%dT%H:%M:%S.%fZ",
+        )
+
+        duration_minutes = self.participation.presence_duration_minutes
+        data = dict(
+            id=self.participation.id,
+            standby=self.participation.standby,
+            subscription_date=subscription_date_str,
+            event=self.participation.event.id,
+            presence_duration_minutes=duration_minutes,
+            presence_status=self.participation.presence_status,
+        )
+
+        data_post = {
+            "presence_status": 'P',
+            "presence_duration_minutes": 14,
         }
 
         self.client.force_authenticate(user=self.user)

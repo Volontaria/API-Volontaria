@@ -153,7 +153,15 @@ class ParticipationsTests(APITestCase):
         self.assertEqual(content['standby'], False)
 
         # Check the system doesn't return attributes not expected
-        attributes = ['id', 'subscription_date', 'user', 'event', 'standby']
+        attributes = [
+            'id',
+            'subscription_date',
+            'user',
+            'event',
+            'standby',
+            'presence_duration_minutes',
+            'presence_status',
+        ]
 
         for key in content.keys():
             self.assertTrue(
@@ -216,7 +224,15 @@ class ParticipationsTests(APITestCase):
         self.assertEqual(content['count'], 3)
 
         # Check the system doesn't return attributes not expected
-        attributes = ['id', 'user', 'event', 'subscription_date', 'standby']
+        attributes = [
+            'id',
+            'user',
+            'event',
+            'subscription_date',
+            'standby',
+            'presence_duration_minutes',
+            'presence_status',
+        ]
 
         for key in content['results'][0].keys():
             self.assertTrue(
@@ -255,7 +271,15 @@ class ParticipationsTests(APITestCase):
         self.assertEqual(content['results'][0]['id'], self.participation.id)
 
         # Check the system doesn't return attributes not expected
-        attributes = ['id', 'user', 'event', 'subscription_date', 'standby']
+        attributes = [
+            'id',
+            'user',
+            'event',
+            'subscription_date',
+            'standby',
+            'presence_duration_minutes',
+            'presence_status',
+        ]
 
         for key in content['results'][0].keys():
             self.assertTrue(
