@@ -1,10 +1,13 @@
 from django.contrib import admin
+from import_export.admin import ImportExportActionModelAdmin
 
+from volunteer.resources import ParticipationResource
 from . import models
 from apiVolontaria.models import Profile
 
 
-class ParticipationAdmin(admin.ModelAdmin):
+class ParticipationAdmin(ImportExportActionModelAdmin):
+    resource_class = ParticipationResource
     search_fields = [
         'user__username',
         'user__first_name',

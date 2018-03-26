@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'apiVolontaria',
     'volunteer',
     'location',
+    'import_export',
 ]
 
 MIDDLEWARE = [
