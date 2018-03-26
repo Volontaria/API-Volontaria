@@ -319,6 +319,36 @@ class ParticipationBasicSerializer(serializers.ModelSerializer):
             'user',
             'standby',
             'subscription_date',
+            'presence_duration_minutes',
+            'presence_status',
+        )
+        read_only_fields = [
+            'id',
+            'presence_duration_minutes',
+            'presence_status',
+        ]
+
+
+class ParticipationAdminSerializer(serializers.ModelSerializer):
+    """This class represents the Participation model serializer."""
+
+    # Explicitly declare the BooleanField to make it "required"
+    standby = serializers.BooleanField()
+    user = UserBasicSerializer(
+        read_only=True,
+        default=serializers.CurrentUserDefault(),
+    )
+
+    class Meta:
+        model = models.Participation
+        fields = (
+            'id',
+            'event',
+            'user',
+            'standby',
+            'subscription_date',
+            'presence_duration_minutes',
+            'presence_status',
         )
         read_only_fields = [
             'id',

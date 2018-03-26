@@ -354,6 +354,13 @@ class ParticipationsId(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return models.Participation.objects.filter()
 
+    def get_serializer_class(self):
+        # If authenticated user is admin
+        if self.request.user.is_superuser:
+            return serializers.ParticipationAdminSerializer
+        else:
+            return serializers.ParticipationBasicSerializer
+
     def delete(self, request, *args, **kwargs):
         participation = self.get_object()
         if not participation.event.is_started:
