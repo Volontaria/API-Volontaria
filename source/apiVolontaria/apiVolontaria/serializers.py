@@ -15,7 +15,7 @@ from .models import ActivationToken, Profile
 
 # Validator for phone numbers
 def phone_number(phone):
-    reg = re.compile('^(\+\d{1,2})?\d{9,10}$')
+    reg = re.compile('^([+][0-9]{1,2})?[0-9]{9,10}$')
     char_list = " -.()"
     for i in char_list:
         phone = phone.replace(i, '')
