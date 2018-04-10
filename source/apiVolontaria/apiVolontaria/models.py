@@ -115,7 +115,7 @@ class Profile(models.Model):
     )
 
     def clean(self):
-        reg = re.compile('^(\+\d{1,2})?\d{9,10}$')
+        reg = re.compile('^([+][0-9]{1,2})?[0-9]{9,10}$')
         if self.phone:
             self.phone = self.phone\
                 .replace(" ", "")\
