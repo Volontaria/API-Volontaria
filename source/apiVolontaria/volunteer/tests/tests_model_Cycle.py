@@ -166,7 +166,7 @@ class CycleTests(APITestCase):
         data = self.cycle.generate_participation_report_data()
 
         test_data = {
-            2: {
+            self.admin.pk: {
                 'first_name': self.admin.first_name,
                 'last_name': self.admin.last_name,
                 'email': self.admin.email,

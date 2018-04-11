@@ -5,6 +5,8 @@ from rest_framework.test import APIClient, APITestCase
 
 from django.urls import reverse
 
+from location.models import Country, StateProvince, Address
+from volunteer.models import Cell
 from .. import models
 from ..factories import UserFactory, AdminFactory
 
@@ -75,7 +77,7 @@ class UsersIdTests(APITestCase):
         content = json.loads(response.content)
 
         # Check id of the user
-        self.assertEqual(content['id'], 1)
+        self.assertEqual(content['id'], self.user.id)
 
         # Check the system doesn't return attributes not expected
         attributes = [
@@ -88,6 +90,7 @@ class UsersIdTests(APITestCase):
             'phone',
             'mobile',
             'is_superuser',
+            'managed_cell',
         ]
         for key in content.keys():
             self.assertTrue(
@@ -122,7 +125,7 @@ class UsersIdTests(APITestCase):
         content = json.loads(response.content)
 
         # Check id of the user
-        self.assertEqual(content['id'], 1)
+        self.assertEqual(content['id'], self.user.id)
 
         # Check the system doesn't return attributes not expected
         attributes = [
@@ -135,6 +138,7 @@ class UsersIdTests(APITestCase):
             'phone',
             'mobile',
             'is_superuser',
+            'managed_cell',
         ]
         for key in content.keys():
             self.assertTrue(
@@ -180,7 +184,7 @@ class UsersIdTests(APITestCase):
         self.assertEqual(content['phone'], data_post['phone'])
 
         # Check id of the user
-        self.assertEqual(content['id'], 1)
+        self.assertEqual(content['id'], self.user.id)
 
         # Check the system doesn't return attributes not expected
         attributes = [
@@ -193,6 +197,7 @@ class UsersIdTests(APITestCase):
             'phone',
             'mobile',
             'is_superuser',
+            'managed_cell',
         ]
         for key in content.keys():
             self.assertTrue(
@@ -269,7 +274,7 @@ class UsersIdTests(APITestCase):
         )
 
         # Check id of the user
-        self.assertEqual(content['id'], 1)
+        self.assertEqual(content['id'], self.user.id)
 
         # Check the system doesn't return attributes not expected
         attributes = [
@@ -282,6 +287,7 @@ class UsersIdTests(APITestCase):
             'phone',
             'mobile',
             'is_superuser',
+            'managed_cell',
         ]
         for key in content.keys():
             self.assertTrue(
@@ -377,3 +383,89 @@ class UsersIdTests(APITestCase):
         self.assertEqual(json.loads(response.content), content)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_retrieve_user_with_empty_managed_cell(self):
+        """
+        Ensure we can retrieve a user with an empty managed_cell list.
+        """
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get(
+            reverse(
+                'users_id',
+                kwargs={'pk': self.user.id},
+            )
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(content['managed_cell'], list())
+
+    def test_retrieve_user_with_managed_cell(self):
+        """
+        Ensure we can retrieve a user with an manager in it managed_cell list.
+        """
+        self.client.force_authenticate(user=self.admin)
+
+        random_country = Country.objects.create(
+            name="random country",
+            iso_code="RC",
+        )
+        random_state_province = StateProvince.objects.create(
+            name="random state",
+            iso_code="RS",
+            country=random_country,
+        )
+        address = Address.objects.create(
+            address_line1='random address 1',
+            postal_code='RAN DOM',
+            city='random city',
+            state_province=random_state_province,
+            country=random_country,
+        )
+
+        cell = Cell.objects.create(
+            name='my cell',
+            address=address,
+        )
+
+        cell.managers = [self.user, ]
+        cell.save()
+
+        response = self.client.get(
+            reverse(
+                'users_id',
+                kwargs={'pk': self.user.id},
+            )
+        )
+
+        content = json.loads(response.content)
+
+        data = [{
+            'id': 1,
+            'name': 'my cell',
+            'address': {
+                'id': 1,
+                'address_line1': 'random address 1',
+                'address_line2': '',
+                'postal_code': 'RAN DOM',
+                'city': 'random city',
+                'country': {
+                    'iso_code': 'RC',
+                    'name': 'random country'
+                },
+                'state_province': {
+                    'iso_code': 'RS',
+                    'name': 'random state'
+                },
+            },
+            'managers': [{
+                'id': self.user.id,
+                'username': self.user.username,
+                'first_name': self.user.first_name,
+                'last_name': self.user.last_name,
+                'email': self.user.email,
+            }]
+        }]
+
+        self.assertEqual(content['managed_cell'], data)

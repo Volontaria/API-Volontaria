@@ -398,6 +398,7 @@ class UsersTests(APITestCase):
             'phone',
             'mobile',
             'is_superuser',
+            'managed_cell',
         ]
         for key in first_user.keys():
             self.assertTrue(
