@@ -1,0 +1,2 @@
+include API-Volontaria/README.rst
+recursive-include API-Volontaria/source/*
