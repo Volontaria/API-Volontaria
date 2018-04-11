@@ -10,6 +10,7 @@ from django.contrib.auth import authenticate, password_validation
 
 from django.core import exceptions
 
+from volunteer.models import Cell
 from .models import ActivationToken, Profile
 
 
@@ -70,6 +71,7 @@ class UserBasicSerializer(serializers.ModelSerializer):
             'new_password',
             'phone',
             'mobile',
+            'managed_cell',
         )
         write_only_fields = (
             'password',
@@ -110,6 +112,16 @@ class UserBasicSerializer(serializers.ModelSerializer):
         required=False,
         validators=[phone_number],
     )
+
+    managed_cell = serializers.SerializerMethodField()
+
+    def get_managed_cell(self, obj):
+        cells = Cell.objects.filter(managers__in=[obj])
+
+        # Need to import here because of circular / recursive import error
+        from volunteer.serializers import CellBasicSerializer
+
+        return CellBasicSerializer(cells, many=True, read_only=True).data
 
     def create(self, validated_data):
         try:
