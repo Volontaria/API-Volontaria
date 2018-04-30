@@ -53,7 +53,7 @@ class AddressesId(generics.RetrieveUpdateDestroyAPIView):
         return Address.objects.filter()
 
     def patch(self, request, *args, **kwargs):
-        if self.request.user.has_perm('update_address'):
+        if self.request.user.has_perm('change_address'):
             try:
                 return self.partial_update(request, *args, **kwargs)
             except ValidationError as err:
@@ -115,7 +115,7 @@ class CountriesId(generics.RetrieveUpdateDestroyAPIView):
         return Country.objects.filter()
 
     def patch(self, request, *args, **kwargs):
-        if self.request.user.has_perm('update_country'):
+        if self.request.user.has_perm('change_country'):
             return self.partial_update(request, *args, **kwargs)
 
         content = {
@@ -174,7 +174,7 @@ class StateProvincesId(generics.RetrieveUpdateDestroyAPIView):
         return StateProvince.objects.filter()
 
     def patch(self, request, *args, **kwargs):
-        if self.request.user.has_perm('update_stateprovince'):
+        if self.request.user.has_perm('change_stateprovince'):
             return self.partial_update(request, *args, **kwargs)
 
         content = {
