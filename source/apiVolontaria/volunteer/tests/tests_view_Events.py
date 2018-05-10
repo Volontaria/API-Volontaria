@@ -193,6 +193,149 @@ class EventsTests(APITestCase):
             'attributes : {0}'.format(attributes),
         )
 
+    def test_create_new_event_with_start_date_outside_cycle(self):
+        """
+        Ensure we can't create a new event if start_date is outside
+        the cycle specified.
+        """
+        start_date = self.cycle_inactive.start_date - timezone.timedelta(
+            minutes=100,
+        )
+        end_date = self.cycle_inactive.end_date - timezone.timedelta(
+            minutes=1,
+        )
+
+        data = {
+            'cell_id': self.cell.id,
+            'cycle_id': self.cycle_inactive.id,
+            'task_type_id': self.task_type.id,
+            'start_date': start_date,
+            'end_date': end_date,
+        }
+
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.post(
+            reverse('volunteer:events'),
+            data,
+            format='json',
+        )
+
+        content = {
+            'non_field_errors': [
+                'Start date need to be after start date of the cycle.'
+            ]
+        }
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(json.loads(response.content), content)
+
+    def test_create_new_event_with_end_date_outside_cycle(self):
+        """
+        Ensure we can't create a new event if end_date is outside
+        the cycle specified.
+        """
+        start_date = self.cycle_inactive.start_date + timezone.timedelta(
+            minutes=1,
+        )
+        end_date = self.cycle_inactive.end_date + timezone.timedelta(
+            minutes=100,
+        )
+
+        data = {
+            'cell_id': self.cell.id,
+            'cycle_id': self.cycle_inactive.id,
+            'task_type_id': self.task_type.id,
+            'start_date': start_date,
+            'end_date': end_date,
+        }
+
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.post(
+            reverse('volunteer:events'),
+            data,
+            format='json',
+        )
+
+        content = {
+            'non_field_errors': [
+                'End date need to be before the end date of the cycle.'
+            ]
+        }
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(json.loads(response.content), content)
+
+    def test_create_new_event_with_both_date_outside_cycle(self):
+        """
+        Ensure we can't create a new event if  both dates are outside
+        the cycle specified.
+        """
+        start_date = self.cycle_inactive.start_date - timezone.timedelta(
+            minutes=100,
+        )
+        end_date = self.cycle_inactive.end_date + timezone.timedelta(
+            minutes=100,
+        )
+
+        data = {
+            'cell_id': self.cell.id,
+            'cycle_id': self.cycle_inactive.id,
+            'task_type_id': self.task_type.id,
+            'start_date': start_date,
+            'end_date': end_date,
+        }
+
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.post(
+            reverse('volunteer:events'),
+            data,
+            format='json',
+        )
+
+        content = {
+            'non_field_errors': [
+                'Start date need to be after start date of the cycle.'
+            ]
+        }
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(json.loads(response.content), content)
+
+    def test_create_new_event_with_start_date_after_end_date(self):
+        """
+        Ensure we can't create a new event if a start_date after end_date.
+        """
+        end_date = self.cycle_inactive.start_date + timezone.timedelta(
+            minutes=1,
+        )
+        start_date = self.cycle_inactive.end_date - timezone.timedelta(
+            minutes=1,
+        )
+
+        data = {
+            'cell_id': self.cell.id,
+            'cycle_id': self.cycle_inactive.id,
+            'task_type_id': self.task_type.id,
+            'start_date': start_date,
+            'end_date': end_date,
+        }
+
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.post(
+            reverse('volunteer:events'),
+            data,
+            format='json',
+        )
+
+        content = {
+            'non_field_errors': [
+                'Start date need to be before the end date.'
+            ]
+        }
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(json.loads(response.content), content)
+
     def test_create_new_event_without_permission(self):
         """
         Ensure we can't create a new event if we don't have the permission.
