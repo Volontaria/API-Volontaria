@@ -45,7 +45,14 @@ INSTALLED_APPS = [
     'apiVolontaria',
     'volunteer',
     'location',
+    'faq',
     'import_export',
+    'easy_thumbnails',
+    'filer',
+    'ckeditor_filebrowser_filer',
+    'mptt',
+    'ckeditor',
+    'orderable',
 ]
 
 MIDDLEWARE = [
@@ -145,6 +152,9 @@ LOCALE_PATHS = (
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'static')
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'media')
+
 # Django Rest Framework
 
 REST_FRAMEWORK = {
@@ -210,6 +220,43 @@ SETTINGS_IMAILING = {
     }
 }
 
+THUMBNAIL_HIGH_RESOLUTION = True
+
+THUMBNAIL_PROCESSORS = (
+    'easy_thumbnails.processors.colorspace',
+    'easy_thumbnails.processors.autocrop',
+    #'easy_thumbnails.processors.scale_and_crop',
+    'filer.thumbnail_processors.scale_and_crop_with_subject_location',
+    'easy_thumbnails.processors.filters',
+)
+
+CKEDITOR_IMAGE_BACKEND = 'pillow'
+CKEDITOR_UPLOAD_PATH = 'media/ckeditor-uploads'
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        'width': 855,
+        'toolbar': [
+            ['Format'],
+            ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat'],
+            ['HorizontalRule'],
+            ['NumberedList', 'BulletedList', '-', 'Table'],
+            ['Link', 'Unlink', 'Anchor'],
+            ['FilerImage', '-', 'SpecialChar'],
+            ['Image', '-', 'SpecialChar'],
+            ['Find', 'Replace'],
+            ['Undo', 'Redo'],
+            ['Preview', '-', 'Source'],
+            ['Maximize'],
+            '/',
+            ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'Blockquote'],
+            ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord'],
+            ['SpellChecker', 'Scayt'],
+        ],
+        'extraPlugins': 'filerimage',
+        'removePlugins': 'image'
+    },
+}
 
 try:
     from apiVolontaria.local_settings import *

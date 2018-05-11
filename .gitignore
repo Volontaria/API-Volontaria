@@ -106,4 +106,7 @@ ENV/
 *.sqlite3
 
 # Project
-local_settings.py
+apiVolontaria/local_settings.py
+
+# Media
+source/media
