@@ -13,7 +13,9 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.conf.urls import url, include
+from django.conf.urls.static import static
 from django.contrib import admin
 
 from .views import (ObtainTemporaryAuthToken, Users, UsersId, UsersActivation,
@@ -71,6 +73,11 @@ urlpatterns = [
         r'^location/',
         include('location.urls', namespace="location"),
     ),
+    # Faq
+    url(
+        r'^faqs/',
+        include('faq.urls', namespace="faq"),
+    ),
     # DOCUMENTATION SWAGGER
     url(
         r'^documentation/',
@@ -81,4 +88,12 @@ urlpatterns = [
         r'^admin/',
         admin.site.urls
     ),
+
+    url(r'^ckeditor/', include('ckeditor_uploader.urls')),
+    url(r'^filebrowser_filer/', include('ckeditor_filebrowser_filer.urls')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += [
+      # ... the rest of your URLconf goes here ...
+    ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
