@@ -10,6 +10,8 @@ from django.contrib.auth.models import User
 
 from . import models
 
+from django.utils.translation import ugettext_lazy as _
+
 
 class CycleBasicSerializer(serializers.ModelSerializer):
 
@@ -252,6 +254,28 @@ class CellBasicSerializer(serializers.ModelSerializer):
 
 class EventBasicSerializer(serializers.ModelSerializer):
     """This class represents the Event model serializer."""
+
+    def validate(self, data):
+        if data['cycle'].start_date and data['cycle'].end_date:
+            if data['cycle'].start_date > data['start_date']:
+                raise serializers.ValidationError(
+                    _('Start date need to be after '
+                      'start date of the cycle.')
+                )
+            if data['cycle'].end_date < data['end_date']:
+                raise serializers.ValidationError(
+                    _('End date need to be before '
+                      'the end date of the cycle.')
+                )
+
+        if 'start_date' in data.keys() and 'end_date' in data.keys():
+            if data['start_date'] > data['end_date']:
+                raise serializers.ValidationError(
+                    _('Start date need to be before '
+                      'the end date.')
+                )
+
+        return data
 
     cell = CellBasicSerializer(read_only=True)
     cycle = CycleBasicSerializer(read_only=True)
