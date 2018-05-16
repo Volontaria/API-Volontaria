@@ -213,6 +213,27 @@ class CellsId(generics.RetrieveUpdateDestroyAPIView):
         return Response(content, status=status.HTTP_403_FORBIDDEN)
 
 
+class CellExport(generics.RetrieveAPIView):
+
+    """
+
+    get:
+    Will create a exportation .csv file of all Participations
+    inside a Cell of today and send a link.
+
+    """
+
+    serializer_class = serializers.CellExportSerializer
+
+    def get_queryset(self):
+        return models.Cell.objects.filter()
+
+    def get(self, request, pk):
+        cell = self.get_object()
+        serializer = serializers.CellExportSerializer(cell)
+        return Response(serializer.data)
+
+
 class Events(generics.ListCreateAPIView):
 
     """
