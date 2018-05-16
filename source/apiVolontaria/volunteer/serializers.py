@@ -1,7 +1,14 @@
+# -*- coding: UTF-8 -*-
+
+import os
+import csv
+
 from rest_framework import serializers
 
 from django.db import IntegrityError
 
+from django.conf import settings
+from django.utils import timezone
 from location.serializers import AddressBasicSerializer
 from location.models import Address, StateProvince, Country
 
@@ -9,6 +16,7 @@ from apiVolontaria.serializers import UserPublicSerializer, UserBasicSerializer
 from django.contrib.auth.models import User
 
 from . import models
+from .resources import ParticipationResource
 
 from django.utils.translation import ugettext_lazy as _
 
@@ -250,6 +258,70 @@ class CellBasicSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id',
         ]
+
+
+class CellExportSerializer(serializers.Serializer):
+    """
+
+    This class is used to generate a .csv of all Participations of a Cell
+    starting from today.
+
+    """
+
+    export_link = serializers.SerializerMethodField()
+
+    read_only_fields = [
+        'export_link',
+    ]
+
+    def get_export_link(self, obj):
+
+        # get today date without time
+        now = timezone.now()
+        now = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        # Set the filename and path
+        filename = '%s_%s.csv' % (obj.pk, now.strftime('%Y%m%d'))
+        file_path = '%s/cell_export/' % settings.MEDIA_ROOT
+
+        # Create exporation class with filter params
+        pa_export = ParticipationResource(cell_filter=obj.pk, date_filter=now)
+        export = pa_export.export()
+
+        # create the MEDIA_ROOT if not existing
+        if not os.path.exists(settings.MEDIA_ROOT):
+            os.makedirs(settings.MEDIA_ROOT)
+
+        # create the folder MEDIA_ROOT/cell_export/ if not existing
+        if not os.path.exists(file_path):
+            os.makedirs(file_path)
+
+        # Open file for writing
+        with open('%s%s' % (file_path, filename), 'w') as tmp:
+
+            # Create csv writer
+            writer = csv.writer(tmp)
+
+            # write the header row
+            writer.writerow(export.headers)
+
+            # write data rows
+            for value in export.dict:
+                writer.writerow([
+                    value['standby'],
+                    value['first_name'],
+                    value['last_name'],
+                    value['email'],
+                    value['phone'],
+                    value['mobile'],
+                    value['event__start_date'],
+                    value['event__end_date'],
+                    value['cell'],
+                    value['presence_status'],
+                    value['presence_duration_minutes'],
+                ])
+
+        return '/%scell_export/%s' % (settings.MEDIA_URL, filename)
 
 
 class EventBasicSerializer(serializers.ModelSerializer):

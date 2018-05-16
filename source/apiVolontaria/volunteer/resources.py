@@ -4,7 +4,7 @@ from import_export import resources
 from import_export.fields import Field
 
 from apiVolontaria.models import Profile
-from .models import Participation
+from . import models
 
 
 class ParticipationResource(resources.ModelResource):
@@ -15,8 +15,12 @@ class ParticipationResource(resources.ModelResource):
     mobile = Field()
     cell = Field()
 
+    def __init__(self, cell_filter=None, date_filter=None):
+        self.cell_filter = cell_filter
+        self.date_filter = date_filter
+
     class Meta:
-        model = Participation
+        model = models.Participation
 
         fields = (
             'standby',
@@ -28,9 +32,22 @@ class ParticipationResource(resources.ModelResource):
             'event__start_date',
             'event__end_date',
             'cell',
+            'presence_status',
+            'presence_duration_minutes',
         )
 
         export_order = fields
+
+    def get_queryset(self):
+        query = self._meta.model.objects.filter()
+
+        if self.cell_filter:
+            query = query.filter(event__cell=self.cell_filter)
+
+        if self.date_filter:
+            query = query.filter(event__start_date__gte=self.date_filter)
+
+        return query
 
     def dehydrate_first_name(self, obj):
         return obj.user.first_name
