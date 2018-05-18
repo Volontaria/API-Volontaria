@@ -107,14 +107,17 @@ class Test:
                       "This can take several minutes."
 
         test = "coverage run " \
-               "--omit=*.virtualenvs*,*virtualenv* "\
-               + PROJECT_PATH + "/manage.py " \
-               "test " + PROJECT_PATH
+               "--include="\
+               + PROJECT_PATH + "/apiVolontaria/*,"\
+               + PROJECT_PATH + "/location/*,"\
+               + PROJECT_PATH + "/order/*,"\
+               + PROJECT_PATH + "/volunteer/* "\
+               "--omit=*__init__*,*migrations/*,*tests/* "\
+               + PROJECT_PATH + "/manage.py test source/apiVolontaria"
 
         coverage = "coverage report " \
                    "-m " \
-                   "--skip-covered " \
-                   "--include=./source/*"
+                   "--skip-covered"
 
         return name, description, [test, coverage]
 
