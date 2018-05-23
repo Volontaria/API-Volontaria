@@ -316,6 +316,7 @@ class CellExportSerializer(serializers.Serializer):
                     value['mobile'],
                     value['event__start_date'],
                     value['event__end_date'],
+                    value['task_type'],
                     value['cell'],
                     value['presence_status'],
                     value['presence_duration_minutes'],

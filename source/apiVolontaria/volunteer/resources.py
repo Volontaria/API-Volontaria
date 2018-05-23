@@ -1,5 +1,7 @@
 # app/admin.py
 
+from django.utils.translation import ugettext_lazy as _
+
 from import_export import resources
 from import_export.fields import Field
 
@@ -14,6 +16,7 @@ class ParticipationResource(resources.ModelResource):
     phone = Field()
     mobile = Field()
     cell = Field()
+    task_type = Field(column_name=_('task_type'))
 
     def __init__(self, cell_filter=None, date_filter=None):
         self.cell_filter = cell_filter
@@ -31,6 +34,7 @@ class ParticipationResource(resources.ModelResource):
             'mobile',
             'event__start_date',
             'event__end_date',
+            'task_type',
             'cell',
             'presence_status',
             'presence_duration_minutes',
@@ -68,3 +72,6 @@ class ParticipationResource(resources.ModelResource):
 
     def dehydrate_cell(self, obj):
         return obj.event.cell.name
+
+    def dehydrate_task_type(self, obj):
+        return obj.event.task_type.name
