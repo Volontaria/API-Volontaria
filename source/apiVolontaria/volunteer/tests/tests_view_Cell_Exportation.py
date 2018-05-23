@@ -170,10 +170,10 @@ class CellExportationTests(APITestCase):
 
         data = [
             'standby,first_name,last_name,email,phone,mobile,'
-            'event__start_date,event__end_date,cell,presence_status,'
-            'presence_duration_minutes\n',
+            'event__start_date,event__end_date,task_type,'
+            'cell,presence_status,presence_duration_minutes\n',
 
-            '1,%s,%s,%s,,,%s,%s,%s,%s,\n' % (
+            '1,%s,%s,%s,,,%s,%s,%s,%s,%s,\n' % (
                 self.participation2.user.first_name,
                 self.participation2.user.last_name,
                 self.participation2.user.email,
@@ -181,11 +181,12 @@ class CellExportationTests(APITestCase):
                     .strftime("%Y-%m-%d %H:%M:%S"),
                 self.participation2.event.end_date
                     .strftime("%Y-%m-%d %H:%M:%S"),
+                self.participation2.event.task_type.name,
                 self.participation2.cell,
                 self.participation2.presence_status,
             ),
 
-            '1,%s,%s,%s,,,%s,%s,%s,%s,\n' % (
+            '1,%s,%s,%s,,,%s,%s,%s,%s,%s,\n' % (
                 self.participation.user.first_name,
                 self.participation.user.last_name,
                 self.participation.user.email,
@@ -193,11 +194,12 @@ class CellExportationTests(APITestCase):
                     .strftime("%Y-%m-%d %H:%M:%S"),
                 self.participation.event.end_date
                     .strftime("%Y-%m-%d %H:%M:%S"),
+                self.participation.event.task_type.name,
                 self.participation.cell,
                 self.participation.presence_status,
             ),
 
-            '1,%s,%s,%s,,,%s,%s,%s,%s,\n' % (
+            '1,%s,%s,%s,,,%s,%s,%s,%s,%s,\n' % (
                 self.participation3.user.first_name,
                 self.participation3.user.last_name,
                 self.participation3.user.email,
@@ -205,6 +207,7 @@ class CellExportationTests(APITestCase):
                     .strftime("%Y-%m-%d %H:%M:%S"),
                 self.participation3.event.end_date
                     .strftime("%Y-%m-%d %H:%M:%S"),
+                self.participation3.event.task_type.name,
                 self.participation3.cell,
                 self.participation3.presence_status,
             )]
