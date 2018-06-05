@@ -169,7 +169,7 @@ class ResetPasswordTests(APITestCase):
         )
 
         content = {
-            'detail': "No account with this username.",
+            'non_field_errors': "No account with this username.",
         }
         self.assertEqual(json.loads(response.content), content)
 

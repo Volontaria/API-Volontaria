@@ -209,7 +209,7 @@ class UsersId(generics.RetrieveUpdateAPIView):
 
     def put(self, request, *args, **kwargs):
         content = {
-            "detail": _("Method \"PUT\" not allowed.")
+            'non_field_errors': _("Method \"PUT\" not allowed.")
         }
         return Response(content, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -254,7 +254,7 @@ class UsersActivation(APIView):
                 format(activation_token)
 
             return Response(
-                {'detail': error},
+                {'non_field_errors': error},
                 status=status.HTTP_400_BAD_REQUEST
             )
         # We have multiple token with the same key (impossible)
@@ -262,7 +262,7 @@ class UsersActivation(APIView):
             error = _("The system have a problem, please contact us, "
                       "it is not your fault.")
             return Response(
-                {'detail': error},
+                {'non_field_errors': error},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -289,7 +289,7 @@ class ResetPassword(APIView):
             user = User.objects.get(username=request.data["username"])
         except Exception:
             content = {
-                'detail': _("No account with this username."),
+                'non_field_errors': _("No account with this username."),
             }
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
@@ -374,7 +374,7 @@ class ChangePassword(APIView):
                 password_validation.validate_password(password=new_password)
             except ValidationError as err:
                 content = {
-                    'detail': err,
+                    'non_field_errors': err,
                 }
                 return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
@@ -394,7 +394,7 @@ class ChangePassword(APIView):
             error = '{0} is not a valid token.'.format(token)
 
             return Response(
-                {'detail': error},
+                {'non_field_errors': error},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -403,6 +403,6 @@ class ChangePassword(APIView):
             error = _("The system has a problem, please contact us, "
                       "it is not your fault.")
             return Response(
-                {'detail': error},
+                {'non_field_errors': error},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )

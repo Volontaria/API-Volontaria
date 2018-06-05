@@ -383,7 +383,7 @@ class ParticipationsIdTests(APITestCase):
         )
 
         content = {
-            'detail': "You can't delete a participation if the "
+            'non_field_errors': "You can't delete a participation if the "
                       "associated event is already started",
         }
 

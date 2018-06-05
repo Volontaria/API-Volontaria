@@ -388,7 +388,7 @@ class ParticipationsId(generics.RetrieveUpdateDestroyAPIView):
             return self.destroy(request, *args, **kwargs)
         else:
             content = {
-                'detail': _("You can't delete a participation if the "
+                'non_field_errors': _("You can't delete a participation if the "
                             "associated event is already started"),
             }
 
