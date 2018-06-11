@@ -1,4 +1,4 @@
-
+from rest_framework import filters
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -158,6 +158,8 @@ class Cells(generics.ListCreateAPIView):
     """
 
     serializer_class = serializers.CellBasicSerializer
+    filter_backends = (filters.OrderingFilter, )
+    ordering_fields = ('name', )
 
     def get_queryset(self):
         return models.Cell.objects.filter()

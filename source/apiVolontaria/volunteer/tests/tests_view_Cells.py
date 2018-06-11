@@ -508,3 +508,31 @@ class CellsTests(APITestCase):
         }
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(content, error)
+
+    def test_cell_list_ordering(self):
+        self.cell_2 = Cell.objects.create(
+            name='AAA Cell',
+            address=self.address,
+        )
+
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get(
+            reverse('volunteer:cells'),
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['results'][0]['name'], 'my cell')
+        self.assertEqual(response.data['results'][1]['name'], 'AAA Cell')
+
+        url_ordered = '%s?ordering=name' % reverse('volunteer:cells')
+
+        response = self.client.get(
+            url_ordered,
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['results'][0]['name'], 'AAA Cell')
+        self.assertEqual(response.data['results'][1]['name'], 'my cell')
