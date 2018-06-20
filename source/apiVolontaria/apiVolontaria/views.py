@@ -306,7 +306,9 @@ class ResetPassword(APIView):
             user = User.objects.get(username=request.data["username"])
         except Exception:
             content = {
-                'non_field_errors': _("No account with this username."),
+                'username': [
+                    _("No account with this username.")
+                ],
             }
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
