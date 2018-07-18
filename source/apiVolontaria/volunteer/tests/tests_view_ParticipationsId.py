@@ -27,6 +27,13 @@ class ParticipationsIdTests(APITestCase):
         self.user2.set_password('Test123!')
         self.user2.save()
 
+        self.user_cell_manager = UserFactory()
+        self.user_cell_manager.set_password('Test123!')
+
+        self.user_cell_manager_no_perms = UserFactory()
+        self.user_cell_manager_no_perms.set_password('Test123!')
+        self.user_cell_manager_no_perms.save()
+
         self.admin = AdminFactory()
         self.admin.set_password('Test123!')
         self.admin.save()
@@ -51,6 +58,14 @@ class ParticipationsIdTests(APITestCase):
             name="my cell",
             address=self.address,
         )
+        self.cell_with_manager = Cell.objects.create(
+            name="my cell with manager",
+            address=self.address,
+        )
+
+        self.cell_with_manager.managers = [self.user_cell_manager, ]
+        self.cell_with_manager.save()
+
         self.cycle = Cycle.objects.create(
             name="my cycle",
         )
@@ -81,6 +96,14 @@ class ParticipationsIdTests(APITestCase):
             end_date=end_date,
         )
 
+        self.event_with_manager = Event.objects.create(
+            cell=self.cell_with_manager,
+            cycle=self.cycle,
+            task_type=self.task_type,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
         subscription_date = timezone.now()
 
         with mock.patch('django.utils.timezone.now') as mock_now:
@@ -97,6 +120,13 @@ class ParticipationsIdTests(APITestCase):
                 subscription_date=subscription_date,
                 user=self.user2,
                 event=self.event2,
+            )
+
+            self.participation_cell_manager = Participation.objects.create(
+                standby=True,
+                subscription_date=subscription_date,
+                user=self.user2,
+                event=self.event_with_manager,
             )
 
     def test_retrieve_participation_id_not_exist(self):
@@ -118,9 +148,9 @@ class ParticipationsIdTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(json.loads(response.content), content)
 
-    def test_retrieve_participation(self):
+    def test_retrieve_participation_as_owner(self):
         """
-        Ensure we can retrieve a participation.
+        Ensure we can retrieve a participation as the owner.
         """
 
         subscription_date_str = self.participation.subscription_date.\
@@ -142,6 +172,40 @@ class ParticipationsIdTests(APITestCase):
             reverse(
                 'volunteer:participations_id',
                 kwargs={'pk': self.participation.id},
+            )
+        )
+
+        content = json.loads(response.content)
+        del content['user']
+        self.assertEqual(content, data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_retrieve_participation_basic_serializer(self):
+        """
+        Ensure we can retrieve a participation.
+        Using the BasicSerializer
+        """
+
+        subscription_date_str = self.participation2.subscription_date.\
+            strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+        duration_minutes = self.participation2.presence_duration_minutes
+        data = dict(
+            id=self.participation2.id,
+            standby=self.participation2.standby,
+            subscription_date=subscription_date_str,
+            event=self.participation2.event.id,
+            presence_duration_minutes=duration_minutes,
+            presence_status=self.participation2.presence_status,
+        )
+
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(
+            reverse(
+                'volunteer:participations_id',
+                kwargs={'pk': self.participation2.id},
             )
         )
 
@@ -247,14 +311,13 @@ class ParticipationsIdTests(APITestCase):
             "%Y-%m-%dT%H:%M:%S.%fZ",
         )
 
-        duration_minutes = self.participation.presence_duration_minutes
         data = dict(
             id=self.participation.id,
             standby=self.participation.standby,
             subscription_date=subscription_date_str,
             event=self.participation.event.id,
-            presence_duration_minutes=duration_minutes,
-            presence_status=self.participation.presence_status,
+            presence_duration_minutes=14,
+            presence_status='P',
         )
 
         data_post = {
@@ -332,6 +395,83 @@ class ParticipationsIdTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_update_participation_cell_manager(self):
+        """
+        Ensure we have the right to modify a Participation
+        if the user is a Cell manager
+        """
+        self.client.force_authenticate(user=self.user_cell_manager)
+
+        data_patch = {'presence_status': 'P'}
+
+        subscription_date = timezone.now()
+
+        subscription_date_str = subscription_date.strftime(
+            "%Y-%m-%dT%H:%M:%S.%fZ",
+        )
+
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = subscription_date
+            response = self.client.patch(
+                reverse(
+                    'volunteer:participations_id',
+                    kwargs={'pk': self.participation_cell_manager.id}
+                ),
+                data_patch,
+                format='json',
+            )
+
+        content = {
+            "id": self.participation_cell_manager.id,
+            "event": self.participation_cell_manager.event.pk,
+            "user": {
+                "id": self.user2.id,
+                "username": self.user2.username,
+                "email": self.user2.email,
+                "first_name": self.user2.first_name,
+                "last_name": self.user2.last_name,
+                "is_active": self.user2.is_active,
+                "is_superuser": self.user2.is_superuser,
+                "phone": None,
+                "mobile": None,
+                "managed_cell": []
+            },
+            "standby": True,
+            "subscription_date": subscription_date_str,
+            "presence_duration_minutes": None,
+            "presence_status": "P"
+        }
+
+        self.assertEqual(json.loads(response.content), content)
+
+    def test_update_participation_cell_manager_no_perms(self):
+        """
+        Ensure we don't have the right to modify a Participation
+        if the user is not a Cell manager
+        """
+        self.client.force_authenticate(user=self.user_cell_manager_no_perms)
+
+        data_patch = {'presence_status': 'P'}
+
+        subscription_date = timezone.now()
+
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = subscription_date
+            response = self.client.patch(
+                reverse(
+                    'volunteer:participations_id',
+                    kwargs={'pk': self.participation_cell_manager.id}
+                ),
+                data_patch,
+                format='json',
+            )
+
+        content = {
+            'detail': "You do not have permission to perform this action.",
+        }
+
+        self.assertEqual(json.loads(response.content), content)
+
     def test_delete_participation_with_permission(self):
         """
         Ensure we can delete a specific participation if the caller owns it.
@@ -383,8 +523,9 @@ class ParticipationsIdTests(APITestCase):
         )
 
         content = {
-            'non_field_errors': "You can't delete a participation if the "
-                      "associated event is already started",
+            'non_field_errors':
+                "You can't delete a participation if the "
+                "associated event is already started",
         }
 
         self.assertEqual(json.loads(response.content), content)

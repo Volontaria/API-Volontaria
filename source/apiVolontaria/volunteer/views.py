@@ -1,9 +1,9 @@
 from rest_framework import filters
 from rest_framework import generics, status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 
-from .permissions import IsOwnerOrReadOnly
+from .permissions import ParticipationIsManager, EventIsManager
 from . import models, serializers
 
 from django.utils.translation import ugettext_lazy as _
@@ -251,6 +251,17 @@ class Events(generics.ListCreateAPIView):
     serializer_class = serializers.EventBasicSerializer
     filter_fields = ['volunteers', 'cycle', 'cell']
 
+    def if_post_permitted(self, request, op_type):
+        # Must get the cell to see if the user is a manager or not
+        cell_id = request.data.get('cell_id', None)
+        cell = models.Cell.objects.filter(pk=cell_id).first()
+
+        is_user_has_perm = self.request.user.has_perm(op_type)
+        is_cell_manager = cell and request.user in cell.managers.all()
+        can_edit = is_user_has_perm or is_cell_manager
+
+        return can_edit
+
     def get_queryset(self):
 
         if self.request.user.has_perm('volunteer.add_event'):
@@ -269,7 +280,7 @@ class Events(generics.ListCreateAPIView):
         return queryset
 
     def post(self, request, *args, **kwargs):
-        if self.request.user.has_perm('volunteer.add_event'):
+        if self.if_post_permitted(request, 'volunteer.add_event'):
             return self.create(request, *args, **kwargs)
 
         content = {
@@ -297,26 +308,14 @@ class EventsId(generics.RetrieveUpdateDestroyAPIView):
 
     serializer_class = serializers.EventBasicSerializer
 
+    permission_classes = (
+        EventIsManager,
+        IsAuthenticated,
+        DjangoModelPermissions,
+    )
+
     def get_queryset(self):
         return models.Event.objects.filter()
-
-    def patch(self, request, *args, **kwargs):
-        if self.request.user.has_perm('volunteer.change_event'):
-            return self.partial_update(request, *args, **kwargs)
-
-        content = {
-            'detail': "You are not authorized to update an event.",
-        }
-        return Response(content, status=status.HTTP_403_FORBIDDEN)
-
-    def delete(self, request, *args, **kwargs):
-        if self.request.user.has_perm('volunteer.delete_event'):
-            return self.destroy(request, *args, **kwargs)
-
-        content = {
-            'detail': "You are not authorized to delete an event.",
-        }
-        return Response(content, status=status.HTTP_403_FORBIDDEN)
 
 
 class Participations(generics.ListCreateAPIView):
@@ -372,14 +371,22 @@ class ParticipationsId(generics.RetrieveUpdateDestroyAPIView):
 
     serializer_class = serializers.ParticipationBasicSerializer
 
-    permission_classes = (IsOwnerOrReadOnly, IsAuthenticated)
+    permission_classes = (
+        IsAuthenticated,
+        ParticipationIsManager,
+    )
 
     def get_queryset(self):
         return models.Participation.objects.filter()
 
     def get_serializer_class(self):
-        # If authenticated user is admin
-        if self.request.user.is_superuser:
+        # We have to check manually the permissions to see
+        # which Serializer to return
+        manager_permissions = ParticipationIsManager.if_can_do_actions(
+            self.request, self, self.get_object()
+        )
+
+        if manager_permissions:
             return serializers.ParticipationAdminSerializer
         else:
             return serializers.ParticipationBasicSerializer
@@ -390,8 +397,9 @@ class ParticipationsId(generics.RetrieveUpdateDestroyAPIView):
             return self.destroy(request, *args, **kwargs)
         else:
             content = {
-                'non_field_errors': _("You can't delete a participation if the "
-                            "associated event is already started"),
+                'non_field_errors':
+                    _("You can't delete a participation if the associated "
+                      "event is already started"),
             }
 
             return Response(content, status=status.HTTP_403_FORBIDDEN)
