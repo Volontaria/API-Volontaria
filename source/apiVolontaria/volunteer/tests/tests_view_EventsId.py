@@ -142,6 +142,9 @@ class EventsIdTests(APITestCase):
             "task_type_id": self.second_task_type.id,
         }
 
+        self.admin.is_superuser = True
+        self.admin.save()
+
         self.client.force_authenticate(user=self.admin)
 
         response = self.client.patch(
@@ -154,6 +157,7 @@ class EventsIdTests(APITestCase):
         )
 
         result = json.loads(response.content)
+
         self.assertEqual(result['id'], self.event.id)
         self.assertEqual(
             result['cell']['id'],
@@ -203,7 +207,9 @@ class EventsIdTests(APITestCase):
             format='json',
         )
 
-        content = {'detail': "You are not authorized to update an event."}
+        content = {
+            'detail': 'You do not have permission to perform this action.'
+        }
         self.assertEqual(json.loads(response.content), content)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -263,7 +269,9 @@ class EventsIdTests(APITestCase):
             ),
         )
 
-        content = {'detail': "You are not authorized to delete an event."}
+        content = {
+            'detail': 'You do not have permission to perform this action.'
+        }
         self.assertEqual(json.loads(response.content), content)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

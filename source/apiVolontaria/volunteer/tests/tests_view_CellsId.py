@@ -19,6 +19,10 @@ class CellsIdTests(APITestCase):
         self.user.set_password('Test123!')
         self.user.save()
 
+        self.other_user = UserFactory()
+        self.other_user.set_password('Test123!')
+        self.other_user.save()
+
         self.admin = AdminFactory()
         self.admin.set_password('Test123!')
         self.admin.save()
@@ -258,6 +262,61 @@ class CellsIdTests(APITestCase):
         self.assertEqual(json.loads(response.content), data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.cell.managers.count(), 1)
+
+        self.assertEquals(
+            self.user.has_perm('volunteer.add_participation'),
+            True
+        )
+
+        self.assertEquals(
+            self.user.has_perm('volunteer.change_participation'),
+            True
+        )
+
+        self.assertEquals(
+            self.user.has_perm('volunteer.delete_participation'),
+            True
+        )
+
+        self.assertEquals(
+            self.user.has_perm('volunteer.add_event'),
+            True
+        )
+
+        self.assertEquals(
+            self.user.has_perm('volunteer.change_event'),
+            True
+        )
+
+        self.assertEquals(
+            self.user.has_perm('volunteer.delete_event'),
+            True
+        )
+
+        # Now let's remove the manager
+        data_post = {
+            "managers": []
+        }
+
+        response = self.client.patch(
+            reverse(
+                'volunteer:cells_id',
+                kwargs={'pk': self.cell.id},
+            ),
+            data_post,
+            format='json',
+        )
+
+        data['managers'] = []
+
+        self.assertEqual(json.loads(response.content), data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEquals(len(self.user.user_permissions.all()), 0)
+
+        # Testing the signals
+        self.cell.managers.add(self.user, self.other_user)
+        self.cell.managers.remove(self.user)
 
     def test_update_multiple_cell_managers(self):
         """
