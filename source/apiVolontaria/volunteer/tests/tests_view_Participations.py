@@ -129,12 +129,73 @@ class ParticipationsTests(APITestCase):
 
         data = {
             'event': self.event.id,
-            'user': self.user.id,
             'standby': False,
             'subscription_date': subscription_date,
         }
 
         self.client.force_authenticate(user=self.user)
+
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = subscription_date
+            response = self.client.post(
+                reverse('volunteer:participations'),
+                data,
+                format='json',
+            )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(content['subscription_date'], subscription_date_str)
+        self.assertEqual(content['user']['id'], self.user.id)
+        self.assertEqual(content['event'], self.event.id)
+        self.assertEqual(content['standby'], False)
+
+        # Check the system doesn't return attributes not expected
+        attributes = [
+            'id',
+            'subscription_date',
+            'user',
+            'event',
+            'standby',
+            'presence_duration_minutes',
+            'presence_status',
+        ]
+
+        for key in content.keys():
+            self.assertTrue(
+                key in attributes,
+                'Attribute "{0}" is not expected but is '
+                'returned by the system.'.format(key),
+            )
+            attributes.remove(key)
+
+        # Ensure the system returns all expected attributes
+        self.assertTrue(
+            len(attributes) == 0,
+            'The system failed to return some '
+            'attributes : {0}'.format(attributes),
+        )
+
+    def test_create_new_participation_as_superuser(self):
+        """
+        Ensure we can create a new participation with custom user
+        as the superuser.
+        """
+        subscription_date = timezone.now()
+
+        subscription_date_str = subscription_date.strftime(
+            "%Y-%m-%dT%H:%M:%S.%fZ",
+        )
+
+        data = {
+            'event': self.event.id,
+            'user': self.user.id,
+            'standby': False,
+            'subscription_date': subscription_date,
+        }
+
+        self.client.force_authenticate(user=self.admin)
 
         with mock.patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = subscription_date
@@ -315,3 +376,67 @@ class ParticipationsTests(APITestCase):
         content = json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(content['count'], 1)
+
+    def test_create_new_participation_invalid_id(self):
+        """
+        Ensure we can create a new participation with custom user
+        as the superuser.
+        """
+        subscription_date = timezone.now()
+
+        data = {
+            'event': self.event.id,
+            'user': 999999,
+            'standby': False,
+            'subscription_date': subscription_date,
+        }
+
+        self.client.force_authenticate(user=self.admin)
+
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = subscription_date
+            response = self.client.post(
+                reverse('volunteer:participations'),
+                data,
+                format='json',
+            )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(
+            content['message'],
+            'Unknown user with this ID'
+        )
+
+    def test_create_new_participation_fail_already_exist(self):
+        """
+        Ensure we can create a new participation with custom user
+        as the superuser.
+        """
+        subscription_date = timezone.now()
+
+        data = {
+            'event': self.event2.id,
+            'user_id': self.user.id,
+            'standby': False,
+            'subscription_date': subscription_date,
+        }
+
+        self.client.force_authenticate(user=self.admin)
+
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = subscription_date
+            response = self.client.post(
+                reverse('volunteer:participations'),
+                data,
+                format='json',
+            )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(
+            content['non_field_errors'],
+            ["There is already a participation with this user and this event", ]
+        )

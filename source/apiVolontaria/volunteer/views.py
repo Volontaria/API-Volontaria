@@ -334,6 +334,12 @@ class Participations(generics.ListCreateAPIView):
     """
 
     serializer_class = serializers.ParticipationBasicSerializer
+
+    permission_classes = (
+        IsAuthenticated,
+        ParticipationIsManager,
+    )
+
     filter_fields = ['event']
 
     def get_queryset(self):
@@ -341,10 +347,29 @@ class Participations(generics.ListCreateAPIView):
             return models.Participation.objects.all()
         return models.Participation.objects.filter(user=self.request.user)
 
+    def get_serializer_class(self):
+        # We have to check manually the permissions to see
+        # which Serializer to return
+        manager_permissions = ParticipationIsManager.if_can_do_actions(
+            self.request, self, None
+        )
+
+        if manager_permissions:
+            return serializers.ParticipationAdminSerializer
+        else:
+            return serializers.ParticipationBasicSerializer
+
     # A user can only create participations for himself
     # This auto-fills the 'user' field of the Participation object.
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        manager_permissions = ParticipationIsManager.if_can_do_actions(
+            self.request, self, None
+        )
+
+        if manager_permissions:
+            serializer.save()
+        else:
+            serializer.save(user=self.request.user)
 
 
 class ParticipationsId(generics.RetrieveUpdateDestroyAPIView):
