@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'volunteer',
     'location',
     'import_export',
+    'anymail',
 ]
 
 MIDDLEWARE = [
@@ -201,6 +202,8 @@ CONSTANT = {
     },
 }
 
+
+
 # Email service configuration.
 # Supported services: SendinBlue.
 SETTINGS_IMAILING = {
@@ -213,6 +216,19 @@ SETTINGS_IMAILING = {
     }
 }
 
+ANYMAIL = {
+    "SENDINBLUE_API_KEY": "example_api_key",
+}
+
+SENDINBLUE_TEMPLATES = {
+    "CALENDAR_INVITATION": "example_template_id",
+}
+
+EMAIL_BACKEND = "anymail.backends.sendinblue.EmailBackend"
+
+DEFAULT_FROM_EMAIL = ""
+
+DEBUG_EMAIL_TO = ""
 
 try:
     from apiVolontaria.local_settings import *

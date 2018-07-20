@@ -7,7 +7,7 @@ from rest_framework.test import APIClient, APITestCase
 
 from django.urls import reverse
 from django.utils import timezone
-from django.contrib.auth.models import Permission
+from django.test.utils import override_settings
 
 from apiVolontaria.factories import UserFactory, AdminFactory
 from location.models import Address, StateProvince, Country
@@ -123,10 +123,6 @@ class ParticipationsTests(APITestCase):
         """
         subscription_date = timezone.now()
 
-        subscription_date_str = subscription_date.strftime(
-            "%Y-%m-%dT%H:%M:%S.%fZ",
-        )
-
         data = {
             'event': self.event.id,
             'user': self.user.id,
@@ -147,7 +143,6 @@ class ParticipationsTests(APITestCase):
         content = json.loads(response.content)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(content['subscription_date'], subscription_date_str)
         self.assertEqual(content['user']['id'], self.user.id)
         self.assertEqual(content['event'], self.event.id)
         self.assertEqual(content['standby'], False)
@@ -315,3 +310,36 @@ class ParticipationsTests(APITestCase):
         content = json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(content['count'], 1)
+
+    @override_settings(
+        DEBUG=True,
+        EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend',
+        CONSTANT={'EMAIL_SERVICE': True},
+        SENDINBLUE_TEMPLATE={'CALENDAR_INVITATION': 0},
+    )
+    def test_create_new_participation_with_ics(self):
+        """
+        Ensure we can create a new participation with request
+        for a email with calendar invite.
+        """
+        subscription_date = timezone.now()
+
+        data = {
+            'event': self.event.id,
+            'user': self.user.id,
+            'standby': False,
+            'send_ics': True,
+            'subscription_date': subscription_date,
+        }
+
+        self.client.force_authenticate(user=self.user)
+
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = subscription_date
+            response = self.client.post(
+                reverse('volunteer:participations'),
+                data,
+                format='json',
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)

@@ -15,6 +15,7 @@ from location.models import Address, StateProvince, Country
 from apiVolontaria.serializers import UserPublicSerializer, UserBasicSerializer
 from django.contrib.auth.models import User
 
+from volunteer.functions import generate_email_invitation
 from . import models
 from .resources import ParticipationResource
 
@@ -403,6 +404,7 @@ class ParticipationBasicSerializer(serializers.ModelSerializer):
 
     # Explicitly declare the BooleanField to make it "required"
     standby = serializers.BooleanField()
+    send_ics = serializers.BooleanField(required=False)
     user = UserBasicSerializer(
         read_only=True,
         default=serializers.CurrentUserDefault(),
@@ -418,12 +420,28 @@ class ParticipationBasicSerializer(serializers.ModelSerializer):
             'subscription_date',
             'presence_duration_minutes',
             'presence_status',
+            'send_ics',
         )
         read_only_fields = [
             'id',
             'presence_duration_minutes',
             'presence_status',
         ]
+
+    def create(self, validated_data):
+        # Get the option to send calendar invitation if existing
+        send_ics = None
+
+        if 'send_ics' in validated_data:
+            send_ics = validated_data.pop('send_ics')
+
+        # Create the object
+        obj = models.Participation(**validated_data)
+
+        if send_ics:
+            generate_email_invitation(obj)
+
+        return obj
 
 
 class ParticipationAdminSerializer(serializers.ModelSerializer):
