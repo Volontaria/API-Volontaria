@@ -329,24 +329,35 @@ class EventBasicSerializer(serializers.ModelSerializer):
     """This class represents the Event model serializer."""
 
     def validate(self, data):
-        if data['cycle'].start_date and data['cycle'].end_date:
-            if data['cycle'].start_date > data['start_date']:
+        validated_data = super().validate(data)
+        cycle = validated_data.get(
+            'cycle',
+            getattr(self.instance, 'cycle', None)
+        )
+        start_date = validated_data.get(
+            'start_date',
+            getattr(self.instance, 'start_date', None)
+        )
+        end_date = validated_data.get(
+            'end_date',
+            getattr(self.instance, 'end_date', None)
+        )
+
+        if cycle and cycle.start_date:
+            if cycle.start_date > start_date:
                 raise serializers.ValidationError(
-                    _('Start date need to be after '
-                      'start date of the cycle.')
+                    _('Start date need to be after start date of the cycle.')
                 )
-            if data['cycle'].end_date < data['end_date']:
+        if cycle and cycle.end_date:
+            if cycle.end_date < end_date:
                 raise serializers.ValidationError(
-                    _('End date need to be before '
-                      'the end date of the cycle.')
+                    _('End date need to be before the end date of the cycle.')
                 )
 
-        if 'start_date' in data.keys() and 'end_date' in data.keys():
-            if data['start_date'] > data['end_date']:
-                raise serializers.ValidationError(
-                    _('Start date need to be before '
-                      'the end date.')
-                )
+        if start_date > end_date:
+            raise serializers.ValidationError(
+                _('Start date need to be before the end date.')
+            )
 
         return data
 
