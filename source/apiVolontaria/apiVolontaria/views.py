@@ -14,6 +14,10 @@ from rest_framework.views import APIView
 from . import serializers
 from .models import TemporaryToken, ActionToken
 from imailing.Mailing import IMailing
+from django.core.mail import send_mail, EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives, EmailMessage
+from anymail.message import attach_inline_image_file, attach_inline_image
 
 
 class ObtainTemporaryAuthToken(ObtainAuthToken):
@@ -129,7 +133,7 @@ class Users(generics.ListCreateAPIView):
                 user.save()
 
             if settings.CONSTANT['EMAIL_SERVICE'] is True:
-                MAIL_SERVICE = settings.SETTINGS_IMAILING
+                # MAIL_SERVICE = settings.SETTINGS_IMAILING
                 FRONTEND_SETTINGS = settings.CONSTANT['FRONTEND_INTEGRATION']
 
                 # Get the token of the saved user and send it with an email
@@ -138,26 +142,29 @@ class Users(generics.ListCreateAPIView):
                     type='account_activation',
                 ).key
 
-                # Setup the url for the activation button in the email
-                activation_url = FRONTEND_SETTINGS['ACTIVATION_URL'].replace(
-                    "{{token}}",
-                    activate_token
+                # data for email activation
+                msg_html_css = render_to_string("css/confirm_sign_up.css")
+
+                merge_data = {
+                    'ACTIVATION_URL': FRONTEND_SETTINGS['ACTIVATION_URL'].replace(
+                        "{{token}}",
+                        activate_token
+                    ),
+                    'CSS_STYLE': msg_html_css
+                }
+
+                plain_msg = render_to_string("confirm_sign_up.txt", merge_data)
+                msg_html = render_to_string("confirm_sign_up.html", merge_data)
+
+                response_send_mail = send_mail(
+                    'Confirmation d\'enregistrement',
+                    plain_msg,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [request.data["email"]],
+                    html_message=msg_html,
                 )
 
-                # Send email with a SETTINGS_IMAILING
-                email = IMailing.\
-                    create_instance(MAIL_SERVICE["SERVICE"],
-                                    MAIL_SERVICE["API_KEY"])
-                response_send_mail = email.send_templated_email(
-                    email_from=MAIL_SERVICE["EMAIL_FROM"],
-                    template_id=MAIL_SERVICE["TEMPLATES"]["CONFIRM_SIGN_UP"],
-                    list_to=[request.data["email"]],
-                    context={
-                        "activation_url": activation_url,
-                        },
-                )
-
-                if response_send_mail["code"] == "failure":
+                if response_send_mail :
                     content = {
                         'detail': _("The account was created but no email was "
                                     "sent. If your account is not "
@@ -309,29 +316,31 @@ class ResetPassword(APIView):
         )
 
         # Send the new token by e-mail to the user
-        MAIL_SERVICE = settings.SETTINGS_IMAILING
         FRONTEND_SETTINGS = settings.CONSTANT['FRONTEND_INTEGRATION']
 
-        button_url = FRONTEND_SETTINGS['FORGOT_PASSWORD_URL'].replace(
-            "{{token}}",
-            str(token)
+        # data for email activation
+        msg_html_css = render_to_string("css/reset_password.css")
+
+        merge_data = {
+            'FORGOT_URL': FRONTEND_SETTINGS['FORGOT_PASSWORD_URL'].replace(
+                                "{{token}}",
+                                str(token)
+                            ),
+            'CSS_STYLE': msg_html_css
+        }
+
+        plain_msg = render_to_string("reset_password.txt", merge_data)
+        msg_html = render_to_string("reset_password.html", merge_data)
+
+        response_send_mail = send_mail(
+            'User activation',
+            plain_msg,
+            settings.DEFAULT_FROM_EMAIL,
+            [request.data["email"]],
+            html_message=msg_html,
         )
 
-        email = IMailing.create_instance(
-            MAIL_SERVICE["SERVICE"],
-            MAIL_SERVICE["API_KEY"],
-        )
-
-        response_send_mail = email.send_templated_email(
-            email_from=MAIL_SERVICE["EMAIL_FROM"],
-            template_id=MAIL_SERVICE["TEMPLATES"]["FORGOT_PASSWORD"],
-            list_to=[user.email],
-            context={
-                "forgot_password_url": button_url,
-            },
-        )
-
-        if response_send_mail["code"] == "failure":
+        if response_send_mail:
             content = {
                 'detail': _("Your token has been created but no email "
                             "has been sent. Please contact the "
