@@ -1,0 +1,36 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+      {{ CSS_STYLE }}
+     </style>
+  </head>
+  <body>
+
+    <div class="email">
+      <div class="email__logo">
+        {% load static %}
+        <img src="{% static 'images/logo_nousrire.png'%}" alt="logo nousrire">
+      </div>
+      <div class="email__content">
+        <h1 class="email__content__title">
+          Confirmation d'achat
+        </h1>
+        <div class="email_body">
+          <p>
+            Ton compte bénévole a bien été créé et il ne te reste plus qu'à l'activer:
+          </p>
+
+          <p><a href="{{ACTIVATION_URL}}" class="button">Activer mon compte</a></p>
+
+          <p>À très bientôt</p>
+        </div>
+        <div id="footer">
+          <p>© 2018 NousRire</p>
+          <p>Propulsé par Volontaria.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
