@@ -11,7 +11,10 @@ from django.test.utils import override_settings
 from ..factories import UserFactory
 from ..models import ActionToken
 
+from django.core import mail
+from django.test import TestCase
 
+@override_settings(EMAIL_BACKEND='anymail.backends.test.EmailBackend')
 class ResetPasswordTests(APITestCase):
 
     def setUp(self):
@@ -30,19 +33,18 @@ class ResetPasswordTests(APITestCase):
             }
         }
     )
-    @mock.patch('apiVolontaria.views.IMailing')
-    def test_create_new_token(self, imailing):
+
+    def test_create_new_token(self):
         """
         Ensure we can have a new token to change our password
         """
         data = {
-            'username': self.user.username,
+            'username': self.user.username
         }
 
-        instance_imailing = imailing.create_instance.return_value
-        instance_imailing.send_templated_email.return_value = {
-            "code": "success",
-        }
+        # Test that one message was sent:
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [self.user.email])
 
         response = self.client.post(
             reverse('reset_password'),
@@ -70,8 +72,8 @@ class ResetPasswordTests(APITestCase):
             }
         }
     )
-    @mock.patch('apiVolontaria.views.IMailing')
-    def test_create_new_token_without_username_param(self, imailing):
+
+    def test_create_new_token_without_username_param(self):
         """
         Ensure we can't have a new token to change our password without
         give our username in param
@@ -107,8 +109,8 @@ class ResetPasswordTests(APITestCase):
             }
         }
     )
-    @mock.patch('apiVolontaria.views.IMailing')
-    def test_create_new_token_with_an_empty_username_param(self, imailing):
+
+    def test_create_new_token_with_an_empty_username_param(self):
         """
         Ensure we can't have a new token to change our password without
         give our username in param
@@ -146,7 +148,7 @@ class ResetPasswordTests(APITestCase):
             }
         }
     )
-    @mock.patch('apiVolontaria.views.IMailing')
+
     def test_create_new_token_with_bad_username(self, imailing):
         """
         Ensure we can't have a new token to change our password without
@@ -185,7 +187,7 @@ class ResetPasswordTests(APITestCase):
             }
         }
     )
-    @mock.patch('apiVolontaria.views.IMailing')
+
     def test_create_new_token_when_token_already_exist(self, imailing):
         """
         Ensure we can have a new token to change our password
@@ -200,10 +202,9 @@ class ResetPasswordTests(APITestCase):
             'username': self.user.username,
         }
 
-        instance_imailing = imailing.create_instance.return_value
-        instance_imailing.send_templated_email.return_value = {
-            "code": "success",
-        }
+        # Test that one message was sent:
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [self.user.email])
 
         response = self.client.post(
             reverse('reset_password'),
@@ -232,8 +233,8 @@ class ResetPasswordTests(APITestCase):
             }
         }
     )
-    @mock.patch('apiVolontaria.views.IMailing')
-    def test_create_new_token_without_email_service(self, imailing):
+
+    def test_create_new_token_without_email_service(self):
         """
         Ensure we can have a new token to change our password
         """
@@ -241,10 +242,9 @@ class ResetPasswordTests(APITestCase):
             'username': self.user.username,
         }
 
-        instance_imailing = imailing.create_instance.return_value
-        instance_imailing.send_templated_email.return_value = {
-            "code": "success",
-        }
+        # Test that one message was sent:
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [self.user.email])
 
         response = self.client.post(
             reverse('reset_password'),
@@ -272,8 +272,8 @@ class ResetPasswordTests(APITestCase):
             }
         }
     )
-    @mock.patch('apiVolontaria.views.IMailing')
-    def test_create_new_token_with_failure_on_email_service(self, imailing):
+
+    def test_create_new_token_with_failure_on_email_service(self):
         """
         Ensure we can have a new token to change our password
         """
@@ -281,10 +281,9 @@ class ResetPasswordTests(APITestCase):
             'username': self.user.username,
         }
 
-        instance_imailing = imailing.create_instance.return_value
-        instance_imailing.send_templated_email.return_value = {
-            "code": "failure",
-        }
+        # Test that one message was sent:
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [self.user.email])
 
         response = self.client.post(
             reverse('reset_password'),
