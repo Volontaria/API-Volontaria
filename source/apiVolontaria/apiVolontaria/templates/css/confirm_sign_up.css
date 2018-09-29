@@ -10,32 +10,26 @@ body {
   padding: 20px;
   text-align: center;
 }
-
 .email__logo {
   margin: 20px;
   text-align: center;
 }
-
 .email__content {
   max-width: 600px;
   padding: 20px;
   margin: auto;
 }
-
 .email__content__title {
   font-size: 24px;
   font-weight: bolder;
 }
-
-.email_body P {
+.email_body > P {
   margin-bottom: 40px;
 }
-
-.email_body P:nth-child(1) {
+.email_body > P:nth-child(1) {
   margin-bottom: 70px;
 }
-
-a.button {
+.email a.button {
   font-size: 1.3em;
   padding: 10px 20px;
   background-color: #e6a251;
@@ -44,16 +38,13 @@ a.button {
   color: white !important;
   text-decoration: none;
 }
-
-a.button:active {
+.email a.button:active {
   background-color: black;
 }
-
-.email__content__summary__item {
+.email .email__content__summary__item {
   line-height: 15px;
   margin: 5px 0;
 }
-
-#footer {
+.email #footer {
   background-color: #f9fafc;
 }
