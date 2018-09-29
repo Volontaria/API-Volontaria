@@ -1,7 +1,5 @@
 import json
 
-from unittest import mock
-
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
@@ -11,8 +9,13 @@ from django.contrib.auth.models import User
 
 from ..models import ActionToken
 from ..factories import UserFactory, AdminFactory
+from django.core import mail
 
+from anymail.exceptions import AnymailCancelSend
+from anymail.signals import pre_send
+from django.dispatch import receiver
 
+@override_settings(EMAIL_BACKEND='anymail.backends.test.EmailBackend')
 class UsersTests(APITestCase):
 
     def setUp(self):
@@ -26,6 +29,58 @@ class UsersTests(APITestCase):
         self.admin.set_password('Test123!')
         self.admin.save()
 
+    @override_settings(
+        CONSTANT={
+            "EMAIL_SERVICE": False,
+            "AUTO_ACTIVATE_USER": False,
+            "FRONTEND_INTEGRATION": {
+                "ACTIVATION_URL": "fake_url",
+            }
+        }
+    )
+    def test_create_new_user_without_service_email(self):
+        """
+        Ensure we can create a new user if we have the permission even if the
+        email service is not activated
+        """
+        data = {
+            'username': 'John',
+            'email': 'John@mailinator.com',
+            'password': 'test123!',
+            'phone': '1234567890',
+            'first_name': 'Chuck',
+            'last_name': 'Norris',
+        }
+
+        response = self.client.post(
+            reverse('users'),
+            data,
+            format='json',
+        )
+
+        content = {"detail": "The account was created but no email was sent "
+                             "(email service deactivated). If your account is "
+                             "not activated, contact the administration."}
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(json.loads(response.content), content)
+
+        user = User.objects.get(username="John")
+        activation_token = ActionToken.objects.filter(
+            user=user,
+            type='account_activation',
+        )
+
+        self.assertEqual(1, len(activation_token))
+
+    @override_settings(
+        CONSTANT={
+            "EMAIL_SERVICE": True,
+            "AUTO_ACTIVATE_USER": False,
+            "FRONTEND_INTEGRATION": {
+                "ACTIVATION_URL": "fake_url",
+            }
+        }
+    )
     def test_create_new_user(self):
         """
         Ensure we can create a new user if we have the permission.
@@ -241,8 +296,7 @@ class UsersTests(APITestCase):
             }
         }
     )
-    @mock.patch('apiVolontaria.views.IMailing')
-    def test_create_user_activation_email(self, imailing):
+    def test_create_user_activation_email(self):
         """
         Ensure that the activation email is sent when user signs up.
         """
@@ -256,16 +310,15 @@ class UsersTests(APITestCase):
             'last_name': 'Norris',
         }
 
-        instance_imailing = imailing.create_instance.return_value
-        instance_imailing.send_templated_email.return_value = {
-            "code": "success",
-        }
-
         response = self.client.post(
             reverse('users'),
             data,
             format='json',
         )
+
+        # Test that one message was sent:
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [data['email']])
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(json.loads(response.content)['phone'], '1234567890')
@@ -281,19 +334,17 @@ class UsersTests(APITestCase):
 
     @override_settings(
         CONSTANT={
-            "EMAIL_SERVICE": True,
+            "EMAIL_SERVICE": False,
             "AUTO_ACTIVATE_USER": False,
             "FRONTEND_INTEGRATION": {
                 "ACTIVATION_URL": "fake_url",
             }
         }
     )
-    @mock.patch('apiVolontaria.views.IMailing')
-    def test_create_user_activation_email_failure(self, imailing):
+    def test_create_user_activation_not_service_email(self):
         """
         Ensure that the user is notified that no email was sent.
         """
-
         data = {
             'username': 'John',
             'email': 'John@mailinator.com',
@@ -303,10 +354,59 @@ class UsersTests(APITestCase):
             'last_name': 'Norris',
         }
 
-        instance_imailing = imailing.create_instance.return_value
-        instance_imailing.send_templated_email.return_value = {
-            "code": "failure",
+        response = self.client.post(
+            reverse('users'),
+            data,
+            format='json',
+        )
+
+        # Test that one message was sent:
+        self.assertEqual(len(mail.outbox), 0)
+
+        content = {
+            'detail': "The account was created but no email was sent "
+                      "(email service deactivated). If your account is not activated, "
+                      "contact the administration.",
         }
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(json.loads(response.content), content)
+
+        user = User.objects.get(username="John")
+        activation_token = ActionToken.objects.filter(
+            user=user,
+            type='account_activation',
+        )
+
+        self.assertFalse(user.is_active)
+
+    @override_settings(
+        CONSTANT={
+            "EMAIL_SERVICE": True,
+            "AUTO_ACTIVATE_USER": False,
+            "FRONTEND_INTEGRATION": {
+                "ACTIVATION_URL": "fake_url",
+            }
+        }
+    )
+    def test_create_user_activation_email_failure(self):
+        """
+        Ensure that the user is notified that no email was sent.
+        """
+        data = {
+            'username': 'John',
+            'email': 'John@mailinator.com',
+            'password': 'test123!',
+            'phone': '1234567890',
+            'first_name': 'Chuck',
+            'last_name': 'Norris',
+        }
+
+        @receiver(pre_send, weak=False)
+        def cancel_pre_send(sender, message, esp_name, **kwargs):
+            raise AnymailCancelSend("whoa there")
+
+        self.addCleanup(pre_send.disconnect, receiver=cancel_pre_send)
 
         response = self.client.post(
             reverse('users'),
@@ -314,10 +414,12 @@ class UsersTests(APITestCase):
             format='json',
         )
 
+        # Test that one message was sent:
+        self.assertEqual(len(mail.outbox), 0)
+
         content = {
-            'detail': "The account was created but no email was "
-                      "sent. If your account is not activated, "
-                      "contact the administration.",
+            'detail': 'The account was created but no email was sent. If your account is '
+                        'not activated, contact the administration.',
         }
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -334,19 +436,17 @@ class UsersTests(APITestCase):
 
     @override_settings(
         CONSTANT={
-            "EMAIL_SERVICE": True,
+            "EMAIL_SERVICE": False,
             "AUTO_ACTIVATE_USER": True,
             "FRONTEND_INTEGRATION": {
                 "ACTIVATION_URL": "fake_url",
             }
         }
     )
-    @mock.patch('apiVolontaria.views.IMailing')
-    def test_create_user_auto_activate(self, imailing):
+    def test_create_user_auto_activate(self):
         """
         Ensure that the user is automatically activated.
         """
-
         data = {
             'username': 'John',
             'email': 'John@mailinator.com',
@@ -356,11 +456,6 @@ class UsersTests(APITestCase):
             'last_name': 'Norris',
         }
 
-        instance_imailing = imailing.create_instance.return_value
-        instance_imailing.send_templated_email.return_value = {
-            "code": "failure",
-        }
-
         response = self.client.post(
             reverse('users'),
             data,
@@ -368,8 +463,8 @@ class UsersTests(APITestCase):
         )
 
         content = {
-            'detail': "The account was created but no email was "
-                      "sent. If your account is not activated, "
+            'detail': "The account was created but no email was sent "
+                      "(email service deactivated). If your account is not activated, "
                       "contact the administration.",
         }
 
@@ -377,6 +472,10 @@ class UsersTests(APITestCase):
         self.assertEqual(json.loads(response.content), content)
 
         user = User.objects.get(username="John")
+
+        # Test that one message wasn't sent
+        self.assertEqual(len(mail.outbox), 0)
+
         activation_token = ActionToken.objects.filter(
             user=user,
             type='account_activation',
@@ -384,6 +483,16 @@ class UsersTests(APITestCase):
 
         self.assertTrue(user.is_active)
         self.assertEqual(1, len(activation_token))
+
+    @override_settings(
+        CONSTANT={
+            "EMAIL_SERVICE": True,
+            "AUTO_ACTIVATE_USER": True,
+            "FRONTEND_INTEGRATION": {
+                "ACTIVATION_URL": "fake_url",
+            }
+        }
+    )
 
     def test_list_users(self):
         """

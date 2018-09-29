@@ -12,7 +12,9 @@ from ..factories import UserFactory
 from ..models import ActionToken
 
 from django.core import mail
-from django.test import TestCase
+from anymail.exceptions import AnymailCancelSend
+from anymail.signals import pre_send
+from django.dispatch import receiver
 
 @override_settings(EMAIL_BACKEND='anymail.backends.test.EmailBackend')
 class ResetPasswordTests(APITestCase):
@@ -39,12 +41,45 @@ class ResetPasswordTests(APITestCase):
         Ensure we can have a new token to change our password
         """
         data = {
-            'username': self.user.username
+            'username': self.user.username,
         }
+
+        response = self.client.post(
+            reverse('reset_password'),
+            data,
+            format='json',
+        )
 
         # Test that one message was sent:
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, [self.user.email])
+
+        # The token has been created
+        tokens = ActionToken.objects.filter(
+            user=self.user,
+            type='password_change',
+        )
+
+        self.assertEqual(response.content, b'')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.assertTrue(len(tokens) == 1)
+
+    @override_settings(
+        CONSTANT={
+            "EMAIL_SERVICE": True,
+            "FRONTEND_INTEGRATION": {
+                "FORGOT_PASSWORD_URL1": "fake_url",
+            }
+        }
+    )
+    def test_create_new_token_with_call_exception(self):
+        """
+        Ensure we can not have a new token to change our password because exception
+        """
+        data = {
+            'username': self.user.username,
+        }
 
         response = self.client.post(
             reverse('reset_password'),
@@ -57,11 +92,16 @@ class ResetPasswordTests(APITestCase):
             user=self.user,
             type='password_change',
         )
+        content = {
+            'detail': "Your token has been created but no email "
+                                "has been sent. Please contact the "
+                                "administration."
+        }
 
-        self.assertEqual(response.content, b'')
-
+        self.assertEqual(json.loads(response.content), content)
+        # Test that one message was sent:
+        self.assertEqual(len(mail.outbox), 0)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
         self.assertTrue(len(tokens) == 1)
 
     @override_settings(
@@ -93,8 +133,9 @@ class ResetPasswordTests(APITestCase):
         )
 
         content = {
-            'username': ["This field is required."],
+            'username': ['This field is required.']
         }
+
         self.assertEqual(json.loads(response.content), content)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -134,6 +175,7 @@ class ResetPasswordTests(APITestCase):
         content = {
             'username': ["This field may not be blank."],
         }
+
         self.assertEqual(json.loads(response.content), content)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -149,7 +191,7 @@ class ResetPasswordTests(APITestCase):
         }
     )
 
-    def test_create_new_token_with_bad_username(self, imailing):
+    def test_create_new_token_with_bad_username(self):
         """
         Ensure we can't have a new token to change our password without
         a valid username
@@ -188,7 +230,7 @@ class ResetPasswordTests(APITestCase):
         }
     )
 
-    def test_create_new_token_when_token_already_exist(self, imailing):
+    def test_create_new_token_when_token_already_exist(self):
         """
         Ensure we can have a new token to change our password
         """
@@ -202,15 +244,14 @@ class ResetPasswordTests(APITestCase):
             'username': self.user.username,
         }
 
-        # Test that one message was sent:
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, [self.user.email])
-
         response = self.client.post(
             reverse('reset_password'),
             data,
             format='json',
         )
+
+        # Test that one message was sent:
+        self.assertEqual(len(mail.outbox), 1)
 
         # The token has been created
         tokens = ActionToken.objects.filter(
@@ -233,7 +274,6 @@ class ResetPasswordTests(APITestCase):
             }
         }
     )
-
     def test_create_new_token_without_email_service(self):
         """
         Ensure we can have a new token to change our password
@@ -242,15 +282,14 @@ class ResetPasswordTests(APITestCase):
             'username': self.user.username,
         }
 
-        # Test that one message was sent:
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, [self.user.email])
-
         response = self.client.post(
             reverse('reset_password'),
             data,
             format='json',
         )
+
+        # Test that one message was not sent:
+        self.assertEqual(len(mail.outbox), 0)
 
         # The token has been created
         tokens = ActionToken.objects.filter(
@@ -263,33 +302,36 @@ class ResetPasswordTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_501_NOT_IMPLEMENTED)
 
         self.assertTrue(len(tokens) == 0)
-
     @override_settings(
         CONSTANT={
             "EMAIL_SERVICE": True,
             "FRONTEND_INTEGRATION": {
                 "FORGOT_PASSWORD_URL": "fake_url",
             }
-        }
+        },
     )
-
-    def test_create_new_token_with_failure_on_email_service(self):
+    def test_create_new_token_with_failure_email(self):
         """
-        Ensure we can have a new token to change our password
+        Ensure we can nt send email after create new token
         """
         data = {
             'username': self.user.username,
         }
 
-        # Test that one message was sent:
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, [self.user.email])
+        @receiver(pre_send, weak=False)
+        def cancel_pre_send(sender, message, esp_name, **kwargs):
+            raise AnymailCancelSend("whoa there")
+
+        self.addCleanup(pre_send.disconnect, receiver=cancel_pre_send)
 
         response = self.client.post(
             reverse('reset_password'),
             data,
             format='json',
         )
+
+        # Test that one message wasn't sent:
+        self.assertEqual(len(mail.outbox), 0)
 
         # The token has been created
         tokens = ActionToken.objects.filter(
@@ -298,11 +340,16 @@ class ResetPasswordTests(APITestCase):
         )
 
         content = {
-            'detail': "Your token has been created but no email "
-                      "has been sent. Please contact the administration.",
+            'detail': "Your token has been created but no email has " 
+                       "been sent. Please contact the administration."
         }
+
         self.assertEqual(json.loads(response.content), content)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         self.assertTrue(len(tokens) == 1)
+
+
+
+

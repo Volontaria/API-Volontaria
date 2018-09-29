@@ -1,35 +1,23 @@
 from django.conf import settings
-from django.core.mail import EmailMessage
-from django.utils.translation import ugettext_lazy as _
+from django.core.mail import send_mail
 
-from .exceptions import MailServiceError
-
-
-def send_mail(users, context, template):
+def service_send_mail(emails, subject, plain_msg, msg_html):
     """
     Uses Anymail to send templated emails.
     Returns a list of email addresses to which emails failed to be delivered.
     """
-    if settings.LOCAL_SETTINGS['EMAIL_SERVICE'] is False:
-        raise MailServiceError(_(
-            "Email service is disabled."
-        ))
-    MAIL_SERVICE = settings.ANYMAIL
-
-    failed_emails = list()
-    for user in users:
-        message = EmailMessage(
-            subject=None,  # required for SendinBlue templates
-            body='',  # required for SendinBlue templates
-            to=[user.email]
+    results = []
+    for email in emails:
+        nb_sent_emails = send_mail(
+            subject,
+            plain_msg,
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            html_message=msg_html,
         )
-        message.from_email = None  # required for SendinBlue templates
-        # use this SendinBlue template
-        message.template_id = MAIL_SERVICE["TEMPLATES"].get(template)
-        message.merge_global_data = context
-        response = message.send()  # return number of successfully sent emails
+        # nb_sent_emails = 1 if mail sent
+        # nb_sent_emails = 0 if mail failed
+        if(bool(nb_sent_emails) == False):
+            results.append(email)
 
-        if not response:
-            failed_emails.append(user.email)
-
-    return failed_emails
+    return results
