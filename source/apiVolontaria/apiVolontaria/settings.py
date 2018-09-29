@@ -26,7 +26,7 @@ SECRET_KEY = 'm_u0yee1g84_g9l89ip@vkw2(03c8ax6esl-6%d471oe5%17-_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -193,7 +193,7 @@ ACTIVATION_TOKENS = {
 # Refer to Anymail's documentation for configuration details.
 
 ANYMAIL = {
-    "SENDINBLUE_API_KEY": "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",
+    "SENDINBLUE_API_KEY": "SENDINBLUE_API_KEY",
     'TEMPLATES': {
         "CONFIRM_SIGN_UP": "example_template_id",
         "FORGOT_PASSWORD": "example_template_id",
@@ -208,7 +208,7 @@ DEFAULT_FROM_EMAIL = 'noreply@example.org'
 # NOTE: "{{token}}" is a placeholder for the real activation token. It will be
 #       dynamically replaced by the real "token".
 CONSTANT = {
-    "EMAIL_SERVICE": True,
+    "EMAIL_SERVICE": False,
     "AUTO_ACTIVATE_USER": False,
     "FRONTEND_INTEGRATION": {
         "ACTIVATION_URL": "example.com/activate?activation_token={{token}}",

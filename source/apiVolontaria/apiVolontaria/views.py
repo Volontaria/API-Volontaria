@@ -13,11 +13,8 @@ from rest_framework.views import APIView
 
 from . import serializers
 from .models import TemporaryToken, ActionToken
-from imailing.Mailing import IMailing
-from django.core.mail import send_mail, EmailMultiAlternatives
+from django.core.mail import send_mail
 from django.template.loader import render_to_string
-from django.core.mail import EmailMultiAlternatives, EmailMessage
-from anymail.message import attach_inline_image_file, attach_inline_image
 
 
 class ObtainTemporaryAuthToken(ObtainAuthToken):
@@ -133,7 +130,6 @@ class Users(generics.ListCreateAPIView):
                 user.save()
 
             if settings.CONSTANT['EMAIL_SERVICE'] is True:
-                # MAIL_SERVICE = settings.SETTINGS_IMAILING
                 FRONTEND_SETTINGS = settings.CONSTANT['FRONTEND_INTEGRATION']
 
                 # Get the token of the saved user and send it with an email
@@ -157,7 +153,7 @@ class Users(generics.ListCreateAPIView):
                 msg_html = render_to_string("confirm_sign_up.html", merge_data)
 
                 response_send_mail = send_mail(
-                    'Confirmation d\'enregistrement',
+                    _("Confirmation d\'enregistrement."),
                     plain_msg,
                     settings.DEFAULT_FROM_EMAIL,
                     [request.data["email"]],
@@ -333,7 +329,7 @@ class ResetPassword(APIView):
         msg_html = render_to_string("reset_password.html", merge_data)
 
         response_send_mail = send_mail(
-            'User activation',
+            _("Mise à jour du mot de passe."),
             plain_msg,
             settings.DEFAULT_FROM_EMAIL,
             [request.data["email"]],
