@@ -9,3 +9,4 @@ factory-boy==2.10.0
 django-import-export==1.0.1
 django-anymail==4.2
 coreapi==2.3.3
+ics==0.4
