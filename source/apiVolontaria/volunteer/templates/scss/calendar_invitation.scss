@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css?family=Nunito+Sans');
+
+body {
+  margin: 0;
+  font-family: 'Nunito Sans', sans-serif;
+  color: #142823;
+}
+
+.email {
+  height: 100vh;
+  padding: 20px;
+  text-align: center;
+
+  &__logo {
+    margin: 20px;
+    text-align: center;
+  }
+
+  &__content {
+    max-width: 600px;
+    padding: 20px;
+    margin: auto;
+  }
+
+  &__content__title {
+    font-size: 24px;
+    font-weight: bolder;
+  }
+  &_body{
+    &> P{
+     margin-bottom: 40px;
+    }
+  }
+  a.button{
+     font-size: 1.3em;
+     padding: 10px 20px;
+     background-color: rgb(107, 141, 47);
+     border-radius: 10px;
+     border: 1px white solid;
+     color: white !important;
+     text-decoration: none;
+  }
+
+  a.button:active{
+    background-color: black;
+  }
+
+  .email__content__summary__item {
+    line-height: 15px;
+    margin: 5px 0;
+  }
+
+  #footer{
+    background-color: rgb(249, 250, 252);
+  }
+}
+
+
+

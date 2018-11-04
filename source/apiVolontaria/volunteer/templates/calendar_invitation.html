@@ -1,0 +1,40 @@
+{% load i18n %}
+{% load static %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+      {{ CSS_STYLE }}
+     </style>
+  </head>
+  <body>
+    <div class="email">
+      <div class="email__logo">
+        <img src="{% static 'images/logo_nousrire.png'%}" alt="logo nousrire">
+      </div>
+      <div class="email__content">
+        <h1 class="email__content__title">
+          {% trans "Récupérer le calendrier de vos participations à nos évènements" %}
+        </h1>
+        <div class="email_body">
+            <p>{% trans "Salut cher bénévole!" %}</p>
+            <p>{% trans "Voici le lien sur lequel tu dois cliquer pour pouvoir récupérer le calendrier des évènements auquel tu participes:" %}</p>
+
+            <p><a href="{{DOWNLOAD_URL}}" class="button">{% trans "telecharger votre calendrier" %}</a></p>
+
+            <h3>{% trans "Comment utiliser mon calendrier?" %}</h3>
+            <p>
+                {% trans "Pour synchroniser votre calendrier dans votre agenda google, allez sur ce <a href='https://support.google.com/calendar/answer/37118?hl=en'>lien</a>." %}
+            </p>
+
+            <p>{% trans "Merci de tout coeur pour ton implication et au plaisir de te compter parmi nous!" %}</p>
+        </div>
+        <div id="footer">
+            <p>© 2018 NousRire</p>
+            <p>{% trans "Propulsé par Volontaria." %}</p>
+        </div>
+    </div>
+  </body>
+</html>
+

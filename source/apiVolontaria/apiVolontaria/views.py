@@ -154,7 +154,7 @@ class Users(generics.ListCreateAPIView):
                 merge_data = {
                     'ACTIVATION_URL': FRONTEND_SETTINGS['ACTIVATION_URL'].replace(
                         "{{token}}",
-                        activate_token
+                        activation_url
                     ),
                     'CSS_STYLE': msg_html_css
                 }

@@ -1,0 +1,19 @@
+{% load i18n %}
+
+{% trans "Récupérer le calendrier de vos participations à nos évènements" %}
+--------------------------------------------------------------------
+
+{% trans "Salut cher bénévole!" %}
+
+{% trans "Voici le lien sur lequel tu dois cliquer pour pouvoir récupérer le calendrier des évènements auquel tu participes:" %}
+
+{% trans "telecharger votre calendrier" %} {{DOWNLOAD_URL}}
+
+{% trans "Comment utiliser mon calendrier?" %}
+
+{% trans "Pour synchroniser votre calendrier dans votre agenda google, allez sur le lien: " %} https://support.google.com/calendar/answer/37118?hl=en
+
+{% trans "Merci de tout coeur pour ton implication et au plaisir de te compter parmi nous!" %}
+
+© 2018 NousRire
+{% trans "Propulsé par Volontaria." %}

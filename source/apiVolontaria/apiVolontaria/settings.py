@@ -215,6 +215,7 @@ CONSTANT = {
         "ACTIVATION_URL": "example.com/activate?activation_token={{token}}",
         "FORGOT_PASSWORD_URL": "example.com/forgot_password?token={{token}}",
     },
+    "CALENDAR_EVENT_NAME": "bénévolat NousRire",
 }
 
 

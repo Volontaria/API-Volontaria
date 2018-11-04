@@ -7,7 +7,6 @@ from .permissions import ParticipationIsManager, EventIsManager
 from . import models, serializers
 
 from django.utils.translation import ugettext_lazy as _
-from ics import Calendar, Event
 
 
 class Cycles(generics.ListCreateAPIView):
@@ -345,23 +344,7 @@ class Participations(generics.ListCreateAPIView):
     # A user can only create participations for himself
     # This auto-fills the 'user' field of the Participation object.
     def perform_create(self, serializer):
-        curentEvent = models.Event.objects.get(pk=self.request.data['event'])
-
-        if self.request.data['inviticalandar']:
-            name = "Volontaria event - " + curentEvent.cycle.name
-            calendar = Calendar()
-            event = Event()
-            event.name = name
-
-            event.begin = curentEvent.start_date
-            event.end = curentEvent.end_date
-            calendar.events.add(event)
-
-            # create a ics file
-            with open('volontaria.ics', 'w') as my_file:
-                my_file.writelines(calendar)
-
-        # serializer.save(user=self.request.user)
+        serializer.save(user=self.request.user)
 
 
 class ParticipationsId(generics.RetrieveUpdateDestroyAPIView):

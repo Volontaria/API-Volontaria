@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Volontaria v.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-28 19:17+0000\n"
+"POT-Creation-Date: 2018-11-13 16:26+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,124 +17,126 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: apiVolontaria/models.py:23
+#: source/apiVolontaria/apiVolontaria/models.py:23
 msgid "Account activation"
 msgstr ""
 
-#: apiVolontaria/models.py:24
+#: source/apiVolontaria/apiVolontaria/models.py:24
 msgid "Password change"
 msgstr ""
 
-#: apiVolontaria/serializers.py:46
+#: source/apiVolontaria/apiVolontaria/serializers.py:46
 msgid "Unable to log in with provided credentials."
 msgstr ""
 
-#: apiVolontaria/serializers.py:49
+#: source/apiVolontaria/apiVolontaria/serializers.py:49
 msgid "Must include \"login\" and \"password\"."
 msgstr ""
 
-#: apiVolontaria/serializers.py:92
+#: source/apiVolontaria/apiVolontaria/serializers.py:92
 msgid "An account for the specified email address already exists."
 msgstr ""
 
-#: apiVolontaria/services.py:15
-msgid "Email service is disabled."
+#: source/apiVolontaria/apiVolontaria/templates/confirm_sign_up.html:19
+msgid "Bienvenue dans l'équipe NousRire!"
 msgstr ""
 
-#: apiVolontaria/templates/confirm_sign_up.html:19
-msgid "Confirmation d'achat"
-msgstr ""
-
-#: apiVolontaria/templates/confirm_sign_up.html:23
+#: source/apiVolontaria/apiVolontaria/templates/confirm_sign_up.html:23
 msgid ""
 "Ton compte bénévole a bien été créé et il ne te reste plus qu'à l'activer:"
 msgstr ""
 
-#: apiVolontaria/templates/confirm_sign_up.html:26
+#: source/apiVolontaria/apiVolontaria/templates/confirm_sign_up.html:26
 msgid "Activer mon compte"
 msgstr ""
 
-#: apiVolontaria/templates/confirm_sign_up.html:28
+#: source/apiVolontaria/apiVolontaria/templates/confirm_sign_up.html:28
 msgid "À très bientôt"
 msgstr ""
 
-#: apiVolontaria/templates/confirm_sign_up.html:32
-#: apiVolontaria/templates/reset_password.html:28
+#: source/apiVolontaria/apiVolontaria/templates/confirm_sign_up.html:32
+#: source/apiVolontaria/apiVolontaria/templates/reset_password.html:30
 msgid "Propulsé par Volontaria."
 msgstr ""
 
-#: apiVolontaria/templates/reset_password.html:16
+#: source/apiVolontaria/apiVolontaria/templates/reset_password.html:18
 msgid "Réinitialisation de ton mot de passe"
 msgstr ""
 
-#: apiVolontaria/templates/reset_password.html:19
+#: source/apiVolontaria/apiVolontaria/templates/reset_password.html:21
 msgid "Salut cher bénévole!"
 msgstr ""
 
-#: apiVolontaria/templates/reset_password.html:20
+#: source/apiVolontaria/apiVolontaria/templates/reset_password.html:22
 msgid ""
 "Voici le lien sur lequel tu dois cliquer pour pouvoir réinitialiser ton mot "
 "de passe :"
 msgstr ""
 
-#: apiVolontaria/templates/reset_password.html:22
+#: source/apiVolontaria/apiVolontaria/templates/reset_password.html:24
 msgid "Réinitialiser"
 msgstr ""
 
-#: apiVolontaria/templates/reset_password.html:24
+#: source/apiVolontaria/apiVolontaria/templates/reset_password.html:26
 msgid ""
 "Merci de tout coeur pour ton implication et au plaisir de te compter parmi "
 "nous!"
 msgstr ""
 
-#: apiVolontaria/views.py:81
+#: source/apiVolontaria/apiVolontaria/views.py:80
 msgid "Could not authenticate user."
 msgstr ""
 
-#: apiVolontaria/views.py:108
+#: source/apiVolontaria/apiVolontaria/views.py:107
 msgid "You are not authorized to list users."
 msgstr ""
 
-#: apiVolontaria/views.py:157
+#: source/apiVolontaria/apiVolontaria/views.py:162
 msgid "Confirmation d'enregistrement."
 msgstr ""
 
-#: apiVolontaria/views.py:166
+#: source/apiVolontaria/apiVolontaria/views.py:167
 msgid ""
 "The account was created but no email was sent. If your account is not "
 "activated, contact the administration."
 msgstr ""
 
-#: apiVolontaria/views.py:196
+#: source/apiVolontaria/apiVolontaria/views.py:174
+msgid ""
+"The account was created but no email was sent (email service deactivated). "
+"If your account is not activated, contact the administration."
+msgstr ""
+
+#: source/apiVolontaria/apiVolontaria/views.py:204
 msgid "You are not authorized to get detail of a given user."
 msgstr ""
 
-#: apiVolontaria/views.py:210
+#: source/apiVolontaria/apiVolontaria/views.py:218
 msgid "You are not authorized to update a given user."
 msgstr ""
 
-#: apiVolontaria/views.py:216
+#: source/apiVolontaria/apiVolontaria/views.py:224
 msgid "Method \"PUT\" not allowed."
 msgstr ""
 
-#: apiVolontaria/views.py:266
+#: source/apiVolontaria/apiVolontaria/views.py:274
 msgid "The system have a problem, please contact us, it is not your fault."
 msgstr ""
 
-#: apiVolontaria/views.py:296
-msgid "No account with this username."
-msgstr ""
-
-#: apiVolontaria/views.py:333
-msgid "Mise à jour du mot de passe."
-msgstr ""
-
-#: apiVolontaria/views.py:342
+#: source/apiVolontaria/apiVolontaria/views.py:299
 msgid ""
 "Your token has been created but no email has been sent. Please contact the "
 "administration."
 msgstr ""
 
-#: apiVolontaria/views.py:409
+#: source/apiVolontaria/apiVolontaria/views.py:309
+msgid "No account with this username."
+msgstr ""
+
+#: source/apiVolontaria/apiVolontaria/views.py:345
+msgid "Mise à jour du mot de passe."
+msgstr ""
+
+#: source/apiVolontaria/apiVolontaria/views.py:412
 msgid "The system has a problem, please contact us, it is not your fault."
 msgstr ""

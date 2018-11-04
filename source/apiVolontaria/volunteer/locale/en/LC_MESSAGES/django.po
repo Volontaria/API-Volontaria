@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Volontaria v.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-28 19:17+0000\n"
+"POT-Creation-Date: 2018-11-13 16:26+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,87 +17,117 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: volunteer/admin.py:120
+#: source/apiVolontaria/volunteer/admin.py:120
 msgid "You must select a cycle"
 msgstr ""
 
-#: volunteer/admin.py:150
+#: source/apiVolontaria/volunteer/admin.py:150
 msgid "Generate cycle Participation report"
 msgstr ""
 
-#: volunteer/models.py:84
+#: source/apiVolontaria/volunteer/models.py:84
 msgid "All of the Participations presence status must be initialised."
 msgstr ""
 
-#: volunteer/models.py:364
+#: source/apiVolontaria/volunteer/models.py:364
 msgid "Initialisation"
 msgstr ""
 
-#: volunteer/models.py:365
+#: source/apiVolontaria/volunteer/models.py:365
 msgid "Absent"
 msgstr ""
 
-#: volunteer/models.py:366
+#: source/apiVolontaria/volunteer/models.py:366
 msgid "Present"
 msgstr ""
 
-#: volunteer/resources.py:19
+#: source/apiVolontaria/volunteer/resources.py:19
 msgid "task_type"
 msgstr ""
 
-#: volunteer/serializers.py:349
+#: source/apiVolontaria/volunteer/serializers.py:352
 msgid "Start date need to be after start date of the cycle."
 msgstr ""
 
-#: volunteer/serializers.py:354
+#: source/apiVolontaria/volunteer/serializers.py:357
 msgid "End date need to be before the end date of the cycle."
 msgstr ""
 
-#: volunteer/serializers.py:359
+#: source/apiVolontaria/volunteer/serializers.py:362
 msgid "Start date need to be before the end date."
 msgstr ""
 
-#: volunteer/views.py:40
+#: source/apiVolontaria/volunteer/serializers.py:448
+msgid "invitation calandar"
+msgstr ""
+
+#: source/apiVolontaria/volunteer/templates/calendar_invitation.html:18
+msgid "Récupérer le calendrier de vos participations à nos évènements"
+msgstr ""
+
+#: source/apiVolontaria/volunteer/templates/calendar_invitation.html:21
+msgid "Salut cher bénévole!"
+msgstr ""
+
+#: source/apiVolontaria/volunteer/templates/calendar_invitation.html:25
+msgid "telecharger votre calendrier"
+msgstr ""
+
+#: source/apiVolontaria/volunteer/templates/calendar_invitation.html:27
+msgid "Comment utiliser mon calendrier?"
+msgstr ""
+
+#: source/apiVolontaria/volunteer/templates/calendar_invitation.html:33
+msgid ""
+"Merci de tout coeur pour ton implication et au plaisir de te compter parmi "
+"nous!"
+msgstr ""
+
+#: source/apiVolontaria/volunteer/templates/calendar_invitation.html:37
+msgid "Propulsé par Volontaria."
+msgstr ""
+
+#: source/apiVolontaria/volunteer/views.py:40
 msgid "You are not authorized to create a new cycle."
 msgstr ""
 
-#: volunteer/views.py:66
+#: source/apiVolontaria/volunteer/views.py:66
 msgid "You are not authorized to update a cycle."
 msgstr ""
 
-#: volunteer/views.py:75
+#: source/apiVolontaria/volunteer/views.py:75
 msgid "You are not authorized to delete a cycle."
 msgstr ""
 
-#: volunteer/views.py:102
+#: source/apiVolontaria/volunteer/views.py:102
 msgid "You are not authorized to create a new tasktype."
 msgstr ""
 
-#: volunteer/views.py:134
+#: source/apiVolontaria/volunteer/views.py:134
 msgid "You are not authorized to update a tasktype."
 msgstr ""
 
-#: volunteer/views.py:143
+#: source/apiVolontaria/volunteer/views.py:143
 msgid "You are not authorized to delete a tasktype."
 msgstr ""
 
-#: volunteer/views.py:172
+#: source/apiVolontaria/volunteer/views.py:172
 msgid "You are not authorized to create a new cell."
 msgstr ""
 
-#: volunteer/views.py:204
+#: source/apiVolontaria/volunteer/views.py:204
 msgid "You are not authorized to update a cell."
 msgstr ""
 
-#: volunteer/views.py:213
+#: source/apiVolontaria/volunteer/views.py:213
 msgid "You are not authorized to delete a cell."
 msgstr ""
 
-#: volunteer/views.py:287
+#: source/apiVolontaria/volunteer/views.py:287
 msgid "You are not authorized to create a new event."
 msgstr ""
 
-#: volunteer/views.py:399
+#: source/apiVolontaria/volunteer/views.py:399
 msgid ""
 "You can't delete a participation if the associated event is already started"
 msgstr ""

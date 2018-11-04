@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Volontaria v.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-28 19:17+0000\n"
+"POT-Creation-Date: 2018-11-13 16:30+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,38 +18,38 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: location/views.py:34
+#: source/apiVolontaria/location/views.py:34
 msgid "You are not authorized to create a new address."
 msgstr ""
 
-#: location/views.py:64
+#: source/apiVolontaria/location/views.py:64
 msgid "You are not authorized to update an address."
 msgstr ""
 
-#: location/views.py:73
+#: source/apiVolontaria/location/views.py:73
 msgid "You are not authorized to delete an address."
 msgstr ""
 
-#: location/views.py:96
+#: source/apiVolontaria/location/views.py:96
 msgid "You are not authorized to create a new country."
 msgstr ""
 
-#: location/views.py:122
+#: source/apiVolontaria/location/views.py:122
 msgid "You are not authorized to update a country."
 msgstr ""
 
-#: location/views.py:131
+#: source/apiVolontaria/location/views.py:131
 msgid "You are not authorized to delete a country."
 msgstr ""
 
-#: location/views.py:154
+#: source/apiVolontaria/location/views.py:154
 msgid "You are not authorized to create a new stateprovince."
 msgstr ""
 
-#: location/views.py:181
+#: source/apiVolontaria/location/views.py:181
 msgid "You are not authorized to update a stateprovince."
 msgstr ""
 
-#: location/views.py:190
+#: source/apiVolontaria/location/views.py:190
 msgid "You are not authorized to delete a stateprovince."
 msgstr ""

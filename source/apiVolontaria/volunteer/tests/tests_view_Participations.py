@@ -1,19 +1,24 @@
 import json
 
+import os.path
+
 from unittest import mock
+from django.conf import settings
 
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
 from django.urls import reverse
 from django.utils import timezone
+from django.test.utils import override_settings
 from django.contrib.auth.models import Permission
 
 from apiVolontaria.factories import UserFactory, AdminFactory
 from location.models import Address, StateProvince, Country
 from ..models import Cell, Event, Cycle, TaskType, Participation
+from django.core import mail
 
-
+@override_settings(EMAIL_BACKEND='anymail.backends.test.EmailBackend')
 class ParticipationsTests(APITestCase):
 
     def setUp(self):
@@ -117,6 +122,13 @@ class ParticipationsTests(APITestCase):
                 event=self.event,
             )
 
+    @override_settings(
+        CONSTANT={
+            "EMAIL_SERVICE": True,
+            "CALENDAR_EVENT_NAME": "bénévolat NousRire",
+            "CALENDAR_EVENT_FILENAME": "benevolat_nousrire",
+        }
+    )
     def test_create_new_participation(self):
         """
         Ensure we can create a new participation.
@@ -132,6 +144,7 @@ class ParticipationsTests(APITestCase):
             'user': self.user.id,
             'standby': False,
             'subscription_date': subscription_date,
+            'invit_icalendar': False,
         }
 
         self.client.force_authenticate(user=self.user)
@@ -177,6 +190,126 @@ class ParticipationsTests(APITestCase):
             'The system failed to return some '
             'attributes : {0}'.format(attributes),
         )
+
+    @override_settings(
+        CONSTANT={
+            "EMAIL_SERVICE": True,
+            "CALENDAR_EVENT_NAME": "bénévolat NousRire",
+            "CALENDAR_EVENT_FILENAME": "benevolat_nousrire",
+        }
+    )
+    def test_create_new_participation_with_calandar_event(self):
+        """
+        Ensure we can create a new participation with calandar event.
+        """
+        subscription_date = timezone.now()
+
+        subscription_date_str = subscription_date.strftime(
+            "%Y-%m-%dT%H:%M:%S.%fZ",
+        )
+
+        data = {
+            'event': self.event.id,
+            'user': self.user.id,
+            'standby': False,
+            'subscription_date': subscription_date,
+            'invit_icalendar': True
+        }
+
+        self.client.force_authenticate(user=self.user)
+
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = subscription_date
+            response = self.client.post(
+                reverse('volunteer:participations'),
+                data,
+                format='json',
+            )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(content['subscription_date'], subscription_date_str)
+        self.assertEqual(content['user']['id'], self.user.id)
+        self.assertEqual(content['event'], self.event.id)
+        self.assertEqual(content['standby'], False)
+
+        self.assertEqual(len(mail.outbox), 1)
+
+        # Check the system doesn't return attributes not expected
+        attributes = [
+            'id',
+            'subscription_date',
+            'user',
+            'event',
+            'standby',
+            'presence_duration_minutes',
+            'presence_status',
+        ]
+
+        for key in content.keys():
+            self.assertTrue(
+                key in attributes,
+                'Attribute "{0}" is not expected but is '
+                'returned by the system.'.format(key),
+            )
+            attributes.remove(key)
+
+        # Ensure the system returns all expected attributes
+        self.assertTrue(
+            len(attributes) == 0,
+            'The system failed to return some '
+            'attributes : {0}'.format(attributes),
+        )
+
+
+    def test_create_new_participation_without_email_service(self):
+        """
+        Ensure we can create a new participation with calandar event but
+        without email service
+        """
+        subscription_date = timezone.now()
+
+        subscription_date_str = subscription_date.strftime(
+            "%Y-%m-%dT%H:%M:%S.%fZ",
+        )
+
+        data = {
+            'event': self.event.id,
+            'user': self.user.id,
+            'standby': False,
+            'subscription_date': subscription_date,
+            'invit_icalendar': True
+        }
+
+        self.client.force_authenticate(user=self.user)
+
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = subscription_date
+            response = self.client.post(
+                reverse('volunteer:participations'),
+                data,
+                format='json',
+            )
+
+        content = {
+            'non_field_errors': ['Email service is disabled, we can\'t send ICS file for '
+                                'the moment. Please remove this option or contact the support.'],
+        }
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(content, json.loads(response.content))
+
+        # Check the system doesn't return attributes not expected
+        attributes = [
+            'id',
+            'subscription_date',
+            'user',
+            'event',
+            'standby',
+            'presence_duration_minutes',
+            'presence_status',
+        ]
 
     def test_create_duplicate_participation(self):
         """
