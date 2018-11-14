@@ -15,9 +15,12 @@ Including another URLconf
 """
 from django.conf import settings
 from django.conf.urls import url, include
+from django.urls import path
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.static import serve
+
+from rest_framework.documentation import include_docs_urls
 
 from .views import (ObtainTemporaryAuthToken, Users, UsersId, UsersActivation,
                     ResetPassword, ChangePassword)
@@ -75,9 +78,13 @@ urlpatterns = [
         include('location.urls', namespace="location"),
     ),
     # DOCUMENTATION SWAGGER
-    url(
-        r'^documentation/',
-        include('rest_framework_docs.urls')
+    path(
+        'docs/',
+        include_docs_urls(
+            title=settings.CONSTANT['ORGANIZATION'] + " API",
+            authentication_classes=[],
+            permission_classes=[]
+        )
     ),
     # Admin panel
     url(

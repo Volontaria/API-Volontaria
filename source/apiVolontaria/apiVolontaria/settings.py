@@ -208,6 +208,7 @@ DEFAULT_FROM_EMAIL = 'noreply@example.org'
 # NOTE: "{{token}}" is a placeholder for the real activation token. It will be
 #       dynamically replaced by the real "token".
 CONSTANT = {
+    "ORGANIZATION": "NousRire",
     "EMAIL_SERVICE": False,
     "AUTO_ACTIVATE_USER": False,
     "FRONTEND_INTEGRATION": {
