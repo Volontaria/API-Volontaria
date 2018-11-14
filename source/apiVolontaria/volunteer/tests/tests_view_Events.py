@@ -59,7 +59,7 @@ class EventsTests(APITestCase):
             address=self.address,
         )
         self.cell_with_manager.save()
-        self.cell_with_manager.managers = [self.user_cell_manager, ]
+        self.cell_with_manager.managers.set([self.user_cell_manager])
         self.cell_with_manager.save()
 
         self.cycle = Cycle.objects.create(

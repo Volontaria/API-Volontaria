@@ -143,7 +143,11 @@ class Cell(models.Model):
         max_length=100,
     )
 
-    address = models.ForeignKey(Address, blank=False)
+    address = models.ForeignKey(
+        Address,
+        blank=False,
+        on_delete=models.CASCADE,
+    )
 
     managers = models.ManyToManyField(
         User,
@@ -275,18 +279,21 @@ class Event(models.Model):
         Cell,
         verbose_name="Cell",
         blank=False,
+        on_delete=models.CASCADE,
     )
 
     cycle = models.ForeignKey(
         Cycle,
         verbose_name="Cycle",
         blank=False,
+        on_delete=models.CASCADE,
     )
 
     task_type = models.ForeignKey(
         TaskType,
         verbose_name="Task type",
         blank=False,
+        on_delete=models.PROTECT,
     )
 
     def clean(self):
@@ -370,8 +377,16 @@ class Participation(models.Model):
         verbose_name_plural = 'Participations'
         unique_together = ('event', 'user')
 
-    event = models.ForeignKey(Event, related_name='participation')
-    user = models.ForeignKey(User, related_name='participation')
+    event = models.ForeignKey(
+        Event,
+        related_name='participation',
+        on_delete=models.CASCADE,
+    )
+    user = models.ForeignKey(
+        User,
+        related_name='participation',
+        on_delete=models.CASCADE,
+    )
 
     presence_duration_minutes = models.PositiveIntegerField(
         default=None,
