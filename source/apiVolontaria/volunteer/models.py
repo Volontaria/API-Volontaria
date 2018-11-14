@@ -2,8 +2,9 @@
 
 from datetime import timedelta
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 from django.db import models, IntegrityError
+from django.db.models.signals import m2m_changed
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -142,7 +143,11 @@ class Cell(models.Model):
         max_length=100,
     )
 
-    address = models.ForeignKey(Address, blank=False)
+    address = models.ForeignKey(
+        Address,
+        blank=False,
+        on_delete=models.CASCADE,
+    )
 
     managers = models.ManyToManyField(
         User,
@@ -161,6 +166,74 @@ class Cell(models.Model):
 
     def __str__(self):
         return '{}, {}'.format(self.name, str(self.address))
+
+
+# Helper to add or remove Participations permission
+def set_permission_cell_manager(user, add=True):
+    permission_add_participation = Permission.objects\
+        .get(name='Can add participation')
+
+    permission_update_participation = Permission.objects\
+        .get(name='Can change participation')
+
+    permission_delete_participation = Permission.objects\
+        .get(name='Can delete participation')
+
+    permission_add_event = Permission.objects \
+        .get(name='Can add event')
+
+    permission_update_event = Permission.objects \
+        .get(name='Can change event')
+
+    permission_delete_event = Permission.objects \
+        .get(name='Can delete event')
+
+    if add:
+        user.user_permissions.add(permission_add_participation)
+        user.user_permissions.add(permission_update_participation)
+        user.user_permissions.add(permission_delete_participation)
+        user.user_permissions.add(permission_add_event)
+        user.user_permissions.add(permission_update_event)
+        user.user_permissions.add(permission_delete_event)
+    else:
+        user.user_permissions.remove(permission_add_participation)
+        user.user_permissions.remove(permission_update_participation)
+        user.user_permissions.remove(permission_delete_participation)
+        user.user_permissions.remove(permission_add_event)
+        user.user_permissions.remove(permission_update_event)
+        user.user_permissions.remove(permission_delete_event)
+
+    user.save()
+
+
+def cell_managers_changed(sender, **kwargs):
+    # After adding a manager, we give permission to all
+    if kwargs['action'] == 'post_add':
+        for obj in sender.objects.filter(cell_id=kwargs['instance']):
+            set_permission_cell_manager(obj.user, add=True)
+
+    # Before removing the user as manager, we remove permissions
+    elif kwargs['action'] in ('pre_remove', 'pre_clear', ):
+        for obj in sender.objects.filter(cell_id=kwargs['instance']):
+
+            # Check if the user has other managed cell
+            other_cell_managed = Cell.objects\
+                .exclude(pk=kwargs['instance'].pk)\
+                .filter(managers__in=[obj.user])
+
+            if not other_cell_managed:
+                set_permission_cell_manager(obj.user, add=False)
+
+    # On post_remove, we give back the permission to remaining users
+    elif kwargs['action'] in ('post_remove', 'post_clear', ):
+        for obj in sender.objects.filter(cell_id=kwargs['instance']):
+            set_permission_cell_manager(obj.user, add=True)
+
+
+m2m_changed.connect(
+    cell_managers_changed,
+    sender=Cell.managers.through
+)
 
 
 class Event(models.Model):
@@ -206,18 +279,21 @@ class Event(models.Model):
         Cell,
         verbose_name="Cell",
         blank=False,
+        on_delete=models.CASCADE,
     )
 
     cycle = models.ForeignKey(
         Cycle,
         verbose_name="Cycle",
         blank=False,
+        on_delete=models.CASCADE,
     )
 
     task_type = models.ForeignKey(
         TaskType,
         verbose_name="Task type",
         blank=False,
+        on_delete=models.PROTECT,
     )
 
     def clean(self):
@@ -301,8 +377,16 @@ class Participation(models.Model):
         verbose_name_plural = 'Participations'
         unique_together = ('event', 'user')
 
-    event = models.ForeignKey(Event, related_name='participation')
-    user = models.ForeignKey(User, related_name='participation')
+    event = models.ForeignKey(
+        Event,
+        related_name='participation',
+        on_delete=models.CASCADE,
+    )
+    user = models.ForeignKey(
+        User,
+        related_name='participation',
+        on_delete=models.CASCADE,
+    )
 
     presence_duration_minutes = models.PositiveIntegerField(
         default=None,

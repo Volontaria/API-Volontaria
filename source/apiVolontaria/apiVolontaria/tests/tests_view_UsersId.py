@@ -354,7 +354,12 @@ class UsersIdTests(APITestCase):
             format='json',
         )
 
-        content = {'password': ['This password is entirely numeric.']}
+        content = {
+            'password': [
+                'This password is too common.',
+                'This password is entirely numeric.'
+            ]
+        }
         self.assertEqual(json.loads(response.content), content)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -429,7 +434,7 @@ class UsersIdTests(APITestCase):
             address=address,
         )
 
-        cell.managers = [self.user, ]
+        cell.managers.set([self.user])
         cell.save()
 
         response = self.client.get(

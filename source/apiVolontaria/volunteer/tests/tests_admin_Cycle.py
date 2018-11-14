@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from django.contrib.auth.models import User
 from django.contrib.admin import ACTION_CHECKBOX_NAME
-from django.core import urlresolvers
+from django.urls import reverse
 from django.utils import timezone
 from rest_framework.test import APITransactionTestCase
 
@@ -144,7 +144,7 @@ class ParticipationTests(APITransactionTestCase):
         self.assertNotEqual(self.admin, None)
 
     def test_admin_cycle_participation_export(self):
-        change_url = urlresolvers.reverse('admin:volunteer_cycle_changelist')
+        change_url = reverse('admin:volunteer_cycle_changelist')
 
         data = {'action': 'generate_participation_report_csv',
                 ACTION_CHECKBOX_NAME: [self.cycle.pk, ]}
@@ -159,7 +159,7 @@ class ParticipationTests(APITransactionTestCase):
         )
 
     def test_admin_cycle_participation_export_error(self):
-        change_url = urlresolvers.reverse('admin:volunteer_cycle_changelist')
+        change_url = reverse('admin:volunteer_cycle_changelist')
 
         data = {'action': 'generate_participation_report_csv',
                 ACTION_CHECKBOX_NAME: [self.cycle.pk, self.cycle_inactive.pk]}
@@ -185,7 +185,7 @@ class ParticipationTests(APITransactionTestCase):
         )
         self.participation3.save()
 
-        change_url = urlresolvers.reverse('admin:volunteer_cycle_changelist')
+        change_url = reverse('admin:volunteer_cycle_changelist')
 
         data = {'action': 'generate_participation_report_csv',
                 ACTION_CHECKBOX_NAME: [self.cycle.pk, ]}

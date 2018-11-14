@@ -13,7 +13,8 @@ from rest_framework.views import APIView
 
 from . import serializers
 from .models import TemporaryToken, ActionToken
-from imailing.Mailing import IMailing
+from django.template.loader import render_to_string
+from  . import services
 
 
 class ObtainTemporaryAuthToken(ObtainAuthToken):
@@ -129,7 +130,7 @@ class Users(generics.ListCreateAPIView):
                 user.save()
 
             if settings.CONSTANT['EMAIL_SERVICE'] is True:
-                MAIL_SERVICE = settings.SETTINGS_IMAILING
+                # Send the new token by e-mail to the user
                 FRONTEND_SETTINGS = settings.CONSTANT['FRONTEND_INTEGRATION']
 
                 # Get the token of the saved user and send it with an email
@@ -144,26 +145,37 @@ class Users(generics.ListCreateAPIView):
                     activate_token
                 )
 
-                # Send email with a SETTINGS_IMAILING
-                email = IMailing.\
-                    create_instance(MAIL_SERVICE["SERVICE"],
-                                    MAIL_SERVICE["API_KEY"])
-                response_send_mail = email.send_templated_email(
-                    email_from=MAIL_SERVICE["EMAIL_FROM"],
-                    template_id=MAIL_SERVICE["TEMPLATES"]["CONFIRM_SIGN_UP"],
-                    list_to=[request.data["email"]],
-                    context={
-                        "activation_url": activation_url,
-                        },
-                )
+                # data for email activation
+                msg_html_css = render_to_string('css/confirm_sign_up.css')
 
-                if response_send_mail["code"] == "failure":
+                merge_data = {
+                    'ACTIVATION_URL': FRONTEND_SETTINGS['ACTIVATION_URL'].replace(
+                        "{{token}}",
+                        activate_token
+                    ),
+                    'CSS_STYLE': msg_html_css
+                }
+
+                plain_msg = render_to_string("confirm_sign_up.txt", merge_data)
+                msg_html = render_to_string("confirm_sign_up.html", merge_data)
+                emails_not_sent = services.service_send_mail([request.data["email"]],
+                                                                _("Confirmation d\'enregistrement."),
+                                                                plain_msg, msg_html)
+
+                if emails_not_sent:
                     content = {
                         'detail': _("The account was created but no email was "
                                     "sent. If your account is not "
                                     "activated, contact the administration."),
                     }
                     return Response(content, status=status.HTTP_201_CREATED)
+            else:
+                content = {
+                    'detail': _("The account was created but no email was sent "
+                      "(email service deactivated). If your account is not activated, "
+                      "contact the administration."),
+                }
+                return Response(content, status=status.HTTP_201_CREATED)
 
         return response
 
@@ -283,6 +295,11 @@ class ResetPassword(APIView):
         # Valid params
         serializer = serializers.ResetPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        text_error_not_email_send =  {
+                    'detail': _("Your token has been created but no email "
+                                "has been sent. Please contact the "
+                                "administration."),
+                }
 
         # get user from the username given in data
         try:
@@ -309,40 +326,32 @@ class ResetPassword(APIView):
             type='password_change',
             user=user,
         )
+        try:
+            # Send the new token by e-mail to the user
+            FRONTEND_SETTINGS = settings.CONSTANT['FRONTEND_INTEGRATION']
 
-        # Send the new token by e-mail to the user
-        MAIL_SERVICE = settings.SETTINGS_IMAILING
-        FRONTEND_SETTINGS = settings.CONSTANT['FRONTEND_INTEGRATION']
+            # data for email activation
+            msg_html_css = render_to_string('css/reset_password.css')
 
-        button_url = FRONTEND_SETTINGS['FORGOT_PASSWORD_URL'].replace(
-            "{{token}}",
-            str(token)
-        )
-
-        email = IMailing.create_instance(
-            MAIL_SERVICE["SERVICE"],
-            MAIL_SERVICE["API_KEY"],
-        )
-
-        response_send_mail = email.send_templated_email(
-            email_from=MAIL_SERVICE["EMAIL_FROM"],
-            template_id=MAIL_SERVICE["TEMPLATES"]["FORGOT_PASSWORD"],
-            list_to=[user.email],
-            context={
-                "forgot_password_url": button_url,
-            },
-        )
-
-        if response_send_mail["code"] == "failure":
-            content = {
-                'detail': _("Your token has been created but no email "
-                            "has been sent. Please contact the "
-                            "administration."),
+            merge_data = {
+                'FORGOT_URL': FRONTEND_SETTINGS['FORGOT_PASSWORD_URL'].replace(
+                    "{{token}}",
+                    str(token)
+                ),
+                'CSS_STYLE': msg_html_css
             }
-            return Response(content, status=status.HTTP_201_CREATED)
 
-        else:
-            return Response(status=status.HTTP_201_CREATED)
+            plain_msg = render_to_string("reset_password.txt", merge_data)
+            msg_html = render_to_string("reset_password.html", merge_data)
+            response_send_mail = services.service_send_mail([user.email],
+                                                            _("Mise à jour du mot de passe."),
+                                                            plain_msg, msg_html)
+            if len(response_send_mail) > 0:
+                return Response(text_error_not_email_send, status=status.HTTP_201_CREATED)
+            else:
+                return Response(status=status.HTTP_201_CREATED)
+        except KeyError:
+            return Response(text_error_not_email_send, status=status.HTTP_201_CREATED)
 
 
 class ChangePassword(APIView):

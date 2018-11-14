@@ -138,9 +138,11 @@ class EventsIdTests(APITestCase):
         data_post = {
             "nb_volunteers_needed": 10,
             "cell_id": self.second_cell.id,
-            "cycle_id": self.second_cycle.id,
             "task_type_id": self.second_task_type.id,
         }
+
+        self.admin.is_superuser = True
+        self.admin.save()
 
         self.client.force_authenticate(user=self.admin)
 
@@ -154,14 +156,11 @@ class EventsIdTests(APITestCase):
         )
 
         result = json.loads(response.content)
+
         self.assertEqual(result['id'], self.event.id)
         self.assertEqual(
             result['cell']['id'],
             self.second_cell.id,
-        )
-        self.assertEqual(
-            result['cycle']['id'],
-            self.second_cycle.id,
         )
         self.assertEqual(
             result['task_type']['id'],
@@ -179,6 +178,75 @@ class EventsIdTests(APITestCase):
         self.assertEqual(
             result['nb_volunteers_standby'],
             self.event.nb_volunteers_standby
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+    def test_update_event_cycle(self):
+        """
+        Ensure we can partially update a specific event.
+        """
+
+        data_post = {
+            "cycle_id": self.second_cycle.id,
+        }
+
+        self.admin.is_superuser = True
+        self.admin.save()
+
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.patch(
+            reverse(
+                'volunteer:events_id',
+                kwargs={'pk': self.event.id},
+            ),
+            data_post,
+            format='json',
+        )
+
+        result = json.loads(response.content)
+
+        self.assertEqual(result['id'], self.event.id)
+        self.assertEqual(
+            result['cycle']['id'],
+            self.second_cycle.id,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_event_start_date(self):
+        """
+        Ensure we can partially update a specific event.
+        This test works since the associated cycle has nos start_date and
+        end_date.
+        """
+
+        data_post = {
+            "start_date": "2018-09-09T12:00:00Z",
+        }
+
+        self.admin.is_superuser = True
+        self.admin.save()
+
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.patch(
+            reverse(
+                'volunteer:events_id',
+                kwargs={'pk': self.event.id},
+            ),
+            data_post,
+            format='json',
+        )
+
+        result = json.loads(response.content)
+
+        self.assertEqual(result['id'], self.event.id)
+        self.assertEqual(
+            result['start_date'],
+            "2018-09-09T12:00:00Z",
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -203,7 +271,9 @@ class EventsIdTests(APITestCase):
             format='json',
         )
 
-        content = {'detail': "You are not authorized to update an event."}
+        content = {
+            'detail': 'You do not have permission to perform this action.'
+        }
         self.assertEqual(json.loads(response.content), content)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -263,7 +333,9 @@ class EventsIdTests(APITestCase):
             ),
         )
 
-        content = {'detail': "You are not authorized to delete an event."}
+        content = {
+            'detail': 'You do not have permission to perform this action.'
+        }
         self.assertEqual(json.loads(response.content), content)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
