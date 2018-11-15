@@ -29,6 +29,37 @@ class UsersTests(APITestCase):
         self.admin.set_password('Test123!')
         self.admin.save()
 
+        self.user_cell_manager = UserFactory()
+        self.user_cell_manager.set_password('Test123!')
+
+        self.random_country = Country.objects.create(
+            name="random country",
+            iso_code="RC",
+        )
+        self.random_state_province = StateProvince.objects.create(
+            name="random state",
+            iso_code="RS",
+            country=self.random_country,
+        )
+        self.address = Address.objects.create(
+            address_line1='random address 1',
+            postal_code='RAN DOM',
+            city='random city',
+            state_province=self.random_state_province,
+            country=self.random_country,
+        )
+        self.cell = Cell.objects.create(
+            name="my cell",
+            address=self.address,
+        )
+        self.cell_with_manager = Cell.objects.create(
+            name="my cell with manager",
+            address=self.address,
+        )
+
+        self.cell_with_manager.managers.set([self.user_cell_manager])
+        self.cell_with_manager.save()
+
     @override_settings(
         CONSTANT={
             "EMAIL_SERVICE": False,
@@ -560,3 +591,6 @@ class UsersTests(APITestCase):
         self.assertEqual(json.loads(response.content), content)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_cell_manager_view_user_permission(self):
+        self.assertEqual(self.user_cell_manager.has_perm('auth.view_user'), True)
