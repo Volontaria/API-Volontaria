@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate, password_validation
 from django.contrib.auth.models import User
@@ -5,7 +6,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from rest_framework import generics, status
+from rest_framework import generics, status, filters
 from rest_framework.authtoken.views import ObtainAuthToken
 
 from rest_framework.response import Response
@@ -14,7 +15,7 @@ from rest_framework.views import APIView
 from . import serializers
 from .models import TemporaryToken, ActionToken
 from django.template.loader import render_to_string
-from  . import services
+from . import services
 
 
 class ObtainTemporaryAuthToken(ObtainAuthToken):
@@ -95,6 +96,8 @@ class Users(generics.ListCreateAPIView):
     Create a new user.
     """
     serializer_class = serializers.UserBasicSerializer
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username', 'first_name', 'last_name', 'email')
 
     def get_queryset(self):
         return User.objects.all()
