@@ -493,7 +493,6 @@ class UsersTests(APITestCase):
             }
         }
     )
-
     def test_list_users(self):
         """
         Ensure we can list all users.
@@ -536,6 +535,25 @@ class UsersTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_list_users_filtered_by_search(self):
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get(reverse('users') + "?search=%s" % self.user.username)
+
+        self.assertEqual(json.loads(response.content)['count'], 1)
+
+        response = self.client.get(reverse('users') + "?search=%s" % self.user.first_name)
+
+        self.assertEqual(json.loads(response.content)['count'], 1)
+
+        response = self.client.get(reverse('users') + "?search=%s" % self.user.last_name)
+
+        self.assertEqual(json.loads(response.content)['count'], 1)
+
+        response = self.client.get(reverse('users') + "?search=%s" % self.user.email)
+
+        self.assertEqual(json.loads(response.content)['count'], 1)
 
     def test_list_users_without_authenticate(self):
         """
