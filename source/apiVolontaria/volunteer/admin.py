@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.utils.translation import ugettext_lazy as _
 
 from volunteer.resources import ParticipationResource
-from . import models
+from . import models, forms
 from apiVolontaria.models import Profile
 
 
@@ -76,6 +76,7 @@ class ParticipationAdmin(ImportExportActionModelAdmin):
 
 
 class EventAdmin(admin.ModelAdmin):
+    form = forms.EventAdminForm
     list_display = [
         'task_type',
         'cell',
