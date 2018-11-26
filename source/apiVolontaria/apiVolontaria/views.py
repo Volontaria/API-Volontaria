@@ -100,7 +100,7 @@ class Users(generics.ListCreateAPIView):
         return User.objects.all()
 
     def get(self, request, *args, **kwargs):
-        if self.request.user.has_perm('apiVolontaria.list_user'):
+        if self.request.user.has_perm('auth.view_user'):
             return self.list(request, *args, **kwargs)
 
         content = {

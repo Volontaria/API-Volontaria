@@ -8,6 +8,8 @@ from django.test.utils import override_settings
 from django.contrib.auth.models import User
 
 from ..models import ActionToken
+from location.models import Address, StateProvince, Country
+from volunteer.models import Cell, Event, Cycle, TaskType, Participation
 from ..factories import UserFactory, AdminFactory
 from django.core import mail
 
@@ -28,6 +30,37 @@ class UsersTests(APITestCase):
         self.admin = AdminFactory()
         self.admin.set_password('Test123!')
         self.admin.save()
+
+        self.user_cell_manager = UserFactory()
+        self.user_cell_manager.set_password('Test123!')
+
+        self.random_country = Country.objects.create(
+            name="random country",
+            iso_code="RC",
+        )
+        self.random_state_province = StateProvince.objects.create(
+            name="random state",
+            iso_code="RS",
+            country=self.random_country,
+        )
+        self.address = Address.objects.create(
+            address_line1='random address 1',
+            postal_code='RAN DOM',
+            city='random city',
+            state_province=self.random_state_province,
+            country=self.random_country,
+        )
+        self.cell = Cell.objects.create(
+            name="my cell",
+            address=self.address,
+        )
+        self.cell_with_manager = Cell.objects.create(
+            name="my cell with manager",
+            address=self.address,
+        )
+
+        self.cell_with_manager.managers.set([self.user_cell_manager])
+        self.cell_with_manager.save()
 
     @override_settings(
         CONSTANT={
@@ -493,7 +526,6 @@ class UsersTests(APITestCase):
             }
         }
     )
-
     def test_list_users(self):
         """
         Ensure we can list all users.
@@ -502,7 +534,7 @@ class UsersTests(APITestCase):
 
         response = self.client.get(reverse('users'))
 
-        self.assertEqual(json.loads(response.content)['count'], 2)
+        self.assertEqual(json.loads(response.content)['count'], 3)
 
         first_user = json.loads(response.content)['results'][0]
         self.assertEqual(first_user['id'], self.user.id)
@@ -560,3 +592,12 @@ class UsersTests(APITestCase):
         self.assertEqual(json.loads(response.content), content)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_list_user_as_cell_manager(self):
+        self.assertEqual(self.user_cell_manager.has_perm('auth.view_user'), True)
+
+        self.client.force_authenticate(user=self.user_cell_manager)
+
+        response = self.client.get(reverse('users'))
+
+        self.assertEqual(response.json()['count'], 3)

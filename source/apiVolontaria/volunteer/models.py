@@ -188,6 +188,9 @@ def set_permission_cell_manager(user, add=True):
     permission_delete_event = Permission.objects \
         .get(name='Can delete event')
 
+    permission_view_user = Permission.objects \
+        .get(name='Can view user')
+
     if add:
         user.user_permissions.add(permission_add_participation)
         user.user_permissions.add(permission_update_participation)
@@ -195,6 +198,7 @@ def set_permission_cell_manager(user, add=True):
         user.user_permissions.add(permission_add_event)
         user.user_permissions.add(permission_update_event)
         user.user_permissions.add(permission_delete_event)
+        user.user_permissions.add(permission_view_user)
     else:
         user.user_permissions.remove(permission_add_participation)
         user.user_permissions.remove(permission_update_participation)
@@ -202,6 +206,7 @@ def set_permission_cell_manager(user, add=True):
         user.user_permissions.remove(permission_add_event)
         user.user_permissions.remove(permission_update_event)
         user.user_permissions.remove(permission_delete_event)
+        user.user_permissions.remove(permission_view_user)
 
     user.save()
 
