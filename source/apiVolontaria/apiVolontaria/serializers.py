@@ -103,11 +103,15 @@ class UserBasicSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(
         source='profile.phone',
         required=False,
+        allow_null=True,
+        allow_blank=True,
         validators=[phone_number],
     )
     mobile = serializers.CharField(
         source='profile.mobile',
         required=False,
+        allow_null=True,
+        allow_blank=True,
         validators=[phone_number],
     )
 
@@ -121,6 +125,22 @@ class UserBasicSerializer(serializers.ModelSerializer):
 
         return CellBasicSerializer(cells, many=True, read_only=True).data
 
+    def validate(self, attrs):
+        mobile = self.initial_data.get('mobile', None)
+        phone = self.initial_data.get('phone', None)
+
+        if not mobile and not phone:
+            raise serializers.ValidationError({
+                "phone": [
+                    _('You must specify "phone" or "mobile" field.')
+                ],
+                "mobile": [
+                    _('You must specify "phone" or "mobile" field.')
+                ],
+            })
+
+        return attrs
+
     def create(self, validated_data):
         try:
             password_validation.validate_password(
@@ -132,20 +152,12 @@ class UserBasicSerializer(serializers.ModelSerializer):
                 })
 
         profile_data = None
-        error_profile = False
         if 'profile' in validated_data.keys():
             profile_data = validated_data.pop('profile')
-
-            if 'mobile' not in profile_data \
-                    and 'phone' not in profile_data:
-                error_profile = True
         else:
-            error_profile = True
-
-        if error_profile:
             raise serializers.ValidationError({
                 "non_field_errors": [
-                    'You must specify "phone" or "mobile" field.'
+                    _('profile data missing.')
                 ],
             })
 

@@ -163,9 +163,12 @@ class UsersTests(APITestCase):
         )
 
         content = {
-            'non_field_errors': [
+            "phone": [
                 'You must specify "phone" or "mobile" field.'
-            ]
+            ],
+            "mobile": [
+                'You must specify "phone" or "mobile" field.'
+            ],
         }
         self.assertEqual(json.loads(response.content), content)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -244,6 +247,8 @@ class UsersTests(APITestCase):
             'username': 'John',
             'email': 'John@mailinator.com',
             'password': '19274682736',
+            'phone': '1234567890',
+            'mobile': '1234567890',
             'first_name': 'Chuck',
             'last_name': 'Norris',
         }
