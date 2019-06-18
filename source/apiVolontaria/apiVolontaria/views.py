@@ -1,4 +1,6 @@
-from django.db.models import Q
+from datetime import datetime
+
+from django.core.mail import EmailMessage
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate, password_validation
 from django.contrib.auth.models import User
@@ -12,10 +14,9 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from volunteer.models import Cell
 from . import serializers
 from .models import TemporaryToken, ActionToken
-from django.template.loader import render_to_string
-from . import services
 
 
 class ObtainTemporaryAuthToken(ObtainAuthToken):
@@ -99,6 +100,13 @@ class Users(generics.ListCreateAPIView):
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username', 'first_name', 'last_name', 'email')
 
+    def get_serializer_class(self):
+        # Need to know if we are in admin section or in user profile
+        if self.request.user.is_superuser or Cell.objects.filter(managers__in=[self.request.user]).count():
+            return serializers.UserAdminSerializer
+
+        return serializers.UserBasicSerializer
+
     def get_queryset(self):
         return User.objects.all()
 
@@ -142,30 +150,23 @@ class Users(generics.ListCreateAPIView):
                     type='account_activation',
                 ).key
 
-                # Setup the url for the activation button in the email
-                activation_url = FRONTEND_SETTINGS['ACTIVATION_URL'].replace(
-                    "{{token}}",
-                    activate_token
+                message = EmailMessage(
+                    to=[user.email, ]
                 )
 
-                # data for email activation
-                msg_html_css = render_to_string('css/confirm_sign_up.css')
-
-                merge_data = {
+                message.from_email = None
+                message.template_id = settings.ANYMAIL['TEMPLATES']['CONFIRM_SIGN_UP']
+                message.merge_global_data = {
                     'ACTIVATION_URL': FRONTEND_SETTINGS['ACTIVATION_URL'].replace(
                         "{{token}}",
                         activate_token
                     ),
-                    'CSS_STYLE': msg_html_css
+                    'YEAR': datetime.now().year
                 }
 
-                plain_msg = render_to_string("confirm_sign_up.txt", merge_data)
-                msg_html = render_to_string("confirm_sign_up.html", merge_data)
-                emails_not_sent = services.service_send_mail([request.data["email"]],
-                                                                _("Confirmation d\'enregistrement."),
-                                                                plain_msg, msg_html)
+                rep = message.send()
 
-                if emails_not_sent:
+                if rep != 1:
                     content = {
                         'detail': _("The account was created but no email was "
                                     "sent. If your account is not "
@@ -192,6 +193,13 @@ class UsersId(generics.RetrieveUpdateAPIView):
     """
     serializer_class = serializers.UserBasicSerializer
 
+    def get_serializer_class(self):
+        # Need to know if we are in admin section or in user profile
+        if 'profile' not in self.kwargs.keys() and (self.request.user.is_superuser or Cell.objects.filter(managers__in=[self.request.user]).count()):
+            return serializers.UserAdminSerializer
+
+        return serializers.UserBasicSerializer
+
     def get_queryset(self):
         return User.objects.filter()
 
@@ -200,7 +208,7 @@ class UsersId(generics.RetrieveUpdateAPIView):
             self.kwargs['pk'] = self.request.user.id
             return self.retrieve(request, *args, **kwargs)
 
-        elif self.request.user.has_perm('apiVolontaria.get_user'):
+        elif self.request.user.has_perm('auth.view_user'):
             return self.retrieve(request, *args, **kwargs)
 
         content = {
@@ -298,19 +306,23 @@ class ResetPassword(APIView):
         # Valid params
         serializer = serializers.ResetPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        text_error_not_email_send =  {
+        text_error_not_email_send = {
                     'detail': _("Your token has been created but no email "
                                 "has been sent. Please contact the "
                                 "administration."),
                 }
 
-        # get user from the username given in data
+        # get user from the username or email given in data
         try:
-            user = User.objects.get(username=request.data["username"])
+            user = User.objects.filter(username=request.data["username_email"]).first()
+
+            if not user:
+                user = User.objects.get(email=request.data["username_email"])
+
         except Exception:
             content = {
-                'username': [
-                    _("No account with this username.")
+                'username_email': [
+                    _("No account with this username or email.")
                 ],
             }
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
@@ -333,23 +345,23 @@ class ResetPassword(APIView):
             # Send the new token by e-mail to the user
             FRONTEND_SETTINGS = settings.CONSTANT['FRONTEND_INTEGRATION']
 
-            # data for email activation
-            msg_html_css = render_to_string('css/reset_password.css')
+            message = EmailMessage(
+                to=[user.email, ]
+            )
 
-            merge_data = {
+            message.from_email = None
+            message.template_id = settings.ANYMAIL['TEMPLATES']['FORGOT_PASSWORD']
+            message.merge_global_data = {
                 'FORGOT_URL': FRONTEND_SETTINGS['FORGOT_PASSWORD_URL'].replace(
                     "{{token}}",
                     str(token)
                 ),
-                'CSS_STYLE': msg_html_css
+                'YEAR': datetime.now().year
             }
 
-            plain_msg = render_to_string("reset_password.txt", merge_data)
-            msg_html = render_to_string("reset_password.html", merge_data)
-            response_send_mail = services.service_send_mail([user.email],
-                                                            _("Mise à jour du mot de passe."),
-                                                            plain_msg, msg_html)
-            if len(response_send_mail) > 0:
+            rep = message.send()
+
+            if rep != 1:
                 return Response(text_error_not_email_send, status=status.HTTP_201_CREATED)
             else:
                 return Response(status=status.HTTP_201_CREATED)

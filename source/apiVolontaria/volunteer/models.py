@@ -17,6 +17,7 @@ class Cycle(models.Model):
 
     class Meta:
         verbose_name_plural = 'Cycles'
+        ordering = ('-start_date', )
 
     name = models.CharField(
         verbose_name="Name",
@@ -149,6 +150,10 @@ class Cell(models.Model):
         on_delete=models.CASCADE,
     )
 
+    email = models.EmailField(
+        verbose_name="Email",
+    )
+
     managers = models.ManyToManyField(
         User,
         verbose_name="Managers",
@@ -249,7 +254,7 @@ class Event(models.Model):
     """
     class Meta:
         verbose_name_plural = 'Events'
-        ordering = ('start_date',)
+        ordering = ('-start_date',)
 
     start_date = models.DateTimeField(
         verbose_name="Begin date",
@@ -381,6 +386,7 @@ class Participation(models.Model):
     class Meta:
         verbose_name_plural = 'Participations'
         unique_together = ('event', 'user')
+        ordering = ('-event__start_date',)
 
     event = models.ForeignKey(
         Event,

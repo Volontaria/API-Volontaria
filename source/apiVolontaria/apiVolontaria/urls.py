@@ -1,5 +1,4 @@
 """apiVolontaria URL Configuration
-
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/1.11/topics/http/urls/
 Examples:
@@ -14,16 +13,18 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf import settings
-from django.conf.urls import url, include
-from django.urls import path
+from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.urls import include, path
 from django.views.static import serve
-
 from rest_framework.documentation import include_docs_urls
 
+from pages.views import InfoPageView
 from .views import (ObtainTemporaryAuthToken, Users, UsersId, UsersActivation,
                     ResetPassword, ChangePassword)
+
+app_name = 'apiVolontaria'
 
 urlpatterns = [
     # Token authentification
@@ -76,6 +77,11 @@ urlpatterns = [
     url(
         r'^location/',
         include('location.urls', namespace="location"),
+    ),
+    url(
+        r'^info-page$',
+        InfoPageView.as_view(),
+        name='info_page',
     ),
     # DOCUMENTATION SWAGGER
     path(

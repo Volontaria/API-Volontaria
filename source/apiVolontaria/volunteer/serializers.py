@@ -12,9 +12,11 @@ from django.utils import timezone
 from location.serializers import AddressBasicSerializer
 from location.models import Address, StateProvince, Country
 
-from apiVolontaria.serializers import UserPublicSerializer, UserBasicSerializer
+from apiVolontaria.serializers import UserPublicSerializer, UserBasicSerializer, UserAdminSerializer
 from django.contrib.auth.models import User
 
+from volunteer import fields
+from volunteer.models import Participation
 from . import models
 from .resources import ParticipationResource
 
@@ -234,6 +236,7 @@ class CellBasicSerializer(serializers.ModelSerializer):
         data = dict()
         data['id'] = instance.id
         data['name'] = instance.name
+        data['email'] = instance.email
         data['address'] = AddressBasicSerializer(
             instance.address
         ).to_representation(instance.address)
@@ -253,11 +256,24 @@ class CellBasicSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'address',
+            'email',
             'managers'
         )
         read_only_fields = [
             'id',
         ]
+
+
+class CellEmailSerializer(serializers.Serializer):
+
+    class Meta:
+        fields = (
+            'subject',
+            'content',
+        )
+
+    subject = serializers.CharField(required=True, write_only=True)
+    content = serializers.CharField(max_length=None, required=True, write_only=True)
 
 
 class CellExportSerializer(serializers.Serializer):
@@ -281,12 +297,26 @@ class CellExportSerializer(serializers.Serializer):
         now = now.replace(hour=0, minute=0, second=0, microsecond=0)
 
         # Set the filename and path
-        filename = '%s_%s.csv' % (obj.pk, now.strftime('%Y%m%d'))
+        filename = '%s_%s.xls' % (obj.pk, now.strftime('%Y%m%d'))
         file_path = '%s/cell_export/' % settings.MEDIA_ROOT
 
-        # Create exporation class with filter params
-        pa_export = ParticipationResource(cell_filter=obj.pk, date_filter=now)
-        export = pa_export.export()
+        cycles = self.context.get('cycles', None)
+        tasks = self.context.get('tasks', None)
+
+        date_filter = None
+
+        # No cycle, we default to filter the futur participations
+        if not cycles:
+            date_filter = now
+
+        # Create exportation class with filter params
+        pa_export = ParticipationResource(
+            cell_filter=obj.pk,  # Always filter by cell
+            date_filter=date_filter,  # If no cycle, we receive a date filter to get Participation of the future
+            cycles_filter=cycles,
+            tasks_filter=tasks,
+        )
+        export_data = pa_export.export()
 
         # create the MEDIA_ROOT if not existing
         if not os.path.exists(settings.MEDIA_ROOT):
@@ -296,31 +326,8 @@ class CellExportSerializer(serializers.Serializer):
         if not os.path.exists(file_path):
             os.makedirs(file_path)
 
-        # Open file for writing
-        with open('%s%s' % (file_path, filename), 'w') as tmp:
-
-            # Create csv writer
-            writer = csv.writer(tmp)
-
-            # write the header row
-            writer.writerow(export.headers)
-
-            # write data rows
-            for value in export.dict:
-                writer.writerow([
-                    value['standby'],
-                    value['first_name'],
-                    value['last_name'],
-                    value['email'],
-                    value['phone'],
-                    value['mobile'],
-                    value['event__start_date'],
-                    value['event__end_date'],
-                    value['task_type'],
-                    value['cell'],
-                    value['presence_status'],
-                    value['presence_duration_minutes'],
-                ])
+        with open('%s%s' % (file_path, filename), 'wb') as f:
+            f.write(export_data.export('xls'))
 
         return '/%scell_export/%s' % (settings.MEDIA_URL, filename)
 
@@ -442,9 +449,13 @@ class ParticipationAdminSerializer(serializers.ModelSerializer):
 
     # Explicitly declare the BooleanField to make it "required"
     standby = serializers.BooleanField()
-    user = UserBasicSerializer(
+    user = UserAdminSerializer(
         read_only=True,
-        default=serializers.CurrentUserDefault(),
+    )
+    user_id = serializers.IntegerField(
+        write_only=True,
+        default=fields.CustomOrCurrentUserIdDefault(),
+        required=False,
     )
 
     class Meta:
@@ -453,6 +464,7 @@ class ParticipationAdminSerializer(serializers.ModelSerializer):
             'id',
             'event',
             'user',
+            'user_id',
             'standby',
             'subscription_date',
             'presence_duration_minutes',
@@ -461,3 +473,67 @@ class ParticipationAdminSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id',
         ]
+
+    def validate(self, data):
+        validated_data = super().validate(data)
+        user = validated_data.get(
+            'user',
+            getattr(self.instance, 'user', None)
+        )
+        user_id = validated_data.get(
+            'user_id',
+            getattr(self.instance, 'user_id', None)
+        )
+        event = validated_data.get(
+            'event',
+            getattr(self.instance, 'event', None)
+        )
+
+        if user_id:
+            actual_user_id = user_id
+        else:
+            actual_user_id = user.pk
+
+        obj_id = 0
+        if self.instance:
+            obj_id = self.instance.id
+
+        obj = Participation.objects.filter(user__pk=actual_user_id, event=event).exclude(id=obj_id).first()
+        if obj:
+            raise serializers.ValidationError(
+                _('There is already a Participation with this event and this user')
+            )
+
+        return data
+
+    def create(self, validated_data):
+
+        user = None
+        user_id = validated_data.get('user_id', None)
+
+        if user_id:
+            try:
+                user = User.objects.get(pk=user_id)
+            except User.DoesNotExist:
+                error = {
+                    'message': (
+                        "Unknown user with this ID"
+                    )
+                }
+                raise serializers.ValidationError(error)
+
+        try:
+            participation = models.Participation.objects.create(**validated_data)
+        except IntegrityError:
+            error = {
+                'non_field_errors': [
+                    "There is already a participation with this user and this event",
+                ]
+            }
+            raise serializers.ValidationError(error)
+
+        if user:
+            participation.user = user
+
+        participation.save()
+        return participation

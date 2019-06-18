@@ -6,6 +6,7 @@ from import_export import resources
 from import_export.fields import Field
 
 from apiVolontaria.models import Profile
+from volunteer.models import Participation
 from . import models
 
 
@@ -17,10 +18,14 @@ class ParticipationResource(resources.ModelResource):
     mobile = Field()
     cell = Field()
     task_type = Field(column_name=_('task_type'))
+    note = Field()
+    last_participation = Field()
 
-    def __init__(self, cell_filter=None, date_filter=None):
+    def __init__(self, cell_filter=None, date_filter=None, cycles_filter=None, tasks_filter=None):
         self.cell_filter = cell_filter
         self.date_filter = date_filter
+        self.cycles_filter = cycles_filter
+        self.tasks_filter = tasks_filter
 
     class Meta:
         model = models.Participation
@@ -38,6 +43,8 @@ class ParticipationResource(resources.ModelResource):
             'cell',
             'presence_status',
             'presence_duration_minutes',
+            'last_participation',
+            'note',
         )
 
         export_order = fields
@@ -45,8 +52,17 @@ class ParticipationResource(resources.ModelResource):
     def get_queryset(self):
         query = self._meta.model.objects.filter()
 
+        # Filter the cell
         if self.cell_filter:
             query = query.filter(event__cell=self.cell_filter)
+
+        # Filter the cycle
+        if self.cycles_filter:
+            query = query.filter(event__cycle__in=self.cycles_filter)
+
+        # Filter the task_type
+        if self.tasks_filter:
+            query = query.filter(event__task_type__in=self.tasks_filter)
 
         if self.date_filter:
             query = query.filter(event__start_date__gte=self.date_filter)
@@ -75,3 +91,18 @@ class ParticipationResource(resources.ModelResource):
 
     def dehydrate_task_type(self, obj):
         return obj.event.task_type.name
+
+    def dehydrate_note(self, obj):
+        try:
+            return obj.user.profile.volunteer_note
+        except:
+            return ''
+
+    def dehydrate_last_participation(self, obj):
+        last_participation = Participation.objects.filter(user=obj.user, presence_status='P').order_by(
+            '-event__start_date').first()
+
+        if last_participation:
+            return last_participation.start_date.strftime('%Y-%m-%d %H:%M')
+
+        return 'N/A'

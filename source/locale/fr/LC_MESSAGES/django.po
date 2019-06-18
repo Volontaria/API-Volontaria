@@ -1,0 +1,230 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-05-27 13:34-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: project/apiVolontaria/models.py:23
+msgid "Account activation"
+msgstr ""
+
+#: project/apiVolontaria/models.py:24
+msgid "Password change"
+msgstr ""
+
+#: project/apiVolontaria/serializers.py:47
+msgid "Unable to log in with provided credentials."
+msgstr ""
+
+#: project/apiVolontaria/serializers.py:50
+msgid "Must include \"login\" and \"password\"."
+msgstr ""
+
+#: project/apiVolontaria/serializers.py:102
+msgid "An account for the specified email address already exists."
+msgstr "Un compte avec ce courriel existe déjà"
+
+#: project/apiVolontaria/serializers.py:140
+#: project/apiVolontaria/serializers.py:143
+msgid "You must specify \"phone\" or \"mobile\" field."
+msgstr "Tu dois entrer au moins un numéro de téléphone"
+
+#: project/apiVolontaria/serializers.py:173
+msgid "profile data missing."
+msgstr ""
+
+#: project/apiVolontaria/views.py:84
+msgid "Could not authenticate user."
+msgstr ""
+
+#: project/apiVolontaria/views.py:113
+msgid "You are not authorized to list users."
+msgstr ""
+
+#: project/apiVolontaria/views.py:166
+msgid ""
+"The account was created but no email was sent. If your account is not "
+"activated, contact the administration."
+msgstr ""
+
+#: project/apiVolontaria/views.py:173
+msgid ""
+"The account was created but no email was sent (email service deactivated). "
+"If your account is not activated, contact the administration."
+msgstr ""
+
+#: project/apiVolontaria/views.py:205
+msgid "You are not authorized to get detail of a given user."
+msgstr ""
+
+#: project/apiVolontaria/views.py:219
+msgid "You are not authorized to update a given user."
+msgstr ""
+
+#: project/apiVolontaria/views.py:225
+msgid "Method \"PUT\" not allowed."
+msgstr ""
+
+#: project/apiVolontaria/views.py:275
+msgid "The system have a problem, please contact us, it is not your fault."
+msgstr ""
+
+#: project/apiVolontaria/views.py:300
+msgid ""
+"Your token has been created but no email has been sent. Please contact the "
+"administration."
+msgstr ""
+
+#: project/apiVolontaria/views.py:311
+msgid "No account with this username."
+msgstr ""
+
+#: project/apiVolontaria/views.py:415
+msgid "The system has a problem, please contact us, it is not your fault."
+msgstr ""
+
+#: project/location/views.py:34
+msgid "You are not authorized to create a new address."
+msgstr ""
+
+#: project/location/views.py:64
+msgid "You are not authorized to update an address."
+msgstr ""
+
+#: project/location/views.py:73
+msgid "You are not authorized to delete an address."
+msgstr ""
+
+#: project/location/views.py:96
+msgid "You are not authorized to create a new country."
+msgstr ""
+
+#: project/location/views.py:122
+msgid "You are not authorized to update a country."
+msgstr ""
+
+#: project/location/views.py:131
+msgid "You are not authorized to delete a country."
+msgstr ""
+
+#: project/location/views.py:154
+msgid "You are not authorized to create a new stateprovince."
+msgstr ""
+
+#: project/location/views.py:181
+msgid "You are not authorized to update a stateprovince."
+msgstr ""
+
+#: project/location/views.py:190
+msgid "You are not authorized to delete a stateprovince."
+msgstr ""
+
+#: project/volunteer/admin.py:116 project/volunteer/admin.py:174
+msgid "You must select a cycle"
+msgstr ""
+
+#: project/volunteer/admin.py:204
+msgid "Generate cycle Participation report"
+msgstr ""
+
+#: project/volunteer/forms.py:19
+msgid "The start date needs to be older than end date."
+msgstr ""
+
+#: project/volunteer/forms.py:32
+msgid "The start date can't be older than start date of the cycle."
+msgstr ""
+
+#: project/volunteer/forms.py:37
+msgid "The end date can't be younger than end date of the cycle."
+msgstr ""
+
+#: project/volunteer/models.py:84
+msgid "All of the Participations presence status must be initialised."
+msgstr ""
+
+#: project/volunteer/models.py:376
+msgid "Initialisation"
+msgstr ""
+
+#: project/volunteer/models.py:377
+msgid "Absent"
+msgstr ""
+
+#: project/volunteer/models.py:378
+msgid "Present"
+msgstr ""
+
+#: project/volunteer/resources.py:19
+msgid "task_type"
+msgstr ""
+
+#: project/volunteer/serializers.py:351
+msgid "Start date need to be after start date of the cycle."
+msgstr ""
+
+#: project/volunteer/serializers.py:356
+msgid "End date need to be before the end date of the cycle."
+msgstr ""
+
+#: project/volunteer/serializers.py:361
+msgid "Start date need to be before the end date."
+msgstr ""
+
+#: project/volunteer/serializers.py:499
+msgid "There is already a Participation with this event and this user"
+msgstr ""
+
+#: project/volunteer/views.py:43
+msgid "You are not authorized to create a new cycle."
+msgstr ""
+
+#: project/volunteer/views.py:69
+msgid "You are not authorized to update a cycle."
+msgstr ""
+
+#: project/volunteer/views.py:78
+msgid "You are not authorized to delete a cycle."
+msgstr ""
+
+#: project/volunteer/views.py:105
+msgid "You are not authorized to create a new tasktype."
+msgstr ""
+
+#: project/volunteer/views.py:137
+msgid "You are not authorized to update a tasktype."
+msgstr ""
+
+#: project/volunteer/views.py:146
+msgid "You are not authorized to delete a tasktype."
+msgstr ""
+
+#: project/volunteer/views.py:175
+msgid "You are not authorized to create a new cell."
+msgstr ""
+
+#: project/volunteer/views.py:207
+msgid "You are not authorized to update a cell."
+msgstr ""
+
+#: project/volunteer/views.py:216
+msgid "You are not authorized to delete a cell."
+msgstr ""
+
+#: project/volunteer/views.py:299
+msgid "You are not authorized to create a new event."
+msgstr ""

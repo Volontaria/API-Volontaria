@@ -1,8 +1,18 @@
+import urllib
+from datetime import datetime
+
+from django.conf import settings
+from django.template.loader import render_to_string
+from django.utils import timezone
+from django.contrib.auth.models import User
 from rest_framework import filters
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 
+from apiVolontaria import services
+from volunteer.models import Event, Participation
+from volunteer.serializers import ParticipationAdminSerializer
 from .permissions import ParticipationIsManager, EventIsManager
 from . import models, serializers
 
@@ -215,6 +225,88 @@ class CellsId(generics.RetrieveUpdateDestroyAPIView):
         return Response(content, status=status.HTTP_403_FORBIDDEN)
 
 
+class CellEmail(generics.CreateAPIView):
+
+    serializer_class = serializers.CellEmailSerializer
+
+    def get_queryset(self):
+        return models.Cell.objects.filter()
+
+    def post(self, request, *args, **kwargs):
+        cell = self.get_object()
+
+        cycles = None
+        if 'cycle' in request.query_params:
+            cycles = request.query_params.getlist('cycle')
+
+        tasks = None
+        if 'task' in request.query_params:
+            tasks = request.query_params.getlist('task')
+
+        serializer = serializers.CellEmailSerializer(cell, data=request.data, context={'cycles': cycles, 'tasks': tasks})
+        serializer.is_valid(raise_exception=True)
+
+        query = Participation.objects.filter(event__cell=cell)
+
+        # Filter the cycle
+        if cycles:
+            query = query.filter(event__cycle__in=cycles)
+
+        # Filter the task_type
+        if tasks:
+            query = query.filter(event__task_type__in=tasks)
+
+        # No cycle or Tasktype, we default to filter the futur participations
+        if not cycles and not tasks:
+            # get today date without time
+            now = timezone.now()
+            now = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+            query = query.filter(event__start_date__gte=now)
+
+        content = serializer.validated_data['content']
+        subject = serializer.validated_data['subject']
+
+        # data for email activation
+        text_error_not_email_send = {
+            'detail': _("No email sended. Please contact the "
+                        "administration."),
+        }
+
+        msg_html_css = render_to_string('css/cell_manager_email.css')
+
+        merge_data = {
+            'content': content,
+            'year': datetime.now().year,
+            'CSS_STYLE': msg_html_css
+        }
+
+        plain_msg = render_to_string("cell_manager_email.txt", merge_data)
+        msg_html = render_to_string("cell_manager_email.html", merge_data)
+
+        # DEBUG
+        #query = ['yanic.olivier@gmail.com', 'traitementsonore@gmail.com', ]
+
+        email_from = cell.email
+
+        # Now must get the emails
+        emails = []
+        for p in query:
+            #emails.append(p)
+            emails.append(p.user.email)
+
+        if settings.CUSTOM_EMAIL:
+            response_send_mail = services.service_send_mail(emails,
+                                                            subject,
+                                                            plain_msg, msg_html, email_from)
+            if len(response_send_mail) > 0:
+                return Response(text_error_not_email_send, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            print('Simulating email send')
+
+        return Response({'emails': emails}, status=status.HTTP_200_OK)
+
+
 class CellExport(generics.RetrieveAPIView):
 
     """
@@ -230,9 +322,18 @@ class CellExport(generics.RetrieveAPIView):
     def get_queryset(self):
         return models.Cell.objects.filter()
 
-    def get(self, request, pk):
+    def get(self, request, *args, **kwargs):
         cell = self.get_object()
-        serializer = serializers.CellExportSerializer(cell)
+
+        cycles = None
+        if 'cycle' in request.query_params:
+            cycles = request.query_params.getlist('cycle')
+
+        tasks = None
+        if 'task' in request.query_params:
+            tasks = request.query_params.getlist('task')
+
+        serializer = serializers.CellExportSerializer(cell, context={'cycles': cycles, 'tasks': tasks})
         return Response(serializer.data)
 
 
@@ -276,6 +377,15 @@ class Events(generics.ListCreateAPIView):
 
             queryset = queryset.\
                 exclude(pk__in=[event.pk for event in list_exclude])
+
+        try:
+            start_date = self.request.query_params.get('start_date', None)
+            end_date = self.request.query_params.get('end_date', None)
+
+            if start_date and end_date:
+                return queryset.filter(start_date__range=[start_date, end_date])
+        except Exception as e:
+            print(e)
 
         return queryset
 
@@ -336,15 +446,59 @@ class Participations(generics.ListCreateAPIView):
     serializer_class = serializers.ParticipationBasicSerializer
     filter_fields = ['event']
 
-    def get_queryset(self):
-        if self.request.user.is_superuser:
-            return models.Participation.objects.all()
-        return models.Participation.objects.filter(user=self.request.user)
+    permission_classes = (
+        IsAuthenticated,
+        ParticipationIsManager,
+    )
 
-    # A user can only create participations for himself
-    # This auto-fills the 'user' field of the Participation object.
+    def get_serializer_class(self):
+        # We have to check manually the permissions to see
+        # which Serializer to return
+        manager_permissions = ParticipationIsManager.if_can_do_actions(
+            self.request, self, None
+        )
+
+        if manager_permissions:
+            return ParticipationAdminSerializer
+        else:
+            return serializers.ParticipationBasicSerializer
+
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        manager_permissions = ParticipationIsManager.if_can_do_actions(
+            self.request, self, None
+        )
+
+        if manager_permissions:
+            serializer.save()
+        else:
+            serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+
+        try:
+            event_id = self.request.query_params.get('event')  # admin request
+            username = self.request.query_params.get('username')  # personal request in user profile
+
+            if username:
+                try:
+                    username = urllib.parse.unquote_plus(username)
+                    user = User.objects.filter(username=username).first()
+                    return models.Participation.objects.filter(user=user)
+                except:
+                    return models.Participation.objects.none()
+
+            elif event_id:
+                event = Event.objects.filter(pk=event_id)[0]
+                if self.request.user.is_superuser or self.request.user in event.cell.managers.all():
+                    return models.Participation.objects.all()
+            else:
+                # Called from the admin board to see the number of Participation
+                return models.Participation.objects.all()
+
+        except:
+            pass
+
+        return models.Participation.objects.filter(user=self.request.user).order_by('-event__start_date')
 
 
 class ParticipationsId(generics.RetrieveUpdateDestroyAPIView):
@@ -390,14 +544,4 @@ class ParticipationsId(generics.RetrieveUpdateDestroyAPIView):
             return serializers.ParticipationBasicSerializer
 
     def delete(self, request, *args, **kwargs):
-        participation = self.get_object()
-        if not participation.event.is_started:
-            return self.destroy(request, *args, **kwargs)
-        else:
-            content = {
-                'non_field_errors':
-                    _("You can't delete a participation if the associated "
-                      "event is already started"),
-            }
-
-            return Response(content, status=status.HTTP_403_FORBIDDEN)
+        return self.destroy(request, *args, **kwargs)

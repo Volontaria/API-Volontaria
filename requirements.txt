@@ -7,5 +7,12 @@ django-cors-headers==2.4.0
 Faker==0.8.17
 factory-boy==2.10.0
 django-import-export==1.0.1
-django-anymail==4.2
 coreapi==2.3.3
+
+django-anymail
+woocommerce
+django-storages
+django-orderable
+django-ckeditor
+django-reversion==3.0.3
+

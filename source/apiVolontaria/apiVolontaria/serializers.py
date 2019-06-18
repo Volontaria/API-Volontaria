@@ -8,8 +8,9 @@ from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import authenticate, password_validation
 
-from django.core import exceptions
-from volunteer.models import Cell
+from coupons import wc_api
+from coupons.models import RechargeableCoupon
+from volunteer.models import Cell, Participation
 from .models import ActionToken, Profile
 
 
@@ -71,6 +72,7 @@ class UserBasicSerializer(serializers.ModelSerializer):
             'phone',
             'mobile',
             'managed_cell',
+            'coupon',
         )
         write_only_fields = (
             'password',
@@ -81,7 +83,15 @@ class UserBasicSerializer(serializers.ModelSerializer):
             'is_superuser',
             'is_active',
             'date_joined',
+            'coupon',
         )
+
+    coupon = serializers.SerializerMethodField()
+
+    def get_coupon(self, obj):
+        coupon = RechargeableCoupon.objects.filter(user=obj).first()
+        serializer = RechargeableCouponBasicSerializer(instance=coupon, many=False)
+        return serializer.data
 
     email = serializers.EmailField(
         required=True,
@@ -101,18 +111,40 @@ class UserBasicSerializer(serializers.ModelSerializer):
     password = serializers.CharField(required=True, write_only=True)
     new_password = serializers.CharField(required=False, write_only=True)
 
+    managed_cell = serializers.SerializerMethodField()
+
+    # https://github.com/Volontaria/API-Volontaria/pull/222/
+
     phone = serializers.CharField(
         source='profile.phone',
         required=False,
+        allow_null=True,
+        allow_blank=True,
         validators=[phone_number],
     )
     mobile = serializers.CharField(
         source='profile.mobile',
         required=False,
+        allow_null=True,
+        allow_blank=True,
         validators=[phone_number],
     )
 
-    managed_cell = serializers.SerializerMethodField()
+    def validate(self, attrs):
+        mobile = self.initial_data.get('mobile', None)
+        phone = self.initial_data.get('phone', None)
+
+        if not mobile and not phone:
+            raise serializers.ValidationError({
+                "phone": [
+                    _('You must specify "phone" or "mobile" field.')
+                ],
+                "mobile": [
+                    _('You must specify "phone" or "mobile" field.')
+                ],
+            })
+
+        return attrs
 
     def get_managed_cell(self, obj):
         cells = Cell.objects.filter(managers__in=[obj])
@@ -133,20 +165,12 @@ class UserBasicSerializer(serializers.ModelSerializer):
                 })
 
         profile_data = None
-        error_profile = False
         if 'profile' in validated_data.keys():
             profile_data = validated_data.pop('profile')
-
-            if 'mobile' not in profile_data \
-                    and 'phone' not in profile_data:
-                error_profile = True
         else:
-            error_profile = True
-
-        if error_profile:
             raise serializers.ValidationError({
                 "non_field_errors": [
-                    'You must specify "phone" or "mobile" field.'
+                    _('profile data missing.')
                 ],
             })
 
@@ -208,6 +232,58 @@ class UserBasicSerializer(serializers.ModelSerializer):
         ).update(instance, validated_data)
 
 
+class UserAdminSerializer(UserBasicSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'is_active',
+            'is_superuser',
+            'password',
+            'new_password',
+            'phone',
+            'mobile',
+            'managed_cell',
+            'coupon',
+            'volunteer_note',
+            'last_participation'
+        )
+        write_only_fields = (
+            'password',
+            'new_password',
+        )
+        read_only_fields = (
+            'is_staff',
+            'is_superuser',
+            'is_active',
+            'date_joined',
+            'coupon',
+            'volunteer_note',
+            'last_participation'
+        )
+
+    volunteer_note = serializers.SerializerMethodField()
+    last_participation = serializers.SerializerMethodField()
+
+    def get_volunteer_note(self, obj):
+        try:
+            return obj.profile.volunteer_note
+        except:
+            return ''
+
+    def get_last_participation(self, obj):
+        last_participation = Participation.objects.filter(user=obj, presence_status='P').order_by('-event__start_date').first()
+
+        if last_participation:
+            return last_participation.start_date
+
+        return ''
+
+
 class UserPublicSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -230,10 +306,35 @@ class UserPublicSerializer(serializers.ModelSerializer):
 
 class ResetPasswordSerializer(serializers.Serializer):
 
-    username = serializers.CharField(required=True)
+    username_email = serializers.CharField(required=True)
 
 
 class ChangePasswordSerializer(serializers.Serializer):
 
     token = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True)
+
+
+class RechargeableCouponBasicSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = RechargeableCoupon
+        fields = (
+            'code',
+            'balance',
+        )
+        read_only_fields = fields
+
+    balance = serializers.SerializerMethodField()
+
+    def get_balance(self, obj):
+        API = wc_api.WooCommerceAPI()
+        data = API.get_coupons(obj.coupon_wc_id)
+
+        if data.status_code == 200:
+            try:
+                return '%s $' % str(data.json()['amount'])
+            except:
+                pass
+
+        return "N/A"

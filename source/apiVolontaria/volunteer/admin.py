@@ -1,11 +1,15 @@
 import csv
 from django.contrib import admin
+from django.contrib.auth.models import User
 from import_export.admin import ImportExportActionModelAdmin
 from django.contrib import messages
 from django.http import HttpResponse
 from django.utils.translation import ugettext_lazy as _
+from import_export.formats import base_formats
 
 from volunteer.resources import ParticipationResource
+
+from coupons.models import CouponOperation, RechargeableCoupon
 from . import models, forms
 from apiVolontaria.models import Profile
 
@@ -48,6 +52,8 @@ class ParticipationAdmin(ImportExportActionModelAdmin):
     ]
     date_hierarchy = 'event__start_date'
 
+    raw_id_fields = ('event', 'user',)
+
     @staticmethod
     def user__email(obj):
         return obj.user.email
@@ -73,6 +79,16 @@ class ParticipationAdmin(ImportExportActionModelAdmin):
     @staticmethod
     def event__duration(obj):
         return obj.event.duration
+
+    def get_export_formats(self):
+        """
+        Returns available export formats.
+        """
+        formats = (
+            base_formats.XLS,
+            base_formats.CSV,
+            )
+        return [f for f in formats if f().can_export()]
 
 
 class EventAdmin(admin.ModelAdmin):
@@ -106,7 +122,57 @@ class CycleAdmin(admin.ModelAdmin):
 
     date_hierarchy = 'start_date'
 
-    actions = ['generate_participation_report_csv', ]
+    actions = ['generate_participation_report_csv', 'generate_coupons', ]
+
+    def generate_coupons(self, request, queryset):
+        if len(queryset) != 1:
+            messages.error(request, _("You must select a cycle"))
+            return
+
+        # Take the first of the array
+        cycle = queryset[0]
+
+        data_dict = cycle.generate_participation_report_data()
+
+        # We have an error if there Participation for this cycle that is not initialised...
+        if 'error' in data_dict:
+            messages.error(request, data_dict['error'])
+            return
+
+        if not len(data_dict):
+            messages.error(request, 'There is no Participations entries for this cycle')
+            return
+
+        # Must check if coupon already exist
+        existing_coupons = CouponOperation.objects.filter(cycle=cycle)
+
+        if existing_coupons:
+            msg = 'There is existing coupon for %s, aborting...' % cycle
+            messages.error(request, msg)
+            return
+
+        # Okay all good let's create the coupons
+        for key, value in data_dict.items():
+
+            user = User.objects.get(pk=int(key))
+            if user:
+                coupon, created = RechargeableCoupon.objects.get_or_create(
+                    code=RechargeableCoupon.generate_unique_code(user),
+                    user=user,
+                )
+                coupon.save()
+
+                coupon_op = CouponOperation.objects.create(
+                    coupon=coupon,
+                    cycle=cycle,
+                    amount=CouponOperation.get_amount_from_minute(value['total_time']),
+                    status='1',
+                )
+
+                coupon_op.save()
+
+    generate_coupons.short_description = \
+        "!!! Générer les coupons !!!"
 
     def generate_participation_report_csv(self, request, queryset):
         """
@@ -154,6 +220,7 @@ class CycleAdmin(admin.ModelAdmin):
 class CellAdmin(admin.ModelAdmin):
     list_display = [
         'name',
+        'email',
     ]
 
     filter_horizontal = [

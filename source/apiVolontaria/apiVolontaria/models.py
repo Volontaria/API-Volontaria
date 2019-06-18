@@ -139,6 +139,8 @@ class Profile(models.Model):
         max_length=17,
     )
 
+    volunteer_note = models.TextField(blank=True, null=True)
+
     def clean(self):
         reg = re.compile('^([+][0-9]{1,2})?[0-9]{9,10}$')
         if self.phone:

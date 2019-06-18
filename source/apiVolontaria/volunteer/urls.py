@@ -41,6 +41,11 @@ urlpatterns = format_suffix_patterns(
             name='cell_export',
         ),
         url(
+            r'^cells/(?P<pk>\d+)/email$',
+            views.CellEmail.as_view(),
+            name='cell_email',
+        ),
+        url(
             r'^cells/(?P<pk>\d+)$',
             views.CellsId.as_view(),
             name='cells_id',
