@@ -20,6 +20,13 @@ class UsersIdTests(APITestCase):
         self.user.set_password('Test123!')
         self.user.save()
 
+        self.profile = models.Profile(user=self.user, volunteer_note='testNote')
+        self.profile.save()
+
+        self.user_no_profile = UserFactory()
+        self.user_no_profile.set_password('Test123!')
+        self.user_no_profile.save()
+
         self.admin = AdminFactory()
         self.admin.set_password('Test123!')
         self.admin.save()
@@ -91,6 +98,7 @@ class UsersIdTests(APITestCase):
             'mobile',
             'is_superuser',
             'managed_cell',
+            'volunteer_note',
         ]
         for key in content.keys():
             self.assertTrue(
@@ -198,6 +206,7 @@ class UsersIdTests(APITestCase):
             'mobile',
             'is_superuser',
             'managed_cell',
+            'volunteer_note',
         ]
         for key in content.keys():
             self.assertTrue(
@@ -474,3 +483,56 @@ class UsersIdTests(APITestCase):
         }]
 
         self.assertEqual(content['managed_cell'], data)
+
+    def test_retrieve_profile_volunteer_note_as_admin(self):
+        """
+        Ensure we can retrieve the volunteer_note as admin.
+        """
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get(
+            reverse(
+                'users_id',
+                kwargs={'pk': self.user.id},
+            )
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        content = json.loads(response.content)
+        self.assertEqual(content['volunteer_note'], 'testNote')
+
+    def test_hide_volunteer_note_to_user(self):
+        """
+        Ensure we cannot retrieve the volunteer_note when the user request is profile.
+        """
+
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(
+            reverse(
+                'profile',
+            )
+        )
+
+        content = json.loads(response.content)
+        self.assertFalse('volunteer_note' in content)
+
+    def test_retrieve_profile_with_no_profile(self):
+        """
+        Ensure we have empty volunteer_note value when no profile exit for a specific user.
+        """
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get(
+            reverse(
+                'users_id',
+                kwargs={'pk': self.user_no_profile.id},
+            )
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        content = json.loads(response.content)
+        self.assertEqual(content['volunteer_note'], '')
+

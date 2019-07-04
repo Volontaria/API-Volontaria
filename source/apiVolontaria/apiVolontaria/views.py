@@ -1,4 +1,3 @@
-from django.db.models import Q
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate, password_validation
 from django.contrib.auth.models import User
@@ -12,6 +11,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from volunteer.models import Cell
 from . import serializers
 from .models import TemporaryToken, ActionToken
 from django.template.loader import render_to_string
@@ -98,6 +98,12 @@ class Users(generics.ListCreateAPIView):
     serializer_class = serializers.UserBasicSerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username', 'first_name', 'last_name', 'email')
+
+    def get_serializer_class(self):
+        if self.request.user and (self.request.user.is_superuser or Cell.objects.filter(managers__in=[self.request.user.id]).count()):
+            return serializers.UserAdminSerializer
+
+        return serializers.UserBasicSerializer
 
     def get_queryset(self):
         return User.objects.all()
@@ -191,6 +197,13 @@ class UsersId(generics.RetrieveUpdateAPIView):
     Partially update a user.
     """
     serializer_class = serializers.UserBasicSerializer
+
+    def get_serializer_class(self):
+        if 'profile' not in self.kwargs.keys() and \
+                (self.request.user.is_superuser or Cell.objects.filter(managers__in=[self.request.user]).count()):
+            return serializers.UserAdminSerializer
+
+        return serializers.UserBasicSerializer
 
     def get_queryset(self):
         return User.objects.filter()

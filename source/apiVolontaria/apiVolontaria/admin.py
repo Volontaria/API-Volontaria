@@ -19,7 +19,8 @@ class CustomUserAdmin(UserAdmin):
         'first_name',
         'last_name',
         'is_active',
-        'is_staff'
+        'is_staff',
+        'get_profile_note',
     ]
 
     list_filter = [
@@ -36,6 +37,18 @@ class CustomUserAdmin(UserAdmin):
     ]
 
     inlines = (ProfileInline, )
+
+    def get_profile_note(self, obj):
+        try:
+            return obj.profile.volunteer_note
+        except models.Profile.DoesNotExist:
+            return ''
+
+    get_profile_note.short_description = 'Note'
+    get_profile_note.admin_order_field = 'profile__volunteer_note'
+
+    def get_queryset(self, request):
+        return super(CustomUserAdmin, self).get_queryset(request).select_related('profile')
 
 
 admin.site.register(models.TemporaryToken)

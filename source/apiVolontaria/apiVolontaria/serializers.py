@@ -9,6 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import authenticate, password_validation
 
 from volunteer.models import Cell
+
 from .models import ActionToken, Profile
 
 
@@ -205,6 +206,45 @@ class UserBasicSerializer(serializers.ModelSerializer):
             UserBasicSerializer,
             self
         ).update(instance, validated_data)
+
+
+class UserAdminSerializer(UserBasicSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'is_active',
+            'is_superuser',
+            'password',
+            'new_password',
+            'phone',
+            'mobile',
+            'managed_cell',
+            'volunteer_note'
+        )
+        write_only_fields = (
+            'password',
+            'new_password',
+        )
+        read_only_fields = (
+            'is_staff',
+            'is_superuser',
+            'is_active',
+            'date_joined',
+            'volunteer_note'
+        )
+
+    volunteer_note = serializers.SerializerMethodField()
+
+    def get_volunteer_note(self, obj):
+        try:
+            return obj.profile.volunteer_note
+        except Profile.DoesNotExist:
+            return ''
 
 
 class UserPublicSerializer(serializers.ModelSerializer):
