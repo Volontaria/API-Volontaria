@@ -348,6 +348,17 @@ class Participations(generics.ListCreateAPIView):
     def get_queryset(self):
         if self.request.user.is_superuser:
             return models.Participation.objects.all()
+
+        event_id = self.request.query_params.get('event')
+        if event_id:
+            # Get the related Event
+            event = models.Event.objects.get(pk=event_id)
+
+            # Check if the user is a manager of the related cell
+            if self.request.user in event.cell.managers.all():
+                print('Yes')
+                return models.Participation.objects.all()
+
         return models.Participation.objects.filter(user=self.request.user)
 
     # A user can only create participations for himself

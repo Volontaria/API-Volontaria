@@ -51,6 +51,9 @@ class ParticipationsTests(APITestCase):
             name="my cell",
             address=self.address,
         )
+        self.cell.managers.set([self.user2])
+        self.cell.save()
+
         self.cycle = Cycle.objects.create(
             name="my cycle",
         )
@@ -301,6 +304,26 @@ class ParticipationsTests(APITestCase):
         Ensure we can list participations filtered by event.
         """
         self.client.force_authenticate(user=self.admin)
+
+        url = "{0}?event={1}".format(
+            reverse('volunteer:participations'),
+            self.event.id,
+        )
+
+        response = self.client.get(
+            url,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(content['count'], 1)
+
+    def test_list_participations_filter_by_event_with_cell_manager(self):
+        """
+        Ensure we can list participations filtered by event as a cell manager.
+        """
+        self.client.force_authenticate(user=self.user2)
 
         url = "{0}?event={1}".format(
             reverse('volunteer:participations'),

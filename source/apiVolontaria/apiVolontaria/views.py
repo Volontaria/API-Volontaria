@@ -200,7 +200,7 @@ class UsersId(generics.RetrieveUpdateAPIView):
             self.kwargs['pk'] = self.request.user.id
             return self.retrieve(request, *args, **kwargs)
 
-        elif self.request.user.has_perm('apiVolontaria.get_user'):
+        elif self.request.user.has_perm('auth.view_user'):
             return self.retrieve(request, *args, **kwargs)
 
         content = {
