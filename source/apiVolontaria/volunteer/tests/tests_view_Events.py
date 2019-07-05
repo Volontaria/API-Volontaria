@@ -594,3 +594,26 @@ class EventsTests(APITestCase):
             'The system failed to return some '
             'attributes : {0}'.format(attributes),
         )
+
+    def test_list_events_filter_by_date_range(self):
+        """
+        Ensure we can list event filtered by date range.
+        """
+        self.client.force_authenticate(user=self.admin)
+
+        date_check = self.event.start_date - timezone.timedelta(seconds=30)
+
+        url = "{0}?start_date__gte={1}&start_date__lte={2}".format(
+            reverse('volunteer:events'),
+            date_check.strftime('%Y-%m-%dT%H:%M:%SZ'),
+            self.event.end_date.strftime('%Y-%m-%dT%H:%M:%SZ'),
+        )
+
+        response = self.client.get(
+            url,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(content['count'], 5)

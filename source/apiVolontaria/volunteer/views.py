@@ -258,7 +258,12 @@ class Events(generics.ListCreateAPIView):
     """
 
     serializer_class = serializers.EventBasicSerializer
-    filter_fields = ['volunteers', 'cycle', 'cell']
+    filter_fields = {
+        'volunteers': ['exact'],
+        'cycle': ['exact'],
+        'cell': ['exact'],
+        'start_date': ['exact', 'gte', 'lte'],
+    }
 
     def if_post_permitted(self, request, op_type):
         # Must get the cell to see if the user is a manager or not
