@@ -458,7 +458,10 @@ class ParticipationAdminSerializer(serializers.ModelSerializer):
     standby = serializers.BooleanField()
     user = UserBasicSerializer(
         read_only=True,
-        default=serializers.CurrentUserDefault(),
+    )
+    user_id = serializers.IntegerField(
+        write_only=True,
+        required=False,
     )
 
     class Meta:
@@ -467,6 +470,7 @@ class ParticipationAdminSerializer(serializers.ModelSerializer):
             'id',
             'event',
             'user',
+            'user_id',
             'standby',
             'subscription_date',
             'presence_duration_minutes',
@@ -475,3 +479,35 @@ class ParticipationAdminSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id',
         ]
+
+    def create(self, validated_data):
+
+        user = None
+        user_id = validated_data.get('user_id', None)
+
+        if user_id:
+            try:
+                user = User.objects.get(pk=user_id)
+            except User.DoesNotExist:
+                error = {
+                    'message': (
+                        "Unknown user with this ID"
+                    )
+                }
+                raise serializers.ValidationError(error)
+
+        try:
+            participation = models.Participation.objects.create(**validated_data)
+        except IntegrityError:
+            error = {
+                'non_field_errors': [
+                    "There is already a participation with this user and this event",
+                ]
+            }
+            raise serializers.ValidationError(error)
+
+        if user:
+            participation.user = user
+            participation.save()
+
+        return participation

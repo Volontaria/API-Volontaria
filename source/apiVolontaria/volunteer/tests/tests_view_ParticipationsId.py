@@ -532,6 +532,76 @@ class ParticipationsIdTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_delete_participation_event_started_admin(self):
+        """
+        Ensure we can't delete a specific participation if
+        the event is already started.
+        """
+        self.client.force_authenticate(user=self.admin)
+
+        start_date = timezone.now()
+        end_date = start_date + timezone.timedelta(
+            minutes=100,
+        )
+
+        event = Event.objects.create(
+            cell=self.cell,
+            cycle=self.cycle,
+            task_type=self.task_type,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        participation = Participation.objects.create(
+            standby=True,
+            user=self.user,
+            event=event,
+        )
+
+        response = self.client.delete(
+            reverse(
+                'volunteer:participations_id',
+                kwargs={'pk': participation.id},
+            ),
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_delete_participation_event_started_cell_manager(self):
+        """
+        Ensure we can't delete a specific participation if
+        the event is already started.
+        """
+        self.client.force_authenticate(user=self.user_cell_manager)
+
+        start_date = timezone.now()
+        end_date = start_date + timezone.timedelta(
+            minutes=100,
+        )
+
+        event = Event.objects.create(
+            cell=self.cell_with_manager,
+            cycle=self.cycle,
+            task_type=self.task_type,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        participation = Participation.objects.create(
+            standby=True,
+            user=self.user,
+            event=event,
+        )
+
+        response = self.client.delete(
+            reverse(
+                'volunteer:participations_id',
+                kwargs={'pk': participation.id},
+            ),
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
     def test_delete_participation_without_permission(self):
         """
         Ensure we can't delete a specific participation without owning it.

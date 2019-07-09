@@ -27,6 +27,10 @@ class ParticipationsTests(APITestCase):
         self.user2.set_password('Test123!')
         self.user2.save()
 
+        self.user_cell_manager = UserFactory()
+        self.user_cell_manager.set_password('Test123!')
+        self.user_cell_manager.save()
+
         self.admin = AdminFactory()
         self.admin.set_password('Test123!')
         self.admin.save()
@@ -51,6 +55,10 @@ class ParticipationsTests(APITestCase):
             name="my cell",
             address=self.address,
         )
+
+        self.cell.managers.set([self.user_cell_manager])
+        self.cell.save()
+
         self.cycle = Cycle.objects.create(
             name="my cycle",
         )
@@ -208,6 +216,37 @@ class ParticipationsTests(APITestCase):
         }
         self.assertEqual(json.loads(response.content), content)
 
+    def test_create_duplicate_participation_cell_manager(self):
+        """
+        Ensure we can't create a duplicated participation as cell manager.
+        """
+        subscription_date = timezone.now()
+
+        data = {
+            'event': self.event2.id,
+            'standby': False,
+            'user_id': self.user.pk
+        }
+
+        self.client.force_authenticate(user=self.user_cell_manager)
+
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = subscription_date
+            response = self.client.post(
+                reverse('volunteer:participations'),
+                data,
+                format='json',
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        content = {
+            'non_field_errors': [
+                'There is already a participation with this user and this event',
+            ],
+        }
+        self.assertEqual(json.loads(response.content), content)
+
     def test_list_participations(self):
         """
         Ensure we can list all participations.
@@ -315,3 +354,94 @@ class ParticipationsTests(APITestCase):
         content = json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(content['count'], 1)
+
+    def test_create_new_participation_cell_manager(self):
+        """
+        Ensure we can create a new participation.
+        """
+        subscription_date = timezone.now()
+
+        subscription_date_str = subscription_date.strftime(
+            "%Y-%m-%dT%H:%M:%S.%fZ",
+        )
+
+        data = {
+            'user_id': self.user.pk,
+            'event': self.event.id,
+            'user': self.user.id,
+            'standby': False,
+            'subscription_date': subscription_date,
+        }
+
+        self.client.force_authenticate(user=self.user_cell_manager)
+
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = subscription_date
+            response = self.client.post(
+                reverse('volunteer:participations'),
+                data,
+                format='json',
+            )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(content['subscription_date'], subscription_date_str)
+        self.assertEqual(content['user']['id'], self.user.id)
+        self.assertEqual(content['event'], self.event.id)
+        self.assertEqual(content['standby'], False)
+
+        # Check the system doesn't return attributes not expected
+        attributes = [
+            'id',
+            'subscription_date',
+            'user',
+            'event',
+            'standby',
+            'presence_duration_minutes',
+            'presence_status',
+        ]
+
+        for key in content.keys():
+            self.assertTrue(
+                key in attributes,
+                'Attribute "{0}" is not expected but is '
+                'returned by the system.'.format(key),
+            )
+            attributes.remove(key)
+
+        # Ensure the system returns all expected attributes
+        self.assertTrue(
+            len(attributes) == 0,
+            'The system failed to return some '
+            'attributes : {0}'.format(attributes),
+        )
+
+    def test_create_new_participation_cell_manager_wrong_user(self):
+        """
+        Ensure we can create a new participation.
+        """
+        subscription_date = timezone.now()
+
+        data = {
+            'user_id': 123,
+            'event': self.event.id,
+            'user': self.user.id,
+            'standby': False,
+            'subscription_date': subscription_date,
+        }
+
+        self.client.force_authenticate(user=self.user_cell_manager)
+
+        with mock.patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = subscription_date
+            response = self.client.post(
+                reverse('volunteer:participations'),
+                data,
+                format='json',
+            )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(content['message'], 'Unknown user with this ID')

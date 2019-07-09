@@ -1,8 +1,12 @@
+import urllib
+
+from django.contrib.auth.models import User
 from rest_framework import filters
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 
+from .serializers import ParticipationAdminSerializer
 from .permissions import ParticipationIsManager, EventIsManager
 from . import models, serializers
 
@@ -345,15 +349,48 @@ class Participations(generics.ListCreateAPIView):
     serializer_class = serializers.ParticipationBasicSerializer
     filter_fields = ['event']
 
-    def get_queryset(self):
-        if self.request.user.is_superuser:
-            return models.Participation.objects.all()
-        return models.Participation.objects.filter(user=self.request.user)
+    permission_classes = (
+        IsAuthenticated,
+        ParticipationIsManager,
+    )
 
-    # A user can only create participations for himself
-    # This auto-fills the 'user' field of the Participation object.
+    def get_serializer_class(self):
+        # We have to check manually the permissions to see
+        # which Serializer to return
+        manager_permissions = ParticipationIsManager.if_can_do_actions(
+            self.request, self, None
+        )
+
+        if manager_permissions:
+            return ParticipationAdminSerializer
+        else:
+            return serializers.ParticipationBasicSerializer
+
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        manager_permissions = ParticipationIsManager.if_can_do_actions(
+            self.request, self, None
+        )
+
+        if manager_permissions:
+            serializer.save()
+        else:
+            serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+
+        event_id = self.request.query_params.get('event')  # admin request
+        username = self.request.query_params.get('username')  # personal request in user profile
+
+        if username:
+            username = urllib.parse.unquote_plus(username)
+            user = User.objects.filter(username=username).first()
+            return models.Participation.objects.filter(user=user)
+        elif event_id:
+            event = models.Event.objects.filter(pk=event_id)[0]
+            if self.request.user.is_superuser or self.request.user in event.cell.managers.all():
+                return models.Participation.objects.all()
+        else:
+            return models.Participation.objects.all()
 
 
 class ParticipationsId(generics.RetrieveUpdateDestroyAPIView):
@@ -395,12 +432,15 @@ class ParticipationsId(generics.RetrieveUpdateDestroyAPIView):
 
         if manager_permissions:
             return serializers.ParticipationAdminSerializer
-        else:
-            return serializers.ParticipationBasicSerializer
+
+        return serializers.ParticipationBasicSerializer
 
     def delete(self, request, *args, **kwargs):
         participation = self.get_object()
-        if not participation.event.is_started:
+
+        # If the user is an admin, he can delete a Participation even after it as started
+        if not participation.event.is_started or ParticipationIsManager.if_cell_manager_or_admin(
+                self.request, self, self.get_object()):
             return self.destroy(request, *args, **kwargs)
         else:
             content = {
