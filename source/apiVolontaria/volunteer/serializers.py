@@ -284,8 +284,22 @@ class CellExportSerializer(serializers.Serializer):
         filename = '%s_%s.csv' % (obj.pk, now.strftime('%Y%m%d'))
         file_path = '%s/cell_export/' % settings.MEDIA_ROOT
 
-        # Create exporation class with filter params
-        pa_export = ParticipationResource(cell_filter=obj.pk, date_filter=now)
+        cycles = self.context.get('cycles', None)
+        tasks = self.context.get('tasks', None)
+
+        date_filter = None
+
+        # No cycle, we default to filter the future participations
+        if not cycles:
+            date_filter = now
+
+        # Create exportation class with filter params
+        pa_export = ParticipationResource(
+            cell_filter=obj.pk,  # Always filter by cell
+            date_filter=date_filter,  # If no cycle, we receive a date filter to get Participation of the future
+            cycles_filter=cycles,
+            tasks_filter=tasks,
+        )
         export = pa_export.export()
 
         # create the MEDIA_ROOT if not existing
