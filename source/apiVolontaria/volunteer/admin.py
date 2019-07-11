@@ -148,7 +148,7 @@ class CycleAdmin(admin.ModelAdmin):
         return response
 
     generate_participation_report_csv.short_description = \
-        _("Generate cycle Participation report")
+        _("Generate Participation report")
 
 
 class CellAdmin(admin.ModelAdmin):

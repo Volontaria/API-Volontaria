@@ -162,7 +162,7 @@ class Users(generics.ListCreateAPIView):
                 plain_msg = render_to_string("confirm_sign_up.txt", merge_data)
                 msg_html = render_to_string("confirm_sign_up.html", merge_data)
                 emails_not_sent = services.service_send_mail([request.data["email"]],
-                                                                _("Confirmation d\'enregistrement."),
+                                                                _("Registering confirmation."),
                                                                 plain_msg, msg_html)
 
                 if emails_not_sent:
@@ -351,7 +351,7 @@ class ResetPassword(APIView):
             plain_msg = render_to_string("reset_password.txt", merge_data)
             msg_html = render_to_string("reset_password.html", merge_data)
             response_send_mail = services.service_send_mail([user.email],
-                                                            _("Mise à jour du mot de passe."),
+                                                            _("Update password."),
                                                             plain_msg, msg_html)
             if len(response_send_mail) > 0:
                 return Response(text_error_not_email_send, status=status.HTTP_201_CREATED)

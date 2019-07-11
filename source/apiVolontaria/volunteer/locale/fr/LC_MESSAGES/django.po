@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Volontaria v.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-28 19:17+0000\n"
+"POT-Creation-Date: 2019-08-05 18:25+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,87 +18,104 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: volunteer/admin.py:120
+#: volunteer/admin.py:121
 msgid "You must select a cycle"
-msgstr ""
+msgstr "Vous devez sélectionner un cycle"
 
-#: volunteer/admin.py:150
-msgid "Generate cycle Participation report"
+#: volunteer/admin.py:151
+msgid "Generate Participation report"
+msgstr "Générer un rapport de Participation"
+
+#: volunteer/forms.py:19
+msgid "The start date needs to be older than end date."
+msgstr "La date de début doit être antérieure à la date de fin."
+
+#: volunteer/forms.py:32
+msgid "The start date can't be older than start date of the cycle."
 msgstr ""
+"La date de début ne peut pas être plus ancienne que la date de début du "
+"cycle."
+
+#: volunteer/forms.py:37
+msgid "The end date can't be younger than end date of the cycle."
+msgstr "La date de fin ne peut être inférieure à la date de fin du cycle."
 
 #: volunteer/models.py:84
 msgid "All of the Participations presence status must be initialised."
 msgstr ""
+"Tous les statuts de présence de Participations doivent être initialisés."
 
-#: volunteer/models.py:364
+#: volunteer/models.py:376
 msgid "Initialisation"
-msgstr ""
+msgstr "Initialisation"
 
-#: volunteer/models.py:365
+#: volunteer/models.py:377
 msgid "Absent"
-msgstr ""
+msgstr "Absent"
 
-#: volunteer/models.py:366
+#: volunteer/models.py:378
 msgid "Present"
-msgstr ""
+msgstr "Présent"
 
 #: volunteer/resources.py:19
 msgid "task_type"
-msgstr ""
+msgstr "task_type"
 
-#: volunteer/serializers.py:349
+#: volunteer/serializers.py:363
 msgid "Start date need to be after start date of the cycle."
-msgstr ""
+msgstr "La date de début doit être postérieure à la date de début du cycle."
 
-#: volunteer/serializers.py:354
+#: volunteer/serializers.py:368
 msgid "End date need to be before the end date of the cycle."
-msgstr ""
+msgstr "La date de fin doit être antérieure à la date de fin du cycle."
 
-#: volunteer/serializers.py:359
+#: volunteer/serializers.py:373
 msgid "Start date need to be before the end date."
-msgstr ""
+msgstr "La date de début doit être antérieure à la date de fin."
 
 #: volunteer/views.py:40
 msgid "You are not authorized to create a new cycle."
-msgstr ""
+msgstr "Vous n'êtes pas autorisé à créer un nouveau cycle."
 
 #: volunteer/views.py:66
 msgid "You are not authorized to update a cycle."
-msgstr ""
+msgstr "Vous n'êtes pas autorisé à mettre à jour un cycle."
 
 #: volunteer/views.py:75
 msgid "You are not authorized to delete a cycle."
-msgstr ""
+msgstr "Vous n'êtes pas autorisé à supprimer un cycle."
 
 #: volunteer/views.py:102
 msgid "You are not authorized to create a new tasktype."
-msgstr ""
+msgstr "Vous n'êtes pas autorisé à créer un nouveau type de tâche."
 
 #: volunteer/views.py:134
 msgid "You are not authorized to update a tasktype."
-msgstr ""
+msgstr "Vous n'êtes pas autorisé à mettre à jour un type de tâche."
 
 #: volunteer/views.py:143
 msgid "You are not authorized to delete a tasktype."
-msgstr ""
+msgstr "Vous n'êtes pas autorisé à supprimer un type de tâche."
 
 #: volunteer/views.py:172
 msgid "You are not authorized to create a new cell."
-msgstr ""
+msgstr "Vous n'êtes pas autorisé à créer une nouvelle cellule."
 
 #: volunteer/views.py:204
 msgid "You are not authorized to update a cell."
-msgstr ""
+msgstr "Vous n'êtes pas autorisé à mettre à jour une cellule."
 
 #: volunteer/views.py:213
 msgid "You are not authorized to delete a cell."
-msgstr ""
+msgstr "Vous n'êtes pas autorisé à supprimer une cellule."
 
-#: volunteer/views.py:287
+#: volunteer/views.py:296
 msgid "You are not authorized to create a new event."
-msgstr ""
+msgstr "Vous n'êtes pas autorisé à créer un nouvel événement."
 
-#: volunteer/views.py:399
+#: volunteer/views.py:408
 msgid ""
 "You can't delete a participation if the associated event is already started"
 msgstr ""
+"Vous ne pouvez pas supprimer une participation si l'événement associé est "
+"déjà commencé"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Volontaria v.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-28 19:17+0000\n"
+"POT-Creation-Date: 2019-08-05 18:25+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,122 +20,145 @@ msgstr ""
 
 #: apiVolontaria/models.py:23
 msgid "Account activation"
-msgstr ""
+msgstr "Activation du compte"
 
 #: apiVolontaria/models.py:24
 msgid "Password change"
-msgstr ""
+msgstr "Changement du mot de passe"
 
-#: apiVolontaria/serializers.py:46
+#: apiVolontaria/serializers.py:45
 msgid "Unable to log in with provided credentials."
 msgstr ""
+"Impossible de se connecter avec les informations d'identification fournies"
 
-#: apiVolontaria/serializers.py:49
+#: apiVolontaria/serializers.py:48
 msgid "Must include \"login\" and \"password\"."
-msgstr ""
+msgstr "Doit inclure \"nom d'utilisateur\" et \"mot de passe\"."
 
-#: apiVolontaria/serializers.py:92
+#: apiVolontaria/serializers.py:91
 msgid "An account for the specified email address already exists."
-msgstr ""
-
-#: apiVolontaria/services.py:15
-msgid "Email service is disabled."
-msgstr ""
+msgstr "Un compte avec le courriel spécifiée existe déjà."
 
 #: apiVolontaria/templates/confirm_sign_up.html:19
-msgid "Confirmation d'achat"
-msgstr ""
+msgid "Welcome to the team NousRire!"
+msgstr "Bienvenue dans l'équipe NousRire!"
 
 #: apiVolontaria/templates/confirm_sign_up.html:23
 msgid ""
-"Ton compte bénévole a bien été créé et il ne te reste plus qu'à l'activer:"
+"Your volunteer account has been created and you just have to activate it:"
 msgstr ""
+"Ton compte bénévole a bien été créé et il ne te reste plus qu'à l'activer:"
 
 #: apiVolontaria/templates/confirm_sign_up.html:26
-msgid "Activer mon compte"
-msgstr ""
+#, fuzzy
+#| msgid "activate my account"
+msgid "Activate my account"
+msgstr "Activer mon compte"
 
 #: apiVolontaria/templates/confirm_sign_up.html:28
-msgid "À très bientôt"
-msgstr ""
+msgid "See you soon"
+msgstr "À très bientôt"
 
 #: apiVolontaria/templates/confirm_sign_up.html:32
-#: apiVolontaria/templates/reset_password.html:28
-msgid "Propulsé par Volontaria."
-msgstr ""
+#: apiVolontaria/templates/reset_password.html:30
+msgid "Powered by Volontaria."
+msgstr "Propulsé par Volontaria."
 
-#: apiVolontaria/templates/reset_password.html:16
-msgid "Réinitialisation de ton mot de passe"
-msgstr ""
+#: apiVolontaria/templates/reset_password.html:18
+msgid "Reset your password"
+msgstr "Réinitialisation de ton mot de passe"
 
-#: apiVolontaria/templates/reset_password.html:19
-msgid "Salut cher bénévole!"
-msgstr ""
-
-#: apiVolontaria/templates/reset_password.html:20
-msgid ""
-"Voici le lien sur lequel tu dois cliquer pour pouvoir réinitialiser ton mot "
-"de passe :"
-msgstr ""
+#: apiVolontaria/templates/reset_password.html:21
+msgid "Hi dear volunteer!"
+msgstr "Salut cher bénévole!"
 
 #: apiVolontaria/templates/reset_password.html:22
-msgid "Réinitialiser"
+msgid "Here is the link you need to click in order to reset your password:"
 msgstr ""
+"Voici le lien sur lequel tu dois cliquer pour pouvoir réinitialiser ton mot "
+"de passe :"
 
 #: apiVolontaria/templates/reset_password.html:24
-msgid ""
+msgid "Reset"
+msgstr "Réinitialiser"
+
+#: apiVolontaria/templates/reset_password.html:26
+msgid "Thank you for your involvement and looking forward to seeing you us!"
+msgstr ""
 "Merci de tout coeur pour ton implication et au plaisir de te compter parmi "
 "nous!"
-msgstr ""
 
 #: apiVolontaria/views.py:81
 msgid "Could not authenticate user."
-msgstr ""
+msgstr "Impossible d'authentifier l'utilisateur."
 
-#: apiVolontaria/views.py:108
+#: apiVolontaria/views.py:110
 msgid "You are not authorized to list users."
-msgstr ""
+msgstr "Vous n'êtes pas autorisé à répertorier les utilisateurs."
 
-#: apiVolontaria/views.py:157
-msgid "Confirmation d'enregistrement."
-msgstr ""
+#: apiVolontaria/views.py:165
+msgid "Registering confirmation."
+msgstr "Confirmation d'enregistrement."
 
-#: apiVolontaria/views.py:166
+#: apiVolontaria/views.py:170
 msgid ""
 "The account was created but no email was sent. If your account is not "
 "activated, contact the administration."
 msgstr ""
+"Le compte a été créé mais aucun email n'a été envoyé. Si votre compte n'est "
+"pas activé, contactez l'administration."
 
-#: apiVolontaria/views.py:196
+#: apiVolontaria/views.py:177
+msgid ""
+"The account was created but no email was sent (email service deactivated). "
+"If your account is not activated, contact the administration."
+msgstr ""
+"Le compte a été créé mais aucun email n'a été envoyé (service de messagerie "
+"désactivé). Si votre compte n'est pas activé, contactez l'administration."
+
+#: apiVolontaria/views.py:207
 msgid "You are not authorized to get detail of a given user."
 msgstr ""
+"Vous n'êtes pas autorisé à obtenir des détails sur un utilisateur donné."
 
-#: apiVolontaria/views.py:210
+#: apiVolontaria/views.py:221
 msgid "You are not authorized to update a given user."
-msgstr ""
+msgstr "Vous n'êtes pas autorisé à mettre à jour un utilisateur donné."
 
-#: apiVolontaria/views.py:216
+#: apiVolontaria/views.py:227
 msgid "Method \"PUT\" not allowed."
-msgstr ""
+msgstr "La méthode \"PUT\" n'est pas autorisée."
 
-#: apiVolontaria/views.py:266
+#: apiVolontaria/views.py:277
 msgid "The system have a problem, please contact us, it is not your fault."
 msgstr ""
+"Le système a un problème, s'il vous plaît contactez-nous, ce n'est pas votre "
+"faute."
 
-#: apiVolontaria/views.py:296
-msgid "No account with this username."
-msgstr ""
-
-#: apiVolontaria/views.py:333
-msgid "Mise à jour du mot de passe."
-msgstr ""
-
-#: apiVolontaria/views.py:342
+#: apiVolontaria/views.py:302
 msgid ""
 "Your token has been created but no email has been sent. Please contact the "
 "administration."
 msgstr ""
+"Votre jeton a été créé mais aucun email n'a été envoyé. S'il vous plaît "
+"contacter l'administration."
 
-#: apiVolontaria/views.py:409
+#: apiVolontaria/views.py:317
+msgid "No account with this username or email."
+msgstr "Aucun compte avec ce nom d'utilisateur ou courriel."
+
+#: apiVolontaria/views.py:354
+msgid "Update password."
+msgstr "Mise à jour du mot de passe."
+
+#: apiVolontaria/views.py:421
 msgid "The system has a problem, please contact us, it is not your fault."
 msgstr ""
+"Le système a un problème, s'il vous plaît contactez-nous, ce n'est pas votre "
+"faute."
+
+#~ msgid ""
+#~ "Merci de tout coeur pour ton implication et au plaisir de te compter "
+#~ "parmi nous!"
+#~ msgstr ""
+#~ "Thank you for your involvement and looking forward to seeing you among us!"
