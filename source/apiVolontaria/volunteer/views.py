@@ -3,6 +3,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 
+from volunteer.serializers import ParticipationAdminSerializer
 from .permissions import ParticipationIsManager, EventIsManager
 from . import models, serializers
 
@@ -345,10 +346,27 @@ class Participations(generics.ListCreateAPIView):
     serializer_class = serializers.ParticipationBasicSerializer
     filter_fields = ['event']
 
+    permission_classes = (
+        IsAuthenticated,
+        ParticipationIsManager,
+    )
+
     def get_queryset(self):
         if self.request.user.is_superuser:
             return models.Participation.objects.all()
         return models.Participation.objects.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        # We have to check manually the permissions to see
+        # which Serializer to return
+        manager_permissions = ParticipationIsManager.if_can_do_actions(
+            self.request, self, None
+        )
+
+        if manager_permissions:
+            return ParticipationAdminSerializer
+
+        return serializers.ParticipationBasicSerializer
 
     # A user can only create participations for himself
     # This auto-fills the 'user' field of the Participation object.

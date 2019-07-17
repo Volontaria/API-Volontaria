@@ -12,7 +12,7 @@ from django.utils import timezone
 from location.serializers import AddressBasicSerializer
 from location.models import Address, StateProvince, Country
 
-from apiVolontaria.serializers import UserPublicSerializer, UserBasicSerializer
+from apiVolontaria.serializers import UserPublicSerializer, UserBasicSerializer, UserAdminSerializer
 from django.contrib.auth.models import User
 
 from . import models
@@ -456,7 +456,7 @@ class ParticipationAdminSerializer(serializers.ModelSerializer):
 
     # Explicitly declare the BooleanField to make it "required"
     standby = serializers.BooleanField()
-    user = UserBasicSerializer(
+    user = UserAdminSerializer(
         read_only=True,
         default=serializers.CurrentUserDefault(),
     )

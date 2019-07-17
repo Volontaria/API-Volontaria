@@ -9,6 +9,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import authenticate, password_validation
 
 from volunteer.models import Cell
+
+from volunteer.models import Participation
 from .models import ActionToken, Profile
 
 
@@ -205,6 +207,48 @@ class UserBasicSerializer(serializers.ModelSerializer):
             UserBasicSerializer,
             self
         ).update(instance, validated_data)
+
+
+class UserAdminSerializer(UserBasicSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'is_active',
+            'is_superuser',
+            'password',
+            'new_password',
+            'phone',
+            'mobile',
+            'managed_cell',
+            'last_participation'
+        )
+        write_only_fields = (
+            'password',
+            'new_password',
+        )
+        read_only_fields = (
+            'is_staff',
+            'is_superuser',
+            'is_active',
+            'date_joined',
+            'last_participation'
+        )
+
+    last_participation = serializers.SerializerMethodField()
+
+    def get_last_participation(self, obj):
+        last_participation = \
+            Participation.objects.filter(user=obj, presence_status='P').order_by('-event__start_date').first()
+
+        if last_participation:
+            return last_participation.start_date
+
+        return ''
 
 
 class UserPublicSerializer(serializers.ModelSerializer):

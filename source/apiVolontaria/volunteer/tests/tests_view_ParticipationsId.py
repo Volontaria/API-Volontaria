@@ -434,7 +434,8 @@ class ParticipationsIdTests(APITestCase):
                 "is_superuser": self.user2.is_superuser,
                 "phone": None,
                 "mobile": None,
-                "managed_cell": []
+                "managed_cell": [],
+                "last_participation": self.participation.event.start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             },
             "standby": True,
             "subscription_date": subscription_date_str,
