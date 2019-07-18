@@ -260,7 +260,7 @@ class ResetPasswordTests(APITestCase):
             "FRONTEND_INTEGRATION": {
                 "FORGOT_PASSWORD_URL": "fake_url",
             }
-        }
+        },
     )
     def test_create_new_token_when_token_already_exist(self):
         """

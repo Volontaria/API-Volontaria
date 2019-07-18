@@ -93,6 +93,7 @@ class CellsTests(APITestCase):
                     'email': self.user.email,
                 },
             ],
+            'email': '',
         }
 
         self.assertRaises(Address.DoesNotExist,
@@ -145,6 +146,7 @@ class CellsTests(APITestCase):
                 },
             },
             'managers': [],
+            'email': '',
         }
 
         self.assertRaises(Country.DoesNotExist,
@@ -191,6 +193,7 @@ class CellsTests(APITestCase):
                 },
             },
             'managers': [],
+            'email': '',
         }
 
         self.client.force_authenticate(user=self.admin)
@@ -230,6 +233,7 @@ class CellsTests(APITestCase):
                 },
             },
             'managers': [],
+            'email': '',
         }
 
         self.client.force_authenticate(user=self.admin)
@@ -268,6 +272,7 @@ class CellsTests(APITestCase):
                     'name': 'Random Country',
                 },
             },
+            'email': '',
             'managers': [],
         }
 
@@ -456,7 +461,8 @@ class CellsTests(APITestCase):
                         'name': self.random_country.name,
                     },
                 },
-                "managers": [],
+                'managers': [],
+                'email': '',
             }
         ]
 

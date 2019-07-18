@@ -154,6 +154,7 @@ class CycleAdmin(admin.ModelAdmin):
 class CellAdmin(admin.ModelAdmin):
     list_display = [
         'name',
+        'email',
     ]
 
     filter_horizontal = [

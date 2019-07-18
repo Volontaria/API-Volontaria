@@ -1,8 +1,14 @@
+from datetime import datetime
+
+from django.conf import settings
+from django.template.loader import render_to_string
+from django.utils import timezone
 from rest_framework import filters
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 
+from apiVolontaria import services
 from .permissions import ParticipationIsManager, EventIsManager
 from . import models, serializers
 
@@ -213,6 +219,85 @@ class CellsId(generics.RetrieveUpdateDestroyAPIView):
             'detail': _("You are not authorized to delete a cell."),
         }
         return Response(content, status=status.HTTP_403_FORBIDDEN)
+
+
+class CellEmail(generics.CreateAPIView):
+
+    serializer_class = serializers.CellEmailSerializer
+
+    def get_queryset(self):
+        return models.Cell.objects.filter()
+
+    def post(self, request, *args, **kwargs):
+        cell = self.get_object()
+
+        cycles = None
+        if 'cycle' in request.query_params:
+            cycles = request.query_params.getlist('cycle')
+
+        tasks = None
+        if 'task' in request.query_params:
+            tasks = request.query_params.getlist('task')
+
+        serializer = serializers.CellEmailSerializer(
+            cell, data=request.data, context={'cycles': cycles, 'tasks': tasks}
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        query = models.Participation.objects.filter(event__cell=cell)
+
+        # Filter the cycle
+        if cycles:
+            query = query.filter(event__cycle__in=cycles)
+
+        # Filter the task_type
+        if tasks:
+            query = query.filter(event__task_type__in=tasks)
+
+        # No cycle or Tasktype, we default to filter the future participations
+        if not cycles and not tasks:
+            # get today date without time
+            now = timezone.now()
+            now = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+            query = query.filter(event__start_date__gte=now)
+
+        content = serializer.validated_data['content']
+        subject = serializer.validated_data['subject']
+
+        # data for email activation
+        text_error_not_email_send = {
+            'detail': _("No email sended. Please contact the "
+                        "administration."),
+        }
+
+        msg_html_css = render_to_string('css/cell_manager_email.css')
+
+        merge_data = {
+            'content': content,
+            'year': datetime.now().year,
+            'CSS_STYLE': msg_html_css
+        }
+
+        plain_msg = render_to_string("cell_manager_email.txt", merge_data)
+        msg_html = render_to_string("cell_manager_email.html", merge_data)
+
+        email_from = cell.email
+
+        # Now must get the emails
+        emails = []
+        for p in query:
+            emails.append(p.user.email)
+
+        if settings.CUSTOM_EMAIL:
+            response_send_mail = services.service_send_mail(emails,
+                                                            subject,
+                                                            plain_msg, msg_html, email_from)
+            if len(response_send_mail) > 0:
+                return Response(text_error_not_email_send, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({'emails': emails}, status=status.HTTP_200_OK)
 
 
 class CellExport(generics.RetrieveAPIView):

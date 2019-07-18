@@ -234,6 +234,7 @@ class CellBasicSerializer(serializers.ModelSerializer):
         data = dict()
         data['id'] = instance.id
         data['name'] = instance.name
+        data['email'] = instance.email
         data['address'] = AddressBasicSerializer(
             instance.address
         ).to_representation(instance.address)
@@ -258,6 +259,18 @@ class CellBasicSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id',
         ]
+
+
+class CellEmailSerializer(serializers.Serializer):
+
+    class Meta:
+        fields = (
+            'subject',
+            'content',
+        )
+
+    subject = serializers.CharField(required=True, write_only=True)
+    content = serializers.CharField(max_length=None, required=True, write_only=True)
 
 
 class CellExportSerializer(serializers.Serializer):

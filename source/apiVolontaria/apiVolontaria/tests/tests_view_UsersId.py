@@ -470,7 +470,8 @@ class UsersIdTests(APITestCase):
                 'first_name': self.user.first_name,
                 'last_name': self.user.last_name,
                 'email': self.user.email,
-            }]
+            }],
+            'email': '',
         }]
 
         self.assertEqual(content['managed_cell'], data)

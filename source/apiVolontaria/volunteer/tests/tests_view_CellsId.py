@@ -89,6 +89,7 @@ class CellsIdTests(APITestCase):
                 ),
             ),
             "managers": [],
+            'email': '',
         }
 
         self.client.force_authenticate(user=self.user)
@@ -130,6 +131,7 @@ class CellsIdTests(APITestCase):
                 ),
             ),
             "managers": [],
+            'email': '',
         }
 
         data_post = {
@@ -247,6 +249,7 @@ class CellsIdTests(APITestCase):
                     "email": self.user.email,
                 },
             ],
+            'email': '',
         }
         self.client.force_authenticate(user=self.admin)
 
@@ -365,6 +368,7 @@ class CellsIdTests(APITestCase):
                     "email": self.admin.email,
                 },
             ],
+            'email': '',
         }
         self.client.force_authenticate(user=self.admin)
 

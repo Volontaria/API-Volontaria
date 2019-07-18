@@ -1,0 +1,4 @@
+{{ content|safe }}
+
+© {{year}} NousRire
+Propulsé par Volontaria.

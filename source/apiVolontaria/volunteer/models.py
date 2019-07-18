@@ -149,6 +149,10 @@ class Cell(models.Model):
         on_delete=models.CASCADE,
     )
 
+    email = models.EmailField(
+        verbose_name="Email",
+    )
+
     managers = models.ManyToManyField(
         User,
         verbose_name="Managers",

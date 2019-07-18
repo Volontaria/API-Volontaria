@@ -222,6 +222,13 @@ CONSTANT = {
     },
 }
 
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp-relay.sendinblue.com'
+EMAIL_HOST_USER = 'SENDINBLUE_EMAIL'
+EMAIL_HOST_PASSWORD = 'SENDINBLUE_PASSWORD'
+EMAIL_PORT = 587
+
+CUSTOM_EMAIL = False
 
 try:
     from apiVolontaria.local_settings import *
