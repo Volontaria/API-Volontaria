@@ -42,11 +42,16 @@ INSTALLED_APPS = [
     'rest_framework_docs',
     'rest_framework.authtoken',
     'corsheaders',
+    'import_export',
+    'anymail',
+    'orderable',
+    'ckeditor',
+    'reversion',
+
     'apiVolontaria',
     'volunteer',
     'location',
-    'import_export',
-    'anymail'
+    'pages',
 ]
 
 MIDDLEWARE = [
