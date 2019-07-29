@@ -230,9 +230,18 @@ class CellExport(generics.RetrieveAPIView):
     def get_queryset(self):
         return models.Cell.objects.filter()
 
-    def get(self, request, pk):
+    def get(self, request, *args, **kwargs):
         cell = self.get_object()
-        serializer = serializers.CellExportSerializer(cell)
+
+        cycles = None
+        if 'cycle' in request.query_params:
+            cycles = request.query_params.getlist('cycle')
+
+        tasks = None
+        if 'task' in request.query_params:
+            tasks = request.query_params.getlist('task')
+
+        serializer = serializers.CellExportSerializer(cell, context={'cycles': cycles, 'tasks': tasks})
         return Response(serializer.data)
 
 
