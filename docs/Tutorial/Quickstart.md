@@ -8,6 +8,12 @@ The project use [Git](https://git-scm.com/) and is accessible on [Github](https:
 
 First of all you need to clone the project on your computer.
 
+To contribute on this repository, use a fork:
+```
+git clone https://github.com/your_github_username/API-Volontaria.git
+```
+
+To just use the API (to contribute on the frontend repository for example):
 ```
 git clone https://github.com/Volontaria/API-Volontaria.git
 ```
@@ -48,7 +54,7 @@ have the right data schema.
 python source/apiVolontaria/manage.py migrate
 ```
 
-> By default this repository work with a Sqlite3 database which is a technology using a simple file in place of a server. You can change this config in `source/apiVolontaria/apiVolontaria/settings.py`. 
+> By default this repository work with a Sqlite3 database which is a technology using a simple file in place of a server. You can change this config in `source/apiVolontaria/apiVolontaria/local_settings.py`. 
  
 ## Test the installation
 
@@ -63,3 +69,20 @@ You can now [visit the homepage](http://localhost:8000/) to validate the install
 ```
 http://localhost:8000/
 ```
+
+## Create an administrator
+
+You will need an administrator to:
+
+ - Access the django admin panel `http://localhost:8000/admin`
+ - Access the admin panel of the frontend
+
+To create an administrator, just use this command line and respond to some questions.
+
+```
+python source/apiVolontaria/manage.py createsuperuser
+```
+
+## Custom settings
+
+If you need to have custom settings on your local environment, you can override global settings in `source/apiVolontaria/apiVolontaria/local_settings.py`.

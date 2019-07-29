@@ -13,26 +13,90 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.conf.urls import url, include
+from django.urls import path
 from django.contrib import admin
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.views.static import serve
 
-from apiVolontaria.views import ObtainTemporaryAuthToken
+from rest_framework.documentation import include_docs_urls
+
+from .views import (ObtainTemporaryAuthToken, Users, UsersId, UsersActivation,
+                    ResetPassword, ChangePassword)
 
 urlpatterns = [
-    # Admin panel
-    url(
-        r'^admin/',
-        admin.site.urls
-    ),
     # Token authentification
     url(
         r'^authentication$',
         ObtainTemporaryAuthToken.as_view(),
         name='token_api'
     ),
-    # DOCUMENTATION SWAGGER
+    # Forgot password
     url(
-        r'^documentation/',
-        include('rest_framework_docs.urls')
-    )
+        r'^reset_password$',
+        ResetPassword.as_view(),
+        name='reset_password'
+    ),
+    url(
+        r'^change_password$',
+        ChangePassword.as_view(),
+        name='change_password'
+    ),
+    # Users
+    url(
+        r'^users$',
+        Users.as_view(),
+        name='users'
+    ),
+    url(
+        r'^users/activate$',
+        UsersActivation.as_view(),
+        name='users_activation',
+    ),
+    url(
+        r'^users/(?P<pk>\d+)$',
+        UsersId.as_view(),
+        name='users_id',
+    ),
+    url(
+        r'^profile$',
+        UsersId.as_view(),
+        kwargs=dict(
+            profile=True,
+        ),
+        name='profile',
+    ),
+    # Volunteer
+    url(
+        r'^volunteer/',
+        include('volunteer.urls', namespace="volunteer"),
+    ),
+    # Location
+    url(
+        r'^location/',
+        include('location.urls', namespace="location"),
+    ),
+    # DOCUMENTATION SWAGGER
+    path(
+        'docs/',
+        include_docs_urls(
+            title=settings.CONSTANT['ORGANIZATION'] + " API",
+            authentication_classes=[],
+            permission_classes=[]
+        )
+    ),
+    # Admin panel
+    url(
+        r'^admin/',
+        admin.site.urls
+    ),
 ]
+
+if settings.DEBUG:
+    urlpatterns = [
+        url(r'^%s(?P<path>.*)$' % settings.MEDIA_URL, serve, {
+            'document_root': settings.MEDIA_ROOT, 'show_indexes': True
+        }),
+    ] + urlpatterns
+    urlpatterns += staticfiles_urlpatterns()

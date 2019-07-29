@@ -11,11 +11,12 @@ notifications:
 install:
   - pip install -r requirements.txt
   - pip install coveralls
-  - pip install pep8
+  - pip install pycodestyle
 
 script:
-  - coverage run --omit=*.virtualenvs*,*virtualenv* source/apiVolontaria/manage.py test source/apiVolontaria/
-  - pep8 --count --show-source --exclude=migrations source/apiVolontaria
+  - cd source/apiVolontaria
+  - coverage run --include=apiVolontaria/*,location/*,order/*,volunteer/* --omit=*__init__*,*migrations/*,*tests/* manage.py test .
+  - pycodestyle --count --show-source --exclude=migrations,.*,__pycache__,docs,env  .
 
 after_success:
   coveralls

@@ -1,70 +1,239 @@
-from rest_framework import serializers
-
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate
-
 import re
+
+from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
+
+from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
+from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth import authenticate, password_validation
+
 from django.core import exceptions
+from volunteer.models import Cell
+from .models import ActionToken, Profile
+
+
+# Validator for phone numbers
+def phone_number(phone):
+    reg = re.compile('^([+][0-9]{1,2})?[0-9]{9,10}$')
+    char_list = " -.()"
+    for i in char_list:
+        phone = phone.replace(i, '')
+    if not reg.match(phone):
+        raise serializers.ValidationError("Invalid format.")
 
 
 class AuthCustomTokenSerializer(serializers.Serializer):
     login = serializers.CharField()
-
-    password = serializers.CharField()
-
-    def validate_email(self, email):
-        if len(email) > 6:
-            if re.match(
-                    '[A-Za-z0-1\.-]+'
-                    '@[A-Za-z0-1\.-]+'
-                    '\.[A-Za-z0-1]{2,4}',
-                    email
-            ):
-                return 1
-        return 0
+    password = serializers.CharField(style={'input_type': 'password'})
 
     def validate(self, attrs):
-        email_or_username = attrs.get('login')
+        login = attrs.get('login')
         password = attrs.get('password')
 
-        if email_or_username and password:
-            # Check if user sent email
-            if self.validate_email(email_or_username):
-                email_exist = User.objects.filter(
-                    email=email_or_username,
-                )
+        if login and password:
+            try:
+                user_obj = User.objects.get(email=login)
+                if user_obj:
+                    login = user_obj.username
+            except User.DoesNotExist:
+                pass
 
-                if not email_exist.count():
-                    # Email is not use
-                    msg = "This email doesn't have account"
-                    raise exceptions.ValidationError(msg)
+            user = authenticate(request=self.context.get('request'),
+                                username=login, password=password)
 
-                email_or_username = email_exist[0].username
-            else:
-                user_exist = User.objects.filter(
-                    username=email_or_username
-                ).count()
-
-                if not user_exist:
-                    # User doesn't exist
-                    msg = "This username doesn't have account"
-                    raise exceptions.ValidationError(msg)
-
-            user = authenticate(
-                username=email_or_username,
-                password=password
-            )
-
-            if user:
-                if not user.is_active:
-                    # User is inactive
-                    msg = "This user is inactive"
-                    raise exceptions.ValidationError(msg)
-            else:
-                # Bad password
-                msg = "Bad password"
-                raise exceptions.ValidationError(msg)
+            if not user:
+                msg = _('Unable to log in with provided credentials.')
+                raise serializers.ValidationError(msg, code='authorization')
+        else:
+            msg = _('Must include "login" and "password".')
+            raise serializers.ValidationError(msg, code='authorization')
 
         attrs['user'] = user
 
         return attrs
+
+
+class UserBasicSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'is_active',
+            'is_superuser',
+            'password',
+            'new_password',
+            'phone',
+            'mobile',
+            'managed_cell',
+        )
+        write_only_fields = (
+            'password',
+            'new_password',
+        )
+        read_only_fields = (
+            'is_staff',
+            'is_superuser',
+            'is_active',
+            'date_joined',
+        )
+
+    email = serializers.EmailField(
+        required=True,
+        validators=[
+            UniqueValidator(
+                queryset=User.objects.all(),
+                message=_(
+                    "An account for the specified email "
+                    "address already exists."
+                ),
+            ),
+        ],
+    )
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
+
+    password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(required=False, write_only=True)
+
+    phone = serializers.CharField(
+        source='profile.phone',
+        required=False,
+        validators=[phone_number],
+    )
+    mobile = serializers.CharField(
+        source='profile.mobile',
+        required=False,
+        validators=[phone_number],
+    )
+
+    managed_cell = serializers.SerializerMethodField()
+
+    def get_managed_cell(self, obj):
+        cells = Cell.objects.filter(managers__in=[obj])
+
+        # Need to import here because of circular / recursive import error
+        from volunteer.serializers import CellBasicSerializer
+
+        return CellBasicSerializer(cells, many=True, read_only=True).data
+
+    def create(self, validated_data):
+        try:
+            password_validation.validate_password(
+                password=validated_data['password']
+            )
+        except ValidationError as err:
+            raise serializers.ValidationError({
+                "password": err.messages
+                })
+
+        profile_data = None
+        error_profile = False
+        if 'profile' in validated_data.keys():
+            profile_data = validated_data.pop('profile')
+
+            if 'mobile' not in profile_data \
+                    and 'phone' not in profile_data:
+                error_profile = True
+        else:
+            error_profile = True
+
+        if error_profile:
+            raise serializers.ValidationError({
+                "non_field_errors": [
+                    'You must specify "phone" or "mobile" field.'
+                ],
+            })
+
+        user = User(**validated_data)
+
+        # Hash the user's password
+        user.set_password(validated_data['password'])
+
+        # Put user inactive by default
+        user.is_active = False
+
+        user.save()
+
+        if profile_data:
+            Profile.objects.create(
+                user=user,
+                **profile_data
+            )
+
+        # Create an ActionToken to activate user in the future
+        ActionToken.objects.create(
+            user=user,
+            type='account_activation',
+        )
+
+        return user
+
+    def update(self, instance, validated_data):
+        if 'new_password' in validated_data.keys():
+            try:
+                old_pw = validated_data.pop('password')
+            except KeyError:
+                raise serializers.ValidationError(
+                    'Missing "password" field. Cannot update password.'
+                )
+            new_pw = validated_data.pop('new_password')
+
+            if instance.check_password(old_pw):
+                try:
+                    password_validation.validate_password(password=new_pw)
+                except ValidationError as err:
+                    raise serializers.ValidationError({
+                        "password": err.messages
+                        })
+                instance.set_password(new_pw)
+            else:
+                msg = "Bad password"
+                raise serializers.ValidationError(msg)
+
+        if 'profile' in validated_data.keys():
+            profile_data = validated_data.pop('profile')
+            profile = Profile.objects.get_or_create(user=instance)
+            profile[0].__dict__.update(profile_data)
+            profile[0].save()
+
+        return super(
+            UserBasicSerializer,
+            self
+        ).update(instance, validated_data)
+
+
+class UserPublicSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'email',
+        )
+        read_only_fields = (
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'email',
+        )
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+
+    username = serializers.CharField(required=True)
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+
+    token = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
