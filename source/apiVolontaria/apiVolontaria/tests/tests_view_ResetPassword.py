@@ -35,13 +35,49 @@ class ResetPasswordTests(APITestCase):
             }
         }
     )
-
     def test_create_new_token(self):
         """
         Ensure we can have a new token to change our password
         """
         data = {
-            'username': self.user.username,
+            'username_email': self.user.username,
+        }
+
+        response = self.client.post(
+            reverse('reset_password'),
+            data,
+            format='json',
+        )
+
+        # Test that one message was sent:
+        self.assertEqual(len(mail.outbox), 1)
+
+        # The token has been created
+        tokens = ActionToken.objects.filter(
+            user=self.user,
+            type='password_change',
+        )
+
+        self.assertEqual(response.content, b'')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.assertTrue(len(tokens) == 1)
+
+    @override_settings(
+        CONSTANT={
+            "EMAIL_SERVICE": True,
+            "FRONTEND_INTEGRATION": {
+                "FORGOT_PASSWORD_URL": "fake_url",
+            }
+        }
+    )
+    def test_create_new_token_with_email(self):
+        """
+        Ensure we can have a new token to change our password
+        """
+        data = {
+            'username_email': self.user.email,
         }
 
         response = self.client.post(
@@ -78,7 +114,7 @@ class ResetPasswordTests(APITestCase):
         Ensure we can not have a new token to change our password because exception
         """
         data = {
-            'username': self.user.username,
+            'username_email': self.user.username,
         }
 
         response = self.client.post(
@@ -112,7 +148,6 @@ class ResetPasswordTests(APITestCase):
             }
         }
     )
-
     def test_create_new_token_without_username_param(self):
         """
         Ensure we can't have a new token to change our password without
@@ -133,7 +168,7 @@ class ResetPasswordTests(APITestCase):
         )
 
         content = {
-            'username': ['This field is required.']
+            'username_email': ['This field is required.']
         }
 
         self.assertEqual(json.loads(response.content), content)
@@ -150,14 +185,13 @@ class ResetPasswordTests(APITestCase):
             }
         }
     )
-
     def test_create_new_token_with_an_empty_username_param(self):
         """
         Ensure we can't have a new token to change our password without
         give our username in param
         """
         data = {
-            'username': '',
+            'username_email': '',
         }
 
         response = self.client.post(
@@ -173,7 +207,7 @@ class ResetPasswordTests(APITestCase):
         )
 
         content = {
-            'username': ["This field may not be blank."],
+            'username_email': ["This field may not be blank."],
         }
 
         self.assertEqual(json.loads(response.content), content)
@@ -190,14 +224,13 @@ class ResetPasswordTests(APITestCase):
             }
         }
     )
-
     def test_create_new_token_with_bad_username(self):
         """
         Ensure we can't have a new token to change our password without
         a valid username
         """
         data = {
-            'username': 'test',
+            'username_email': 'test',
         }
 
         response = self.client.post(
@@ -213,7 +246,7 @@ class ResetPasswordTests(APITestCase):
         )
 
         content = {
-            'username': ["No account with this username."],
+            'username_email': ["No account with this username or email."],
         }
         self.assertEqual(json.loads(response.content), content)
 
@@ -229,7 +262,6 @@ class ResetPasswordTests(APITestCase):
             }
         }
     )
-
     def test_create_new_token_when_token_already_exist(self):
         """
         Ensure we can have a new token to change our password
@@ -241,7 +273,7 @@ class ResetPasswordTests(APITestCase):
         )
 
         data = {
-            'username': self.user.username,
+            'username_email': self.user.username,
         }
 
         response = self.client.post(
@@ -279,7 +311,7 @@ class ResetPasswordTests(APITestCase):
         Ensure we can have a new token to change our password
         """
         data = {
-            'username': self.user.username,
+            'username_email': self.user.username,
         }
 
         response = self.client.post(
@@ -302,6 +334,7 @@ class ResetPasswordTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_501_NOT_IMPLEMENTED)
 
         self.assertTrue(len(tokens) == 0)
+
     @override_settings(
         CONSTANT={
             "EMAIL_SERVICE": True,
@@ -315,7 +348,7 @@ class ResetPasswordTests(APITestCase):
         Ensure we can nt send email after create new token
         """
         data = {
-            'username': self.user.username,
+            'username_email': self.user.username,
         }
 
         @receiver(pre_send, weak=False)

@@ -298,19 +298,23 @@ class ResetPassword(APIView):
         # Valid params
         serializer = serializers.ResetPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        text_error_not_email_send =  {
+        text_error_not_email_send = {
                     'detail': _("Your token has been created but no email "
                                 "has been sent. Please contact the "
                                 "administration."),
                 }
 
-        # get user from the username given in data
+        # get user from the username or email given in data
         try:
-            user = User.objects.get(username=request.data["username"])
+            user = User.objects.filter(username=request.data["username_email"]).first()
+
+            if not user:
+                user = User.objects.get(email=request.data["username_email"])
+
         except Exception:
             content = {
-                'username': [
-                    _("No account with this username.")
+                'username_email': [
+                    _("No account with this username or email.")
                 ],
             }
             return Response(content, status=status.HTTP_400_BAD_REQUEST)
