@@ -233,15 +233,13 @@ class CellExport(generics.RetrieveAPIView):
     def get(self, request, *args, **kwargs):
         cell = self.get_object()
 
-        cycles = None
-        if 'cycle' in request.query_params:
-            cycles = request.query_params.getlist('cycle')
-
-        tasks = None
-        if 'task' in request.query_params:
-            tasks = request.query_params.getlist('task')
-
-        serializer = serializers.CellExportSerializer(cell, context={'cycles': cycles, 'tasks': tasks})
+        serializer = serializers.CellExportSerializer(
+            cell,
+            format_ext=self.request.query_params.get('format-ext', 'xls'),
+            cycles=request.query_params.getlist('cycle', []),
+            tasks=request.query_params.getlist('task', []),
+        )
+        serializer.is_valid()
         return Response(serializer.data)
 
 

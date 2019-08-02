@@ -1,7 +1,7 @@
-import csv
 import json
 import shutil
 import tempfile
+import tablib
 
 from unittest import mock
 
@@ -9,9 +9,7 @@ from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
 from django.conf import settings
-from django.urls import reverse
 from django.utils import timezone
-from django.contrib.auth.models import Permission
 from django.test.utils import override_settings
 
 from apiVolontaria.factories import UserFactory, AdminFactory
@@ -31,6 +29,10 @@ class CellExportationTests(APITestCase):
         self.user2 = UserFactory()
         self.user2.set_password('Test123!')
         self.user2.save()
+
+        self.user3 = UserFactory()
+        self.user3.set_password('Test123!')
+        self.user3.save()
 
         self.admin = AdminFactory()
         self.admin.set_password('Test123!')
@@ -134,7 +136,7 @@ class CellExportationTests(APITestCase):
 
             self.participation3 = Participation.objects.create(
                 standby=True,
-                user=self.user2,
+                user=self.user3,
                 event=self.event3,
             )
 
@@ -154,7 +156,7 @@ class CellExportationTests(APITestCase):
         settings.DEFAULT_FILE_STORAGE = settings._original_file_storage
         del settings._original_file_storage
 
-    def test_cell_exportation_filters(self):
+    def test_cell_exportation_csv(self):
         """
         Ensure we can export Participation from a Cell.
         """
@@ -162,7 +164,207 @@ class CellExportationTests(APITestCase):
         self.client.force_authenticate(user=self.user)
 
         response = self.client.get(
-            '/volunteer/cells/%s/export?task=%s&cycle=%s' %
+            '/volunteer/cells/%s/export?format-ext=csv' % self.cell.pk,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+
+        # get today date without time
+        now = timezone.now()
+        now = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        actual_file_path = \
+            '/%scell_export/%s_%s.csv' % \
+            (settings.MEDIA_URL, self.cell.pk, now.strftime('%Y%m%d'))
+
+        data_compare = {
+            'export_link': actual_file_path
+        }
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(content, data_compare)
+
+        data = [
+            'standby,first_name,last_name,email,phone,mobile,event__start_date,event__end_date,'
+            'task_type,cell,presence_status,presence_duration_minutes\n',
+
+            '1,%s,%s,%s,,,%s,%s,%s,%s,%s,\n' % (
+                self.participation.user.first_name,
+                self.participation.user.last_name,
+                self.participation.user.email,
+                self.participation.event.start_date
+                    .strftime("%Y-%m-%d %H:%M:%S"),
+                self.participation.event.end_date
+                    .strftime("%Y-%m-%d %H:%M:%S"),
+                self.participation.event.task_type.name,
+                self.participation.cell,
+                self.participation.presence_status,
+            ),
+
+            '1,%s,%s,%s,,,%s,%s,%s,%s,%s,\n' % (
+                self.participation2.user.first_name,
+                self.participation2.user.last_name,
+                self.participation2.user.email,
+                self.participation2.event.start_date
+                    .strftime("%Y-%m-%d %H:%M:%S"),
+                self.participation2.event.end_date
+                    .strftime("%Y-%m-%d %H:%M:%S"),
+                self.participation2.event.task_type.name,
+                self.participation2.cell,
+                self.participation2.presence_status,
+            ),
+
+            '1,%s,%s,%s,,,%s,%s,%s,%s,%s,\n' % (
+                self.participation3.user.first_name,
+                self.participation3.user.last_name,
+                self.participation3.user.email,
+                self.participation3.event.start_date
+                    .strftime("%Y-%m-%d %H:%M:%S"),
+                self.participation3.event.end_date
+                    .strftime("%Y-%m-%d %H:%M:%S"),
+                self.participation3.event.task_type.name,
+                self.participation3.cell,
+                self.participation3.presence_status,
+            )
+        ]
+
+        actual_file_path = \
+            '%s/cell_export/%s_%s.csv' % \
+            (self._temp_media, self.cell.pk, now.strftime('%Y%m%d'))
+
+        with open(actual_file_path) as fp:
+            line = fp.readline()
+            cnt = 0
+            while line:
+                self.assertEqual(line, data[cnt])
+
+                line = fp.readline()
+                cnt += 1
+
+    def test_cell_exportation_xls(self):
+        """
+        Ensure we can export Participation from a Cell in xls format.
+        """
+
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(
+            '/volunteer/cells/%s/export?format-ext=xls' % self.cell.pk,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+
+        # get today date without time
+        now = timezone.now()
+        now = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        actual_file_path = \
+            '/%scell_export/%s_%s.xls' % \
+            (settings.MEDIA_URL, self.cell.pk, now.strftime('%Y%m%d'))
+
+        data_compare = {
+            'export_link': actual_file_path
+        }
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(content, data_compare)
+
+        data_header = [
+            'standby', 'first_name', 'last_name', 'email', 'phone', 'mobile',
+            'event__start_date', 'event__end_date', 'task_type',
+            'cell', 'presence_status', 'presence_duration_minutes'
+        ]
+
+        data_line_1 = (
+            '1',
+            self.participation.user.first_name,
+            self.participation.user.last_name,
+            self.participation.user.email,
+            '', '',
+            self.participation.event.start_date
+                .strftime("%Y-%m-%d %H:%M:%S"),
+            self.participation.event.end_date
+                .strftime("%Y-%m-%d %H:%M:%S"),
+            self.participation.event.task_type.name,
+            self.participation.cell,
+            self.participation.presence_status,
+            '',
+        )
+
+        data_line_2 = (
+            '1',
+            self.participation2.user.first_name,
+            self.participation2.user.last_name,
+            self.participation2.user.email,
+            '', '',
+            self.participation2.event.start_date
+                .strftime("%Y-%m-%d %H:%M:%S"),
+            self.participation2.event.end_date
+                .strftime("%Y-%m-%d %H:%M:%S"),
+            self.participation2.event.task_type.name,
+            self.participation2.cell,
+            self.participation2.presence_status,
+            '',
+        )
+
+        data_line_3 = (
+            '1',
+            self.participation3.user.first_name,
+            self.participation3.user.last_name,
+            self.participation3.user.email,
+            '', '',
+            self.participation3.event.start_date
+                .strftime("%Y-%m-%d %H:%M:%S"),
+            self.participation3.event.end_date
+                .strftime("%Y-%m-%d %H:%M:%S"),
+            self.participation3.event.task_type.name,
+            self.participation3.cell,
+            self.participation3.presence_status,
+            '',
+        )
+
+        actual_file_path = \
+            '%s/cell_export/%s_%s.xls' % \
+            (self._temp_media, self.cell.pk, now.strftime('%Y%m%d'))
+
+        with open(actual_file_path, 'rb') as fp:
+            file_data = fp.read()
+
+            # Import the file as binary into another set to test
+            dataset = tablib.import_set(file_data)
+
+            self.assertEqual(dataset.headers, data_header)
+
+            self.assertEqual(dataset[0], data_line_1)
+            self.assertEqual(dataset[1], data_line_2)
+            self.assertEqual(dataset[2], data_line_3)
+
+    def test_cell_exportation_bad_format(self):
+        """
+        Ensure we cannot export Participation from a Cell in unsupported format.
+        """
+
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(
+            '/volunteer/cells/%s/export?format-ext=zzz' % self.cell.pk,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+        self.assertEqual(content, {'message': 'Error Format zzz cannot be exported.'})
+
+    def test_cell_exportation_filters(self):
+        """
+        Ensure we can export Participation from a Cell using filters.
+        """
+
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(
+            '/volunteer/cells/%s/export?task=%s&cycle=%s&format-ext=csv' %
             (self.cell.id, self.other_task_type.id, self.other_cycle.id),
             format='json',
         )
@@ -200,7 +402,7 @@ class CellExportationTests(APITestCase):
                 self.participation3.event.task_type.name,
                 self.participation3.cell,
                 self.participation3.presence_status,
-        )
+            ),
         ]
 
         actual_file_path = \
@@ -237,7 +439,7 @@ class CellExportationTests(APITestCase):
         now = now.replace(hour=0, minute=0, second=0, microsecond=0)
 
         actual_file_path = \
-            '/%scell_export/%s_%s.csv' % \
+            '/%scell_export/%s_%s.xls' % \
             (settings.MEDIA_URL, self.cell.pk, now.strftime('%Y%m%d'))
 
         data_compare = {
