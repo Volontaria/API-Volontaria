@@ -77,6 +77,11 @@ urlpatterns = [
         r'^location/',
         include('location.urls', namespace="location"),
     ),
+    # Pages
+    url(
+        r'^pages/',
+        include('pages.urls', namespace="pages"),
+    ),
     # DOCUMENTATION SWAGGER
     path(
         'docs/',
