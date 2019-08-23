@@ -91,6 +91,7 @@ class UsersIdTests(APITestCase):
             'mobile',
             'is_superuser',
             'managed_cell',
+            'coupon',
         ]
         for key in content.keys():
             self.assertTrue(
@@ -139,6 +140,7 @@ class UsersIdTests(APITestCase):
             'mobile',
             'is_superuser',
             'managed_cell',
+            'coupon',
         ]
         for key in content.keys():
             self.assertTrue(
@@ -198,6 +200,7 @@ class UsersIdTests(APITestCase):
             'mobile',
             'is_superuser',
             'managed_cell',
+            'coupon',
         ]
         for key in content.keys():
             self.assertTrue(
@@ -288,6 +291,7 @@ class UsersIdTests(APITestCase):
             'mobile',
             'is_superuser',
             'managed_cell',
+            'coupon',
         ]
         for key in content.keys():
             self.assertTrue(

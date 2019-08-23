@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.auth.admin import UserAdmin
 
+from coupons.models import Coupon
 from . import models
 
 
@@ -10,6 +11,20 @@ class ProfileInline(admin.StackedInline):
     can_delete = False
     verbose_name_plural = 'Profile'
     fk_name = 'user'
+
+
+class CouponInline(admin.TabularInline):
+    model = Coupon
+    extra = 0
+    max = 1
+    fields = ('code', 'coupon_wc_id',)
+    readonly_fields = ('code', 'coupon_wc_id')
+
+    def has_add_permission(self, request, obj):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class CustomUserAdmin(UserAdmin):
@@ -35,7 +50,7 @@ class CustomUserAdmin(UserAdmin):
         'email',
     ]
 
-    inlines = (ProfileInline, )
+    inlines = (ProfileInline, CouponInline)
 
 
 admin.site.register(models.TemporaryToken)

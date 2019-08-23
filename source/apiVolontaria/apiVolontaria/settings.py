@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'apiVolontaria',
     'volunteer',
     'location',
+    'coupons',
     'pages',
 ]
 
@@ -202,11 +203,14 @@ ANYMAIL = {
     'TEMPLATES': {
         "CONFIRM_SIGN_UP": "example_template_id",
         "FORGOT_PASSWORD": "example_template_id",
+        "COUPON": "example_template_id",
     },
 }
 EMAIL_BACKEND = 'anymail.backends.sendinblue.EmailBackend'
 # This 'FROM' email is not used with SendInBlue templates
 DEFAULT_FROM_EMAIL = 'noreply@example.org'
+
+COUPON_SEND_EMAIL = False
 
 # These settings are not related to the core API functionality. Feel free to
 # edit them to your needs.

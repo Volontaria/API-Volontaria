@@ -9,7 +9,11 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import authenticate, password_validation
 
 from volunteer.models import Cell
+
+from coupons.models import Coupon
 from .models import ActionToken, Profile
+
+from coupons.serializers import CouponBasicSerializer
 
 
 # Validator for phone numbers
@@ -70,6 +74,7 @@ class UserBasicSerializer(serializers.ModelSerializer):
             'phone',
             'mobile',
             'managed_cell',
+            'coupon',
         )
         write_only_fields = (
             'password',
@@ -80,7 +85,15 @@ class UserBasicSerializer(serializers.ModelSerializer):
             'is_superuser',
             'is_active',
             'date_joined',
+            'coupon',
         )
+
+    coupon = serializers.SerializerMethodField()
+
+    def get_coupon(self, obj):
+        coupon = Coupon.objects.filter(user=obj).first()
+        serializer = CouponBasicSerializer(instance=coupon, many=False)
+        return serializer.data
 
     email = serializers.EmailField(
         required=True,

@@ -12,11 +12,12 @@ from django.test import Client
 from apiVolontaria.models import Profile
 from location.models import Country, StateProvince, Address
 
+from coupons.models import Coupon, CouponOperation
 from ..admin import CycleAdmin
 from ..models import Participation, Cell, Cycle, TaskType, Event
 
 
-class ParticipationTests(APITransactionTestCase):
+class CycleAdminGenerateCoupons(APITransactionTestCase):
 
     def create_user(self):
         self.username = "test_admin"
@@ -80,6 +81,12 @@ class ParticipationTests(APITransactionTestCase):
             end_date=self.end_date,
         )
 
+        self.other_cycle = Cycle.objects.create(
+            name="my other cycle",
+            start_date=self.start_date,
+            end_date=self.end_date,
+        )
+
         # Some date INSIDE the cycle range
         self.start_date = self.start_date + timezone.timedelta(
             minutes=1,
@@ -130,46 +137,49 @@ class ParticipationTests(APITransactionTestCase):
         self.client = Client()
         self.client.login(username=self.username, password=self.password)
 
-    def test_admin_access(self):
-        admin_pages = [
-            "/admin/volunteer/",
-            "/admin/volunteer/cycle/",
-        ]
+    def test_admin_cycle_generate_coupons(self):
+        """
+        Ensure that we can generate coupons
+        """
 
-        for page in admin_pages:
-            resp = self.client.get(page)
-            self.assertEqual(resp.status_code, 200)
-            self.assertIn("<!DOCTYPE html", str(resp.content))
-
-    def test_admin_participations(self):
-        self.assertNotEqual(self.admin, None)
-
-    def test_admin_cycle_participation_export(self):
         change_url = reverse('admin:volunteer_cycle_changelist')
 
-        data = {'action': 'generate_participation_report_csv',
+        data = {'action': 'generate_coupons',
                 ACTION_CHECKBOX_NAME: [self.cycle.pk, ]}
 
-        response = self.client.post(change_url, data)
+        response = self.client.post(change_url, data, follow=True)
 
         self.assertEquals(response.status_code, 200)
 
-        self.assertEquals(
-            response.content,
-            b'first_name,last_name,email,total_time\r\n,,,96\r\n',
-        )
+        coupons = Coupon.objects.all()
+        coupons_op = CouponOperation.objects.all()
 
-    def test_admin_cycle_participation_export_error(self):
+        self.assertEquals(len(coupons), 1)
+        self.assertEquals(len(coupons_op), 1)
+
+    def test_admin_cycle_generate_coupons_multiple_cycles_selected(self):
+
         change_url = reverse('admin:volunteer_cycle_changelist')
 
-        data = {'action': 'generate_participation_report_csv',
-                ACTION_CHECKBOX_NAME: [self.cycle.pk, self.cycle_inactive.pk]}
+        data = {'action': 'generate_coupons',
+                ACTION_CHECKBOX_NAME: [self.cycle.pk, self.other_cycle.pk,]}
 
-        response = self.client.post(change_url, data)
+        response = self.client.post(change_url, data, follow=True)
 
-        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response.status_code, 200)
 
-    def test_admin_cycle_participation_export_error_initialisation(self):
+        coupons = Coupon.objects.all()
+        coupons_op = CouponOperation.objects.all()
+
+        self.assertEquals(len(coupons), 0)
+        self.assertEquals(len(coupons_op), 0)
+
+    def test_admin_cycle_generate_coupons_blocked_by_init_participation(self):
+        """
+        Ensure that we cannot generate this cycle coupons if
+        there is Participation in the Initialisation state associated to that cycle
+        """
+
         self.event3 = Event.objects.create(
             cell=self.cell,
             cycle=self.cycle,
@@ -188,9 +198,71 @@ class ParticipationTests(APITransactionTestCase):
 
         change_url = reverse('admin:volunteer_cycle_changelist')
 
-        data = {'action': 'generate_participation_report_csv',
+        data = {'action': 'generate_coupons',
                 ACTION_CHECKBOX_NAME: [self.cycle.pk, ]}
 
-        response = self.client.post(change_url, data)
+        response = self.client.post(change_url, data, follow=True)
 
-        self.assertEquals(response.status_code, 302)
+        self.assertEquals(response.status_code, 200)
+
+        coupons = Coupon.objects.all()
+        coupons_op = CouponOperation.objects.all()
+
+        self.assertEquals(len(coupons), 0)
+        self.assertEquals(len(coupons_op), 0)
+
+    def test_admin_cycle_generate_coupons_existing_coupons(self):
+        """
+        Ensure that we cannot generate this cycle coupons if
+        there is already a CouponOperation associated to that cycle
+        """
+
+        # Manually create the coupon
+        coupon = Coupon.objects.create(
+            user=self.user,
+            code=Coupon.generate_unique_code(self.user)
+        )
+
+        # Manually create the coupon operation
+        coupon_op = CouponOperation.objects.create(
+            coupon=coupon,
+            amount=100,
+            cycle=self.cycle,
+        )
+
+        change_url = reverse('admin:volunteer_cycle_changelist')
+
+        data = {'action': 'generate_coupons',
+                ACTION_CHECKBOX_NAME: [self.cycle.pk, ]}
+
+        response = self.client.post(change_url, data, follow=True)
+
+        self.assertEquals(response.status_code, 200)
+
+        coupons = Coupon.objects.all()
+        coupons_op = CouponOperation.objects.all()
+
+        # We have only the initially created coupon and couponOperation
+        self.assertEquals(len(coupons), 1)
+        self.assertEquals(len(coupons_op), 1)
+
+    def test_admin_cycle_generate_coupons_no_participation(self):
+        """
+        Ensure that we cannot generate this cycle coupons if
+        there is no Participation associated to that cycle
+        """
+
+        change_url = reverse('admin:volunteer_cycle_changelist')
+
+        data = {'action': 'generate_coupons',
+                ACTION_CHECKBOX_NAME: [self.other_cycle.pk, ]}
+
+        response = self.client.post(change_url, data, follow=True)
+
+        self.assertEquals(response.status_code, 200)
+
+        coupons = Coupon.objects.all()
+        coupons_op = CouponOperation.objects.all()
+
+        self.assertEquals(len(coupons), 0)
+        self.assertEquals(len(coupons_op), 0)

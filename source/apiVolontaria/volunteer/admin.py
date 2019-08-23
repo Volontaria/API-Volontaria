@@ -4,8 +4,11 @@ from import_export.admin import ImportExportActionModelAdmin
 from django.contrib import messages
 from django.http import HttpResponse
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth.models import User
 
 from volunteer.resources import ParticipationResource
+
+from coupons.models import CouponOperation, Coupon
 from . import models, forms
 from apiVolontaria.models import Profile
 
@@ -106,7 +109,61 @@ class CycleAdmin(admin.ModelAdmin):
 
     date_hierarchy = 'start_date'
 
-    actions = ['generate_participation_report_csv', ]
+    actions = ['generate_participation_report_csv', 'generate_coupons', ]
+
+    def generate_coupons(self, request, queryset):
+        if len(queryset) != 1:
+            messages.error(request, _("You must select a cycle"))
+            return
+
+        # Take the first of the array
+        cycle = queryset[0]
+
+        data_dict = cycle.generate_participation_report_data()
+
+        # We have an error if there is Participations for this Cycle that has not been initialised...
+        if 'error' in data_dict:
+            messages.error(request, data_dict['error'])
+            return
+
+        if not len(data_dict):
+            messages.error(request, 'There is no Participations entries for this cycle')
+            return
+
+        # Must check if coupon already exist
+        existing_coupons = CouponOperation.objects.filter(cycle=cycle)
+
+        if existing_coupons:
+            msg = 'There is existing coupon for %s, aborting...' % cycle
+            messages.error(request, msg)
+            return
+
+        # Okay all good let's create the coupons
+        for key, value in data_dict.items():
+
+            user = User.objects.get(pk=int(key))
+            if user:
+                # Search for existing RechargeableCoupon
+                coupon = Coupon.objects.filter(user=user).first()
+
+                # Not found, let's create it
+                if not coupon:
+                    coupon = Coupon.objects.create(
+                        code=Coupon.generate_unique_code(user),
+                        user=user,
+                    )
+
+                coupon_op = CouponOperation.objects.create(
+                    coupon=coupon,
+                    cycle=cycle,
+                    amount=CouponOperation.get_amount_from_minute(value['total_time']),
+                    status='1',
+                )
+
+                coupon_op.save()
+
+    generate_coupons.short_description = \
+        "!!! Générer les coupons !!!"
 
     def generate_participation_report_csv(self, request, queryset):
         """

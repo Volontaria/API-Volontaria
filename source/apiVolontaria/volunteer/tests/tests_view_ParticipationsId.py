@@ -434,7 +434,8 @@ class ParticipationsIdTests(APITestCase):
                 "is_superuser": self.user2.is_superuser,
                 "phone": None,
                 "mobile": None,
-                "managed_cell": []
+                "managed_cell": [],
+                "coupon": {},
             },
             "standby": True,
             "subscription_date": subscription_date_str,
