@@ -6,11 +6,7 @@
  - Front-end repository : https://github.com/Volontaria/Website-Volontaria
  - Documentation for the project : http://volontaria.readthedocs.io
 
-## Issue manager
+## Interested by Volontaria
 
-Issues are handled in a [Redmine instance](https://genielibre.com/projects/volontaria).
-Feel free to create an account there to begin contributing!
-
-## Important
-
-API-Volontaria is not yet ready for testing and is still under development! It will not work as expected! If you'd like to join the public beta test group please contact us.
+If you'd like to use Volontaria for your organization feel free to contact us to sync your effort with our 
+development team and get important tips on deployment and configuration.
