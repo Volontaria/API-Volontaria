@@ -2,7 +2,7 @@ from rest_framework.test import APITestCase
 
 from django.core.exceptions import ValidationError
 
-from ..models import Address, Country, StateProvince
+from location.models import Address, Country, StateProvince
 
 
 class AddressTests(APITestCase):

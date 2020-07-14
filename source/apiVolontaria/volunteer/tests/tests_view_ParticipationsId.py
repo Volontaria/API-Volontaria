@@ -11,7 +11,7 @@ from django.contrib.auth.models import Permission
 
 from apiVolontaria.factories import UserFactory, AdminFactory
 from location.models import Address, StateProvince, Country
-from ..models import Cell, Event, Cycle, TaskType, Participation
+from volunteer.models import Cell, Event, Cycle, TaskType, Participation
 
 
 class ParticipationsIdTests(APITestCase):

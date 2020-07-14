@@ -16,7 +16,7 @@ from django.test.utils import override_settings
 
 from apiVolontaria.factories import UserFactory, AdminFactory
 from location.models import Address, StateProvince, Country
-from ..models import Cell, Event, Cycle, TaskType, Participation
+from volunteer.models import Cell, Event, Cycle, TaskType, Participation
 
 
 class CellExportationTests(APITestCase):
@@ -59,8 +59,16 @@ class CellExportationTests(APITestCase):
         self.cycle = Cycle.objects.create(
             name="my cycle",
         )
+
+        self.other_cycle = Cycle.objects.create(
+            name="my other cycle",
+        )
         self.task_type = TaskType.objects.create(
             name="my tasktype",
+        )
+
+        self.other_task_type = TaskType.objects.create(
+            name="my other tasktype",
         )
 
         start_date = timezone.now() - timezone.timedelta(
@@ -95,7 +103,15 @@ class CellExportationTests(APITestCase):
         self.event2 = Event.objects.create(
             cell=self.cell,
             cycle=self.cycle,
-            task_type=self.task_type,
+            task_type=self.other_task_type,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        self.event3 = Event.objects.create(
+            cell=self.cell,
+            cycle=self.other_cycle,
+            task_type=self.other_task_type,
             start_date=start_date,
             end_date=end_date,
         )
@@ -107,7 +123,7 @@ class CellExportationTests(APITestCase):
             self.participation = Participation.objects.create(
                 standby=True,
                 user=self.user,
-                event=self.event2,
+                event=self.event,
             )
 
             self.participation2 = Participation.objects.create(
@@ -119,7 +135,7 @@ class CellExportationTests(APITestCase):
             self.participation3 = Participation.objects.create(
                 standby=True,
                 user=self.user2,
-                event=self.event,
+                event=self.event3,
             )
 
             "Create temp directory and update MEDIA_ROOT and default storage."
@@ -138,8 +154,7 @@ class CellExportationTests(APITestCase):
         settings.DEFAULT_FILE_STORAGE = settings._original_file_storage
         del settings._original_file_storage
 
-    @override_settings(DEBUG=True)
-    def test_cell_exportation(self):
+    def test_cell_exportation_filters(self):
         """
         Ensure we can export Participation from a Cell.
         """
@@ -147,7 +162,8 @@ class CellExportationTests(APITestCase):
         self.client.force_authenticate(user=self.user)
 
         response = self.client.get(
-            '/volunteer/cells/%s/export' % self.cell.pk,
+            '/volunteer/cells/%s/export?task=%s&cycle=%s' %
+            (self.cell.id, self.other_task_type.id, self.other_cycle.id),
             format='json',
         )
 
@@ -174,32 +190,6 @@ class CellExportationTests(APITestCase):
             'cell,presence_status,presence_duration_minutes\n',
 
             '1,%s,%s,%s,,,%s,%s,%s,%s,%s,\n' % (
-                self.participation2.user.first_name,
-                self.participation2.user.last_name,
-                self.participation2.user.email,
-                self.participation2.event.start_date
-                    .strftime("%Y-%m-%d %H:%M:%S"),
-                self.participation2.event.end_date
-                    .strftime("%Y-%m-%d %H:%M:%S"),
-                self.participation2.event.task_type.name,
-                self.participation2.cell,
-                self.participation2.presence_status,
-            ),
-
-            '1,%s,%s,%s,,,%s,%s,%s,%s,%s,\n' % (
-                self.participation.user.first_name,
-                self.participation.user.last_name,
-                self.participation.user.email,
-                self.participation.event.start_date
-                    .strftime("%Y-%m-%d %H:%M:%S"),
-                self.participation.event.end_date
-                    .strftime("%Y-%m-%d %H:%M:%S"),
-                self.participation.event.task_type.name,
-                self.participation.cell,
-                self.participation.presence_status,
-            ),
-
-            '1,%s,%s,%s,,,%s,%s,%s,%s,%s,\n' % (
                 self.participation3.user.first_name,
                 self.participation3.user.last_name,
                 self.participation3.user.email,
@@ -210,7 +200,8 @@ class CellExportationTests(APITestCase):
                 self.participation3.event.task_type.name,
                 self.participation3.cell,
                 self.participation3.presence_status,
-            )]
+        )
+        ]
 
         actual_file_path = \
             '%s/cell_export/%s_%s.csv' % \
@@ -225,3 +216,33 @@ class CellExportationTests(APITestCase):
 
                 line = fp.readline()
                 cnt += 1
+
+    def test_cell_exportation_no_cycle(self):
+        """
+        Ensure we can export Participation from a Cell without a cycle.
+        """
+
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(
+            '/volunteer/cells/%s/export' %
+            (self.cell.id, ),
+            format='json',
+        )
+
+        content = json.loads(response.content)
+
+        # get today date without time
+        now = timezone.now()
+        now = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        actual_file_path = \
+            '/%scell_export/%s_%s.csv' % \
+            (settings.MEDIA_URL, self.cell.pk, now.strftime('%Y%m%d'))
+
+        data_compare = {
+            'export_link': actual_file_path
+        }
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(content, data_compare)

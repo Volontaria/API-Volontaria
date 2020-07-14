@@ -7,8 +7,8 @@ from django.urls import reverse
 
 from location.models import Country, StateProvince, Address
 from volunteer.models import Cell
-from .. import models
-from ..factories import UserFactory, AdminFactory
+from apiVolontaria import models
+from apiVolontaria.factories import UserFactory, AdminFactory
 
 
 class UsersIdTests(APITestCase):

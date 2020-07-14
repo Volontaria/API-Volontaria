@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from apiVolontaria.factories import UserFactory, AdminFactory
 from location.models import Address, StateProvince, Country
-from ..models import Cell, Event, Cycle, TaskType
+from volunteer.models import Cell, Event, Cycle, TaskType
 
 
 class EventsTests(APITestCase):

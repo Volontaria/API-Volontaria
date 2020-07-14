@@ -45,8 +45,13 @@ INSTALLED_APPS = [
     'apiVolontaria',
     'volunteer',
     'location',
+    'pages',
+    'ckeditor_api',
     'import_export',
-    'anymail'
+    'anymail',
+    'orderable',
+    'ckeditor',
+    'reversion',
 ]
 
 MIDDLEWARE = [

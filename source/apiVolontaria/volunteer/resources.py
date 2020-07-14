@@ -18,9 +18,11 @@ class ParticipationResource(resources.ModelResource):
     cell = Field()
     task_type = Field(column_name=_('task_type'))
 
-    def __init__(self, cell_filter=None, date_filter=None):
+    def __init__(self, cell_filter=None, date_filter=None, cycles_filter=None, tasks_filter=None):
         self.cell_filter = cell_filter
         self.date_filter = date_filter
+        self.cycles_filter = cycles_filter
+        self.tasks_filter = tasks_filter
 
     class Meta:
         model = models.Participation
@@ -45,8 +47,17 @@ class ParticipationResource(resources.ModelResource):
     def get_queryset(self):
         query = self._meta.model.objects.filter()
 
+        # Filter the cell
         if self.cell_filter:
             query = query.filter(event__cell=self.cell_filter)
+
+        # Filter the cycle
+        if self.cycles_filter:
+            query = query.filter(event__cycle__in=self.cycles_filter)
+
+        # Filter the task_type
+        if self.tasks_filter:
+            query = query.filter(event__task_type__in=self.tasks_filter)
 
         if self.date_filter:
             query = query.filter(event__start_date__gte=self.date_filter)

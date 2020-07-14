@@ -8,7 +8,6 @@ from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import authenticate, password_validation
 
-from django.core import exceptions
 from volunteer.models import Cell
 from .models import ActionToken, Profile
 
@@ -230,7 +229,7 @@ class UserPublicSerializer(serializers.ModelSerializer):
 
 class ResetPasswordSerializer(serializers.Serializer):
 
-    username = serializers.CharField(required=True)
+    username_email = serializers.CharField(required=True)
 
 
 class ChangePasswordSerializer(serializers.Serializer):

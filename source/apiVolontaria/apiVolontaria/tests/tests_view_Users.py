@@ -7,10 +7,10 @@ from django.urls import reverse
 from django.test.utils import override_settings
 from django.contrib.auth.models import User
 
-from ..models import ActionToken
+from apiVolontaria.models import ActionToken
 from location.models import Address, StateProvince, Country
 from volunteer.models import Cell, Event, Cycle, TaskType, Participation
-from ..factories import UserFactory, AdminFactory
+from apiVolontaria.factories import UserFactory, AdminFactory
 from django.core import mail
 
 from anymail.exceptions import AnymailCancelSend

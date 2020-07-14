@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
 from apiVolontaria.factories import UserFactory, AdminFactory
-from ..models import Address, Country, StateProvince
+from location.models import Address, Country, StateProvince
 
 
 class AddressesTests(APITestCase):

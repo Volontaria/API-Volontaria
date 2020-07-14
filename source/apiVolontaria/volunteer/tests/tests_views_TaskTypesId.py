@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apiVolontaria.factories import UserFactory, AdminFactory
-from ..models import TaskType
+from volunteer.models import TaskType
 
 
 class TaskTypesIdTests(APITestCase):
