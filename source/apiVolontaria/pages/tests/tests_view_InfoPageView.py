@@ -6,7 +6,7 @@ from rest_framework.test import APIClient, APITestCase
 from django.urls import reverse
 
 from apiVolontaria.factories import UserFactory, AdminFactory
-from ..models import InfoSection
+from pages.models import InfoSection
 
 
 class InfoPageViewTests(APITestCase):

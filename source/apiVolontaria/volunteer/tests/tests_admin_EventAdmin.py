@@ -8,8 +8,8 @@ from django.test import Client
 from apiVolontaria.models import Profile
 from location.models import Address, StateProvince, Country
 from volunteer.forms import EventAdminForm
-from ..admin import EventAdmin
-from ..models import Event, Cycle, Cell, TaskType
+from volunteer.admin import EventAdmin
+from volunteer.models import Event, Cycle, Cell, TaskType
 
 
 class EventAdminTests(APITransactionTestCase):

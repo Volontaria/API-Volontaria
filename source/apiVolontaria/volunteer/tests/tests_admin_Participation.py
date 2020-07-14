@@ -9,8 +9,8 @@ from django.test import Client
 
 from apiVolontaria.models import Profile
 from location.models import Country, StateProvince, Address
-from ..admin import ParticipationAdmin
-from ..models import Participation, Cell, Cycle, TaskType, Event
+from volunteer.admin import ParticipationAdmin
+from volunteer.models import Participation, Cell, Cycle, TaskType, Event
 
 
 class ParticipationTests(APITransactionTestCase):

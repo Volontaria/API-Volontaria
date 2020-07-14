@@ -1,8 +1,8 @@
 from rest_framework.test import APITestCase
 from django.core.exceptions import ValidationError
 
-from ..models import Profile
-from ..factories import UserFactory
+from apiVolontaria.models import Profile
+from apiVolontaria.factories import UserFactory
 
 
 class ProfileTests(APITestCase):

@@ -7,7 +7,7 @@ from django.urls import reverse
 
 from apiVolontaria.factories import UserFactory, AdminFactory
 from location.models import Address, StateProvince, Country
-from ..models import Cell
+from volunteer.models import Cell
 
 
 class CellsIdTests(APITestCase):

@@ -4,7 +4,7 @@ from django.db import IntegrityError
 
 from apiVolontaria.factories import UserFactory, AdminFactory
 from location.models import Address, StateProvince, Country
-from ..models import Cell
+from volunteer.models import Cell
 
 
 class CellTests(APITransactionTestCase):

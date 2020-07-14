@@ -1,6 +1,6 @@
 from rest_framework.test import APITransactionTestCase
 
-from ..models import InfoSection
+from pages.models import InfoSection
 
 
 class InfoSectionTests(APITransactionTestCase):

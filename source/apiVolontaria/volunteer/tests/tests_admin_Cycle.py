@@ -11,8 +11,8 @@ from django.test import Client
 
 from apiVolontaria.models import Profile
 from location.models import Country, StateProvince, Address
-from ..admin import CycleAdmin
-from ..models import Participation, Cell, Cycle, TaskType, Event
+from volunteer.admin import CycleAdmin
+from volunteer.models import Participation, Cell, Cycle, TaskType, Event
 
 
 class ParticipationTests(APITransactionTestCase):

@@ -20,10 +20,29 @@ from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.static import serve
 
+from rest_framework.routers import DefaultRouter
 from rest_framework.documentation import include_docs_urls
 
+from ckeditor_api.urls import ckeditor_router
 from .views import (ObtainTemporaryAuthToken, Users, UsersId, UsersActivation,
                     ResetPassword, ChangePassword)
+
+
+class OptionalSlashDefaultRouter(DefaultRouter):
+    """ Subclass of DefaultRouter to make the trailing slash optional """
+    def __init__(self, *args, **kwargs):
+        super(DefaultRouter, self).__init__(*args, **kwargs)
+        self.trailing_slash = '/?'
+
+
+# Create a router and register our viewsets with it.
+router = OptionalSlashDefaultRouter()
+
+# External workplace application
+# Their urls are directly appended to the main router
+# The retreat app is not included here because we needed a url prefix, thus
+#   it is included separately at the bottom of this file.
+router.registry.extend(ckeditor_router.registry)
 
 urlpatterns = [
     # Token authentification
@@ -82,6 +101,10 @@ urlpatterns = [
         r'^pages/',
         include('pages.urls', namespace="pages"),
     ),
+    path(
+        '',
+        include(router.urls)
+    ),  # includes router generated URL
     # DOCUMENTATION SWAGGER
     path(
         'docs/',
