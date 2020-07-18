@@ -1,0 +1,25 @@
+site_name: Plateforme Volontaria
+site_description: Plateforme de benevolat
+repo_name: volontaria/API-Volontaria
+repo_url: https://github.com/volontaria/API-Volontaria
+site_dir: site
+copyright: Copyright &copy; 2020, <a href="https://volontaria.github.io/">Volontaria</a>.
+dev_addr: 0.0.0.0:8001
+edit_uri: ''
+nav:
+  - Home: 'index.md'
+  - Getting started:
+    - Install with Docker: 'getting_started/docker.md'
+    - Install manually: 'getting_started/virtualenv.md'
+  - Policies:
+    - Code of conduct: 'CODE_OF_CONDUCT.md'
+theme:
+  name: material
+  features:
+    - tabs
+  palette:
+    primary: indigo
+    accent: orange
+
+markdown_extensions:
+  - admonition

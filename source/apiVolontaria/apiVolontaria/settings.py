@@ -12,22 +12,23 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 from django.utils.translation import ugettext_lazy as _
+from pathlib import Path
+from decouple import config, Csv
+from dj_database_url import parse as db_url
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+BASE_DIR = Path(__file__).absolute().parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'm_u0yee1g84_g9l89ip@vkw2(03c8ax6esl-6%d471oe5%17-_'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost', cast=Csv())
 
 # Application definition
 
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'location',
     'pages',
     'ckeditor_api',
+    'log_management',
     'import_export',
     'anymail',
     'orderable',
@@ -72,7 +74,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            BASE_DIR + '/apiVolontaria/templates/'
+            BASE_DIR.joinpath('/apiVolontaria/templates/')
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -93,10 +95,11 @@ WSGI_APPLICATION = 'apiVolontaria.wsgi.application'
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+    'default': config(
+        'DATABASE_URL',
+        default='sqlite:///' + str(BASE_DIR.joinpath('db.sqlite3')),
+        cast=db_url
+    )
 }
 
 
@@ -148,10 +151,10 @@ LOCALE_PATHS = (
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = config('STATIC_URL', default='/static/')
 STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'static')
 
-MEDIA_URL = 'media/'
+MEDIA_URL = config('MEDIA_URL', default='/media/')
 MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'media')
 
 # Django Rest Framework
@@ -177,48 +180,103 @@ REST_FRAMEWORK = {
 
 # CORS Header Django Rest Framework
 
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_ALLOW_ALL = config(
+    'CORS_ORIGIN_ALLOW_ALL',
+    default=True,
+    cast=bool,
+)
 
 
 # Temporary Token
 
 REST_FRAMEWORK_TEMPORARY_TOKENS = {
-    'MINUTES': 10,
-    'RENEW_ON_SUCCESS': True,
-    'USE_AUTHENTICATION_BACKENDS': False,
+    'MINUTES': config(
+        'TEMPORARY_TOKEN_MINUTES',
+        default=30,
+        cast=int,
+    ),
+    'RENEW_ON_SUCCESS': config(
+        'TEMPORARY_TOKEN_RENEW_ON_SUCCESS',
+        default=True,
+        cast=bool,
+    ),
+    'USE_AUTHENTICATION_BACKENDS': config(
+        'USE_AUTHENTICATION_BACKENDS',
+        default=False,
+        cast=bool,
+    ),
 }
 
 # Activation Token
 
 ACTIVATION_TOKENS = {
-    'MINUTES': 2880,
+    'MINUTES': config(
+        'ACTIVATION_TOKENS_MINUTES',
+        default=1440,
+        cast=int,
+    ),
 }
 
 # Email service configuration (using Anymail).
 # Refer to Anymail's documentation for configuration details.
 
 ANYMAIL = {
-    "SENDINBLUE_API_KEY": "SENDINBLUE_API_KEY",
+    'SENDINBLUE_API_KEY': config(
+        'SENDINBLUE_API_KEY',
+        default='example_key',
+    ),
     'TEMPLATES': {
-        "CONFIRM_SIGN_UP": "example_template_id",
-        "FORGOT_PASSWORD": "example_template_id",
+        'CONFIRM_SIGN_UP': config(
+            'CONFIRM_SIGN_UP',
+            default='0',
+            cast=int,
+        ),
+        'FORGOT_PASSWORD': config(
+            'FORGOT_PASSWORD',
+            default='0',
+            cast=int,
+        ),
     },
 }
-EMAIL_BACKEND = 'anymail.backends.sendinblue.EmailBackend'
+EMAIL_BACKEND = config(
+    'EMAIL_BACKEND',
+    default='anymail.backends.sendinblue.EmailBackend',
+)
+
 # This 'FROM' email is not used with SendInBlue templates
-DEFAULT_FROM_EMAIL = 'noreply@example.org'
+DEFAULT_FROM_EMAIL = config(
+    'DEFAULT_FROM_EMAIL',
+    default='noreply@example.org',
+)
 
 # These settings are not related to the core API functionality. Feel free to
 # edit them to your needs.
 # NOTE: "{{token}}" is a placeholder for the real activation token. It will be
 #       dynamically replaced by the real "token".
 CONSTANT = {
-    "ORGANIZATION": "NousRire",
-    "EMAIL_SERVICE": False,
-    "AUTO_ACTIVATE_USER": False,
+    "ORGANIZATION":  config(
+        'ORGANIZATION',
+        default='Volontaria',
+    ),
+    "EMAIL_SERVICE": config(
+        'EMAIL_SERVICE',
+        default=False,
+        cast=bool,
+    ),
+    "AUTO_ACTIVATE_USER": config(
+        'AUTO_ACTIVATE_USER',
+        default=False,
+        cast=bool,
+    ),
     "FRONTEND_INTEGRATION": {
-        "ACTIVATION_URL": "example.com/activate?activation_token={{token}}",
-        "FORGOT_PASSWORD_URL": "example.com/forgot_password?token={{token}}",
+        'ACTIVATION_URL': config(
+            'ACTIVATION_URL',
+            default='https://example.com/activate/{{token}}',
+        ),
+         'FORGOT_PASSWORD_URL': config(
+            'FORGOT_PASSWORD_URL',
+            default='https://example.com/reset-password/{{token}}',
+        ),
     },
 }
 
