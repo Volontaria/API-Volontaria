@@ -12,6 +12,8 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from source.apiVolontaria.apiVolontaria.services import \
+    send_reset_password_email
 from . import serializers
 from .models import TemporaryToken, ActionToken
 from django.template.loader import render_to_string
@@ -261,7 +263,6 @@ class UsersActivation(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-
 class ResetPassword(APIView):
     """
     post:
@@ -317,26 +318,14 @@ class ResetPassword(APIView):
             # Send the new token by e-mail to the user
             FRONTEND_SETTINGS = settings.CONSTANT['FRONTEND_INTEGRATION']
 
-            # data for email activation
-            msg_html_css = render_to_string('css/reset_password.css')
+            reset_url = FRONTEND_SETTINGS['FORGOT_PASSWORD_URL'].replace(
+                "{{token}}",
+                str(token)
+            )
 
-            merge_data = {
-                'FORGOT_URL': FRONTEND_SETTINGS['FORGOT_PASSWORD_URL'].replace(
-                    "{{token}}",
-                    str(token)
-                ),
-                'CSS_STYLE': msg_html_css
-            }
+            send_reset_password_email(user, reset_url)
 
-            plain_msg = render_to_string("reset_password.txt", merge_data)
-            msg_html = render_to_string("reset_password.html", merge_data)
-            response_send_mail = services.service_send_mail([user.email],
-                                                            _("Mise à jour du mot de passe."),
-                                                            plain_msg, msg_html)
-            if len(response_send_mail) > 0:
-                return Response(text_error_not_email_send, status=status.HTTP_201_CREATED)
-            else:
-                return Response(status=status.HTTP_201_CREATED)
+            return Response(status=status.HTTP_201_CREATED)
         except KeyError:
             return Response(text_error_not_email_send, status=status.HTTP_201_CREATED)
 

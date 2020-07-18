@@ -85,7 +85,7 @@ class CellBasicSerializer(serializers.ModelSerializer):
                     },
                 )
             except IntegrityError as err:
-                if 'UNIQUE constraint failed' in err.args[0]:
+                if 'duplicate key value violates unique constraint' in err.args[0]:
                     error = {
                         'message': (
                             "A Country with that iso_code already exists"
@@ -107,7 +107,7 @@ class CellBasicSerializer(serializers.ModelSerializer):
                 )
                 cell_address.save()
             except IntegrityError as err:
-                if 'UNIQUE constraint failed' in err.args[0]:
+                if 'duplicate key value violates unique constraint' in err.args[0]:
                     error = {
                         'message': (
                             "A StateProvince with that iso_code already exists"
@@ -192,7 +192,7 @@ class CellBasicSerializer(serializers.ModelSerializer):
                             },
                         )
                 except IntegrityError as err:
-                    if 'UNIQUE constraint failed' in err.args[0]:
+                    if 'duplicate key value violates unique constraint' in err.args[0]:
                         error = {
                             'message': (
                                 "A Country with that iso_code already exists"
@@ -214,7 +214,7 @@ class CellBasicSerializer(serializers.ModelSerializer):
                     )
                     cell_address.save()
                 except IntegrityError as err:
-                    if 'UNIQUE constraint failed' in err.args[0]:
+                    if 'duplicate key value violates unique constraint' in err.args[0]:
                         error = {
                             'message': (
                                 "A StateProvince with "

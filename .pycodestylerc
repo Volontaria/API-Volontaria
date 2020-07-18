@@ -1,0 +1,5 @@
+[pycodestyle]
+count = True
+show-source = True
+exclude = migrations,__pycache__,docs,env,venv,./.git*,settings.py
+format=pylint

@@ -89,3 +89,27 @@ def send_sign_up_validation_email(user, url_of_activation):
         context,
         'CONFIRM_SIGN_UP'
     )
+
+
+def send_reset_password_email(user, url_of_reset):
+    """
+    This function sends an email to a user in order to allow
+    him to reset his password.
+    :param user: The user that want to reset his password
+    :param url_of_reset: The url where the user need to go to reset
+    his password
+    :return: None
+    """
+
+    context = {
+        'USER_FIRST_NAME': user.first_name,
+        'USER_LAST_NAME': user.last_name,
+        'USER_EMAIL': user.email,
+        'RESET_URL': url_of_reset,
+    }
+
+    send_templated_email(
+        [user],
+        context,
+        'FORGOT_PASSWORD'
+    )

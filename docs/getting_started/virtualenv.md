@@ -1,4 +1,4 @@
-# Quickstart
+# Getting started with manual installation
 
 We're going to install and configure a basic instance of this API
 
@@ -20,7 +20,8 @@ git clone https://github.com/Volontaria/API-Volontaria.git
 
 ## Create a virtual environment
 
-[Virtualenv](https://virtualenv.pypa.io/) provide isolated Python environments, which are more practical than installing packages systemwide. They also allow installing packages without administrator privileges.
+[Virtualenv](https://virtualenv.pypa.io/) provide isolated Python environments, which are more practical 
+than installing packages systemwide. They also allow installing packages without administrator privileges.
 
 1. Create a new virtual environment 
 ```
@@ -54,7 +55,8 @@ have the right data schema.
 python source/apiVolontaria/manage.py migrate
 ```
 
-> By default this repository work with a Sqlite3 database which is a technology using a simple file in place of a server. You can change this config in `source/apiVolontaria/apiVolontaria/local_settings.py`. 
+> By default this repository work with a Sqlite3 database which is a technology using a simple file in place 
+> of a server. You can change this config in `source/apiVolontaria/apiVolontaria/local_settings.py`. 
  
 ## Test the installation
 
@@ -85,4 +87,5 @@ python source/apiVolontaria/manage.py createsuperuser
 
 ## Custom settings
 
-If you need to have custom settings on your local environment, you can override global settings in `source/apiVolontaria/apiVolontaria/local_settings.py`.
+If you need to have custom settings on your local environment, you can override global 
+settings in `source/apiVolontaria/apiVolontaria/local_settings.py`.

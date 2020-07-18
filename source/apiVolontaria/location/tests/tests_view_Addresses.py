@@ -1,6 +1,5 @@
 import json
 
-from django.utils import timezone
 from django.urls import reverse
 
 from rest_framework import status

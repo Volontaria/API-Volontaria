@@ -10,8 +10,23 @@ from volunteer.models import Cell
 from apiVolontaria import models
 from apiVolontaria.factories import UserFactory, AdminFactory
 
+from apiVolontaria.testing_tools import CustomAPITestCase
 
-class UsersIdTests(APITestCase):
+
+class UsersIdTests(CustomAPITestCase):
+
+    ATTRIBUTES = [
+        'id',
+        'username',
+        'email',
+        'first_name',
+        'last_name',
+        'is_active',
+        'phone',
+        'mobile',
+        'is_superuser',
+        'managed_cell',
+    ]
 
     def setUp(self):
         self.client = APIClient()
@@ -446,31 +461,12 @@ class UsersIdTests(APITestCase):
 
         content = json.loads(response.content)
 
-        data = [{
-            'id': 1,
-            'name': 'my cell',
-            'address': {
-                'id': 1,
-                'address_line1': 'random address 1',
-                'address_line2': '',
-                'postal_code': 'RAN DOM',
-                'city': 'random city',
-                'country': {
-                    'iso_code': 'RC',
-                    'name': 'random country'
-                },
-                'state_province': {
-                    'iso_code': 'RS',
-                    'name': 'random state'
-                },
-            },
-            'managers': [{
-                'id': self.user.id,
-                'username': self.user.username,
-                'first_name': self.user.first_name,
-                'last_name': self.user.last_name,
-                'email': self.user.email,
-            }]
-        }]
+        self.check_attributes(content)
 
-        self.assertEqual(content['managed_cell'], data)
+        cell_attributes = [
+            'id',
+            'name',
+            'address',
+            'managers',
+        ]
+        self.check_attributes(content['managed_cell'][0], cell_attributes)

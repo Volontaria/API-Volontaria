@@ -28,7 +28,7 @@ class AddressTests(APITestCase):
         """
         params = dict(
             address_line1='random address',
-            postal_code='random postal',
+            postal_code='Y7E 1k1',
             city='random city',
             state_province=self.random_state_province,
             country=self.random_country,
@@ -53,7 +53,7 @@ class AddressTests(APITestCase):
         """
         params = dict(
             address_line1='random address',
-            postal_code='random postal',
+            postal_code='Y7E 1k1',
             city='random city',
             state_province=self.random_state_province,
             country=self.random_country2,

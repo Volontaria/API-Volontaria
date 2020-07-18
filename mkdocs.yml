@@ -11,6 +11,12 @@ nav:
   - Getting started:
     - Install with Docker: 'getting_started/docker.md'
     - Install manually: 'getting_started/virtualenv.md'
+  - Contributing:
+      - How to find help: 'contributing/how_to_find_help.md'
+      - Reporting bug: 'contributing/reporting_bug.md'
+      - Suggesting enhancement: 'contributing/suggesting_enhancement.md'
+      - Contributing to code: 'contributing/code_contribution.md'
+      - Style guide: 'contributing/style_guide.md'
   - Policies:
     - Code of conduct: 'CODE_OF_CONDUCT.md'
 theme:
