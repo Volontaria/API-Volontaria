@@ -4,7 +4,7 @@ import inspect
 
 # Paths
 REPOSITORY_PATH = os.path.abspath(os.path.dirname(sys.argv[0]))
-PROJECT_PATH = REPOSITORY_PATH + '/source/apiVolontaria'
+PROJECT_PATH = REPOSITORY_PATH
 
 # Color constant to console print
 HEADER = '\033[95m'
@@ -76,7 +76,9 @@ class Test:
             # Execute the command
             self.__execute_command(name, description, commands)
         else:
-            raise ValueError('`' + command_name + '` is not a valid command name.')
+            raise ValueError(
+                '`' + command_name + '` is not a valid command name.'
+            )
 
     @staticmethod
     def __execute_command(name, description, commands):
@@ -106,18 +108,10 @@ class Test:
         description = "We will run all tests of the project. " \
                       "This can take several minutes."
 
-        test = "coverage run " \
-               "--include="\
-               + PROJECT_PATH + "/apiVolontaria/*,"\
-               + PROJECT_PATH + "/location/*,"\
-               + PROJECT_PATH + "/order/*,"\
-               + PROJECT_PATH + "/volunteer/* "\
-               "--omit=*__init__*,*migrations/*,*tests/* "\
-               + PROJECT_PATH + "/manage.py test source/apiVolontaria"
+        test = "coverage run " + PROJECT_PATH + "/manage.py " \
+               "test " + PROJECT_PATH
 
-        coverage = "coverage report " \
-                   "-m " \
-                   "--skip-covered"
+        coverage = "coverage report"
 
         return name, description, [test, coverage]
 
@@ -127,11 +121,8 @@ class Test:
         Method to run Pycodestyle
         """
         name = "Pycodestyle"
-        description = "This check will be empty if you have no one styling error"
-        styling = "pycodestyle " \
-                  "--count " \
-                  "--show-source " \
-                  "--exclude=migrations " + PROJECT_PATH
+        description = "Output will be empty if there are no styling errors."
+        styling = "pycodestyle --config=.pycodestylerc " + PROJECT_PATH
 
         return name, description, [styling]
 

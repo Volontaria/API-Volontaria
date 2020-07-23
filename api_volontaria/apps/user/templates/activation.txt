@@ -1,0 +1,6 @@
+Activation
+
+Bonjour {{ FIRST_NAME }} {{ LAST_NAME }},
+Veuillez activer votre profil afin de confirmer votre adresse courriel.
+
+{{ ACTIVATION_URL }}

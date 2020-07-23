@@ -3,8 +3,8 @@ ENV PYTHONUNBUFFERED 1
 
 # Allows docker to cache installed dependencies between builds
 COPY ./requirements.txt requirements.txt
-COPY ./requirements-dev.txt requirements-dev.txt
 RUN pip install -r requirements.txt
+COPY ./requirements-dev.txt requirements-dev.txt
 RUN pip install -r requirements-dev.txt
 
 # Adds our application code to the image
@@ -14,4 +14,4 @@ WORKDIR code
 EXPOSE 8000
 
 # Run the production server
-CMD newrelic-admin run-program gunicorn --bind 0.0.0.0:$PORT --access-logfile - source.apiVolontaria.apiVolontaria.wsgi:application
+CMD newrelic-admin run-program gunicorn --bind 0.0.0.0:$PORT --access-logfile - API-Volontaria.wsgi:application

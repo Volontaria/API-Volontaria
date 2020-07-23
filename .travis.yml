@@ -1,8 +1,7 @@
 language: python
-sudo: required
-services:
-- docker
+
 python:
+  - 3.6
 
 notifications:
   email:
@@ -10,14 +9,14 @@ notifications:
     on_failure: change
 
 install:
-  - docker-compose build
+  - pip install -r requirements.txt
+  - pip install coveralls
+  - pip install pycodestyle
 
-before_script:
-  # We will run a postgres service into docker, so wee need to stop the postgres service
-  - sudo service postgresql stop
 script:
-  - docker-compose run web coverage run source/apiVolontaria/manage.py test
-  - docker-compose run web pycodestyle --config=.pycodestylerc .
+ - docker-compose build
+ - docker-compose run web coverage run --source=api_volontaria --omit=env/* manage.py test
+ - docker-compose run web pycodestyle --config=.pycodestylerc .
 
 after_success:
-  - docker-compose run -e TRAVIS_JOB_ID -e TRAVIS_BRANCH -e TRAVIS api coveralls
+  coveralls

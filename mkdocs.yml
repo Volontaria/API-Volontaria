@@ -1,5 +1,5 @@
-site_name: Plateforme Volontaria
-site_description: Plateforme de benevolat
+site_name: Volontaria
+site_description: API to manage volunteers in an organisation.
 repo_name: volontaria/API-Volontaria
 repo_url: https://github.com/volontaria/API-Volontaria
 site_dir: site
