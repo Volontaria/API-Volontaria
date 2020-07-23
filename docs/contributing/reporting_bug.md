@@ -12,7 +12,7 @@ Before creating bug reports, please check the issues as you might find out that 
 #### How Do I Submit A (Good) Bug Report?
 
 Bugs are tracked as [GitHub issues](https://guides.github.com/features/issues/). Create an issue on the repository 
-and fill in [the template](.github/ISSUE_TEMPLATE.md) automatically generated in the issue text box.
+and fill in the template automatically generated in the issue text box.
 
 Explain the problem and include additional details to help maintainers reproduce the problem:
 

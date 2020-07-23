@@ -52,6 +52,7 @@ coverage.xml
 
 # Django stuff:
 *.log
+local_settings.py
 
 # Flask stuff:
 instance/
@@ -99,14 +100,8 @@ ENV/
 # mypy
 .mypy_cache/
 
-# IDE config file
-.idea/
-
 # Database
 *.sqlite3
 
-# Project
-source/apiVolontaria/apiVolontaria/local_settings.py
-
-# Media
-source/media
+# IDE
+.idea

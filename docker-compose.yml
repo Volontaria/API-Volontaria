@@ -4,18 +4,20 @@ services:
   postgres:
     image: postgres:latest
     environment:
-      POSTGRES_DB: db_name
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: my_db_name
+      POSTGRES_USER: my_db_user
+      POSTGRES_PASSWORD: my_db_password
   web:
     restart: always
     env_file: .env.docker
+    environment:
+      - DJANGO_SECRET_KEY=local
     image: web
     build: ./
     command: >
       bash -c "python wait_for_postgres.py &&
-               ./source/apiVolontaria/manage.py migrate &&
-               ./source/apiVolontaria/manage.py runserver 0.0.0.0:8000"
+               ./manage.py migrate &&
+               ./manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./:/code
     ports:

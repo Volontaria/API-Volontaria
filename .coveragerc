@@ -1,0 +1,7 @@
+[run]
+branch = true
+include = api_volontaria/*
+omit = *__init__*, */tests/*, */migrations/*, */admin.py, */settings/*, */wsgi.py, manage.py
+
+[report]
+show_missing = true

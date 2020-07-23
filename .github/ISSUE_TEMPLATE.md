@@ -1,4 +1,4 @@
-## Expected behaviour
+## Expected behavior
 > Describe the expected behaviour.
 
 ## Current behavior
