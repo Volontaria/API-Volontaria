@@ -56,55 +56,6 @@ class User(AbstractUser):
 
         return user
 
-    def send_confirm_signup_email(self):
-        if settings.LOCAL_SETTINGS['EMAIL_SERVICE'] is True:
-
-            activation_url = ActionToken.generate_activation_url()
-
-            merge_data = {
-                "ACTIVATION_URL": activation_url,
-                "FIRST_NAME": self.first_name,
-                "LAST_NAME": self.last_name,
-            }
-            plain_msg = render_to_string(
-                "activation.txt",
-                merge_data
-            )
-            msg_html = render_to_string(
-                "activation.html",
-                merge_data
-            )
-            send_templated_email(
-                "Confirmation de la création de votre compte",
-                plain_msg,
-                settings.DEFAULT_FROM_EMAIL,
-                [self],
-                html_message=msg_html,
-            )
-
-    def send_reset_password(self):
-
-        forgot_password_url = ActionToken.generate_reset_password_url(self)
-
-        merge_data = {
-            "RESET_PASSWORD_URL": forgot_password_url
-        }
-        plain_msg = render_to_string(
-            "reset_password.txt",
-            merge_data
-        )
-        msg_html = render_to_string(
-            "reset_password.html",
-            merge_data
-        )
-        send_templated_email(
-            "Reset password",
-            plain_msg,
-            settings.DEFAULT_FROM_EMAIL,
-            [self],
-            html_message=msg_html,
-        )
-
 
 class ActionToken(models.Model):
     """

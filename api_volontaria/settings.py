@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'api_volontaria.apps.user',
     'api_volontaria.apps.notification',
     'anymail',
+    'import_export',
     'simple_history',
     'dry_rest_permissions',
     'api_volontaria.apps.log_management',
@@ -162,7 +163,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'US/Eastern'
 
 USE_I18N = True
 
@@ -225,10 +226,23 @@ ACTIVATION_TOKENS = {
 # Refer to Anymail's documentation for configuration details.
 
 ANYMAIL = {
-    'SENDINBLUE_API_KEY': 'example_key',
+    'SENDINBLUE_API_KEY': config('SENDINBLUE_API_KEY', default='placeholder_key'),
     'REQUESTS_TIMEOUT': (30, 30),
     'TEMPLATES': {
-        'RESET_PASSWORD': config('RESET_PASSWORD_EMAIL_TEMPLATE', 0),
+        'CONFIRMATION_PARTICIPATION': config(
+            'TEMPLATE_ID_CONFIRMATION_PARTICIPATION',
+            default=0,
+            cast=int
+        ),
+        'CANCELLATION_PARTICIPATION_EMERGENCY': config(
+            'TEMPLATE_ID_CANCELLATION_PARTICIPATION_EMERGENCY',
+            default=0,
+            cast=int
+        ),
+        'RESET_PASSWORD': config(
+            'RESET_PASSWORD_EMAIL_TEMPLATE',
+            default=0
+        ),
     }
 }
 EMAIL_BACKEND = 'anymail.backends.sendinblue.EmailBackend'
@@ -246,3 +260,5 @@ LOCAL_SETTINGS = {
         'RESET_PASSWORD': 'reset-password/{uid}/{token}',
     },
 }
+
+NUMBER_OF_DAYS_BEFORE_EMERGENCY_CANCELLATION = 2

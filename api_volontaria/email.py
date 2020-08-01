@@ -25,12 +25,13 @@ class EmailAPI:
 
         return {
             "MAIL_NAME_CONTACT": contact_email,
+            "VOLONTARIA_WEBSITE_URL": 'https://volontaria.github.io/'
         }
 
     def send_template_email(self, email, template, context):
 
-        email_context = self.get_generic_information()
-        email_context.update(context)
+        email_context = context
+        email_context['GENERIC'] = self.get_generic_information()
 
         message = EmailMessage(
             subject=None,  # required for SendinBlue templates
@@ -44,15 +45,3 @@ class EmailAPI:
 
         # return number of successfully sent emails
         return message.send()
-
-    def get_messages(self, template_name, merge_data):
-        plain_msg = render_to_string(
-            f'{template_name}.txt',
-            merge_data
-        )
-        msg_html = render_to_string(
-            f'{template_name}.html',
-            merge_data
-        )
-
-        return plain_msg, msg_html

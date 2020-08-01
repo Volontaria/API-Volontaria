@@ -1,8 +1,15 @@
+from datetime import datetime, timedelta
+import pytz
+from babel.dates import format_date
+from django.conf import settings
 from django.db import models
+from django.db.models.signals import post_save, pre_delete
+from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import get_user_model
 from dry_rest_permissions.generics import authenticated_users
+from api_volontaria.email import EmailAPI
 
 User = get_user_model()
 
@@ -11,6 +18,7 @@ class Cell(models.Model):
     """
     This class represents a physical place where volunteer can go to help.
     """
+
     class Meta:
         verbose_name = _("Cell")
         verbose_name_plural = _('Cells')
@@ -125,6 +133,7 @@ class Event(models.Model):
     """
     This class represents an event where volunteer can come to help.
     """
+
     class Meta:
         verbose_name = _("Event")
         verbose_name_plural = _('Events')
@@ -279,6 +288,100 @@ class Participation(models.Model):
         auto_now_add=True,
     )
 
+    def send_email_confirmation(self):
+        start_time = self.event.start_time
+        start_time = start_time.astimezone(pytz.timezone('US/Eastern'))
+
+        end_time = self.event.end_time
+        end_time = end_time.astimezone(pytz.timezone('US/Eastern'))
+
+        type_participation = 'Bénévole'
+        if self.is_standby:
+            type_participation = 'Remplaçant'
+
+        context = {
+            'PARTICIPATION': {
+                'FIRST_NAME': self.user.first_name,
+                'LAST_NAME': self.user.last_name,
+                'TYPE': type_participation
+            },
+            'ACTIVITY': {
+                'NAME': self.event.task_type.name,
+                'START_DATE': format_date(
+                    start_time,
+                    format='long',
+                    locale='fr'
+                ),
+                'START_TIME': start_time.strftime('%-Hh%M'),
+                'END_TIME': end_time.strftime('%-Hh%M'),
+            },
+            'CELL': {
+                'NAME': self.event.cell.name,
+                'ADDRESS_LINE_1': self.event.cell.address_line_1,
+                'ADDRESS_LINE_2': self.event.cell.address_line_2,
+                'POSTAL_CODE': self.event.cell.postal_code,
+                'CITY': self.event.cell.city,
+                'STATE_PROVINCE': self.event.cell.state_province,
+            },
+        }
+
+        EmailAPI().send_template_email(
+            self.user.email,
+            'CONFIRMATION_PARTICIPATION',
+            context,
+        )
+
+    def send_email_cancellation_emergency(self):
+        """
+        An email to inform the administrator that a user just cancel his
+        reservation despite the fact that the event is really soon
+        :return: Nothing
+        """
+        start_time = self.event.start_time
+        start_time = start_time.astimezone(pytz.timezone('US/Eastern'))
+
+        end_time = self.event.end_time
+        end_time = end_time.astimezone(pytz.timezone('US/Eastern'))
+
+        context = {
+            'PARTICIPANT': {
+                'FIRST_NAME': self.user.first_name,
+                'LAST_NAME': self.user.last_name,
+            },
+            'ACTIVITY': {
+                'NAME': self.event.task_type.name,
+                'START_DATE': format_date(
+                    start_time,
+                    format='long',
+                    locale='fr'
+                ),
+                'START_TIME': start_time.strftime('%-Hh%M'),
+                'END_TIME': end_time.strftime('%-Hh%M'),
+                'HOURS_BEFORE_EMERGENCY':
+                    settings.NUMBER_OF_DAYS_BEFORE_EMERGENCY_CANCELLATION * 24,
+                'NUMBER_OF_VOLUNTEERS': self.event.nb_volunteers,
+                'NUMBER_OF_VOLUNTEERS_NEEDED': self.event.nb_volunteers_needed,
+                'NUMBER_OF_VOLUNTEERS_STANDBY':
+                    self.event.nb_volunteers_standby,
+                'NUMBER_OF_VOLUNTEERS_STANDBY_NEEDED':
+                    self.event.nb_volunteers_standby_needed,
+            },
+            'CELL': {
+                'NAME': self.event.cell.name,
+                'ADDRESS_LINE_1': self.event.cell.address_line_1,
+                'ADDRESS_LINE_2': self.event.cell.address_line_2,
+                'POSTAL_CODE': self.event.cell.postal_code,
+                'CITY': self.event.cell.city,
+                'STATE_PROVINCE': self.event.cell.state_province,
+            },
+        }
+
+        EmailAPI().send_template_email(
+            self.user.email,
+            'CANCELLATION_PARTICIPATION_EMERGENCY',
+            context,
+        )
+
     @staticmethod
     def has_destroy_permission(request):
         if request.user.is_staff:
@@ -318,3 +421,23 @@ class Participation(models.Model):
             return True
         else:
             return False
+
+
+@receiver(post_save, sender=Participation)
+def send_participation_confirmation(sender, instance, created, **kwargs):
+    if created:
+        instance.send_email_confirmation()
+
+
+@receiver(pre_delete, sender=Participation)
+def send_cancellattion_email_emergency(sender, instance, using, **kwargs):
+    if not instance.is_standby:
+        start_time = instance.event.start_time
+        start_time = start_time.astimezone(pytz.timezone('US/Eastern'))
+        limit_date = start_time - timedelta(
+            days=settings.NUMBER_OF_DAYS_BEFORE_EMERGENCY_CANCELLATION
+        )
+
+        now = datetime.now(pytz.timezone('US/Eastern'))
+        if now > limit_date:
+            instance.send_email_cancellation_emergency()
