@@ -26,6 +26,7 @@ class EventsTests(CustomAPITestCase):
     ATTRIBUTES = [
         'id',
         'url',
+        'description',
         'start_time',
         'end_time',
         'nb_volunteers_needed',
@@ -78,6 +79,7 @@ class EventsTests(CustomAPITestCase):
         Ensure we can create a new event if we are an admin.
         """
         data_post = {
+            "description": "My new event description",
             "start_time": LOCAL_TIMEZONE.localize(datetime(2100, 1, 13, 9)),
             "end_time": LOCAL_TIMEZONE.localize(datetime(2100, 1, 15, 10)),
             "nb_volunteers_needed": 10,
@@ -110,6 +112,7 @@ class EventsTests(CustomAPITestCase):
         Ensure we can't create a new event if we are a simple user.
         """
         data_post = {
+            "description": "My new event description",
             "start_time": LOCAL_TIMEZONE.localize(datetime(2100, 1, 13, 9)),
             "end_time": LOCAL_TIMEZONE.localize(datetime(2100, 1, 15, 10)),
             "nb_volunteers_needed": 10,

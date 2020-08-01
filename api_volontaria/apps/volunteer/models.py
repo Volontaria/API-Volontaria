@@ -96,6 +96,9 @@ class TaskType(models.Model):
         max_length=100,
     )
 
+    def __str__(self):
+        return self.name
+
     @staticmethod
     def has_create_permission(request):
         if request.user.is_staff:
@@ -126,6 +129,10 @@ class Event(models.Model):
         verbose_name = _("Event")
         verbose_name_plural = _('Events')
 
+    description = models.TextField(
+        verbose_name="Description",
+    )
+
     start_time = models.DateTimeField(
         verbose_name=_("Begin date"),
     )
@@ -138,6 +145,7 @@ class Event(models.Model):
         verbose_name=_("Number of volunteers (needed)"),
         default=0,
     )
+
     nb_volunteers_standby_needed = models.PositiveIntegerField(
         verbose_name=_("Number of volunteers on hold (needed)"),
         default=0,
@@ -164,6 +172,9 @@ class Event(models.Model):
         blank=False,
         on_delete=models.PROTECT,
     )
+
+    def __str__(self):
+        return str(self.start_time) + ' - ' + str(self.end_time)
 
     @property
     def is_started(self):

@@ -67,6 +67,7 @@ class EventSerializer(serializers.HyperlinkedModelSerializer):
         fields = [
             'id',
             'url',
+            'description',
             'start_time',
             'end_time',
             'nb_volunteers_needed',
