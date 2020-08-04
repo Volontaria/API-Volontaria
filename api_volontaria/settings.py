@@ -252,7 +252,10 @@ DEFAULT_FROM_EMAIL = 'noreply@example.org'
 
 LOCAL_SETTINGS = {
     'ORGANIZATION': "volontaria",
-    'CONTACT_EMAIL': "rignon.noel@gmail.com",
+    'CONTACT_EMAIL': config(
+            'CONTACT_EMAIL',
+            default='noreply@volontaria.org',
+    ),
     'EMAIL_SERVICE': False,
     'AUTO_ACTIVATE_USER': False,
     'FRONTEND_URLS': {
