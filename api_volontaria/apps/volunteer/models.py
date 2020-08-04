@@ -377,7 +377,7 @@ class Participation(models.Model):
         }
 
         EmailAPI().send_template_email(
-            self.user.email,
+            settings.LOCAL_SETTINGS['CONTACT_EMAIL'],
             'CANCELLATION_PARTICIPATION_EMERGENCY',
             context,
         )
