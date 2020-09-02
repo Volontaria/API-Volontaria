@@ -9,7 +9,8 @@ notifications:
     on_failure: change
 
 install:
-  - pip install -r requirements.txt
+  - pip install --upgrade pip
+  - pip install --use-feature=2020-resolver -r requirements.txt
   - pip install coveralls
   - pip install pycodestyle
 

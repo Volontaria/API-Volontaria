@@ -59,7 +59,6 @@ INSTALLED_APPS = [
     'api_volontaria.apps.log_management',
     'api_volontaria.apps.page',
     'api_volontaria.apps.volunteer',
-    'rest_framework_filters',
     'django_filters',
 ]
 
