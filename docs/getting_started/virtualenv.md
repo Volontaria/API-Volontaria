@@ -62,10 +62,10 @@ You will need to define your environment variable, one of the easiest way is to 
 
 If you want to modify some settings you can just overwrite your `.env` file with the ENV variable that you want. Differents Django settings are based on ENV variables as you can see in `blitz_api/settings.py`
 
-!!! Danger
+!!! danger
     Take care to not push your confidentials credentials when you push code to our repository or on your open-source forks. You can review your change by using git diff before committing your change. (ex: password, Secret API keys)
 
-!!! Danger
+!!! danger
     Try to always use python-decouple to manage your settings and to not directly edit the `settings.py`.
 
 
