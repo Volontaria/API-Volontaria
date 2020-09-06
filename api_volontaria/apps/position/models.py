@@ -82,6 +82,16 @@ class Application(models.Model):
     This class represents a application made by volunteer for a given position.
     """
 
+    APPLICATION_UNDER_EXAMINATION = 'UNDER EXAMINATION'
+    APPLICATION_ACCEPTED = 'ACCEPTED'
+    APPLICATION_DECLINED = 'DECLINED'
+
+    APPLICATION_CHOICES = (
+        (APPLICATION_UNDER_EXAMINATION, _('Under examination')),
+        (APPLICATION_ACCEPTED, _('Accepted')),
+        (APPLICATION_DECLINED, _('Declined')),
+    )
+
     class Meta:
         verbose_name = _("Application")
         verbose_name_plural = _("Applications")
@@ -102,8 +112,11 @@ class Application(models.Model):
         verbose_name="Motivation",
     )
 
-    accepted = models.BooleanField(
-        verbose_name="Accepted"
+    application_status = models.CharField(
+        verbose_name=_("Application status"),
+        max_length=100,
+        choices=APPLICATION_CHOICES,
+        default=APPLICATION_UNDER_EXAMINATION
     )
 
     def __str__(self):
