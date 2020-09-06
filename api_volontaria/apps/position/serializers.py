@@ -17,8 +17,19 @@ class PositionSerializer(serializers.HyperlinkedModelSerializer):
         model = Position
         fields = '__all__'
 
+    def validate_user(self, value):
+        """
+        Check that the user creating a position belongs to staff.
+        """
+        if self.context['request'].user.is_staff:
+            return value
+        else:
+            raise serializers.ValidationError(
+                "You don't have the right to create a position."
+            )
 
-class ParticipationSerializer(serializers.HyperlinkedModelSerializer):
+
+class ApplicationSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.ReadOnlyField()
 
     class Meta:

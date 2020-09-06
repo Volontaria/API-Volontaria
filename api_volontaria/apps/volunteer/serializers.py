@@ -34,7 +34,8 @@ class ParticipationSerializer(serializers.HyperlinkedModelSerializer):
 
     def validate_user(self, value):
         """
-        Check that the blog post is about Django.
+        Check that the user creating a participation for another user
+        either belongs to staff or is user himself.
         """
         if self.context['request'].user.is_staff:
             return value
