@@ -22,13 +22,13 @@ class PositionViewSet(viewsets.ModelViewSet):
     filter_fields = '__all__'
     permission_classes = (DRYPermissions,)
 
-    # def get_permissions(self):
-    #     if self.action in ['list', 'retrieve']:
-    #         permission_classes = []
-    #     else:
-    #         permission_classes = [IsAdminUser]
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            permission_classes = []
+        else:
+            permission_classes = [IsAdminUser]
 
-    #     return [permission() for permission in permission_classes]
+        return [permission() for permission in permission_classes]
 
 
 class ApplicationViewSet(viewsets.ModelViewSet):
