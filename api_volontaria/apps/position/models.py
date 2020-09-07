@@ -37,7 +37,7 @@ class Position(models.Model):
     )
     
     weekly_hours = models.FloatField(
-        verbose_name=_("Hourly wage"),
+        verbose_name=_("Weekly hours"),
     )
     
     minimum_duration_commitment = models.FloatField(
@@ -45,7 +45,7 @@ class Position(models.Model):
     )
 
     is_remote_job = models.BooleanField(
-        verbose_name=_("Job is remote ")
+        verbose_name=_("Is remote")
     )
     
     is_posted = models.BooleanField(
