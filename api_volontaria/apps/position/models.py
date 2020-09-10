@@ -62,6 +62,20 @@ class Position(models.Model):
         else:
             return False
 
+    @staticmethod
+    def has_destroy_permission(request):
+        if request.user.is_staff:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def has_update_permission(request):
+        if request.user.is_staff:
+            return True
+        else:
+            return False
+
     @authenticated_users
     def has_object_destroy_permission(self, request):
         if request.user.is_staff:
@@ -79,10 +93,10 @@ class Position(models.Model):
 
 class Application(models.Model):
     """
-    This class represents a application made by volunteer for a given position.
+    This class represents an application made by volunteer for a given position.
     """
 
-    APPLICATION_UNDER_EXAMINATION = 'UNDER EXAMINATION'
+    APPLICATION_UNDER_EXAMINATION = 'UNDER_EXAMINATION'
     APPLICATION_ACCEPTED = 'ACCEPTED'
     APPLICATION_DECLINED = 'DECLINED'
 
@@ -119,11 +133,29 @@ class Application(models.Model):
         default=APPLICATION_UNDER_EXAMINATION
     )
 
+    user = models.ForeignKey(
+        User,
+        related_name=_('applications'),
+        on_delete=models.CASCADE,
+    )
+
     def __str__(self):
-        return self.name
+        return self.position.name
 
     @staticmethod
+    @authenticated_users
     def has_create_permission(request):
+        return True
+
+    @staticmethod
+    def has_destroy_permission(request):
+        if request.user.is_staff:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def has_update_permission(request):
         if request.user.is_staff:
             return True
         else:

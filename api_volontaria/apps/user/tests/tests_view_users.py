@@ -73,7 +73,17 @@ class UsersTests(CustomAPITestCase):
             },
             'tasktype': {
                 'create': False,
-            }
+            },
+            'application': {
+                'create': True,
+                'update': False,
+                'destroy': False,
+            },
+            'position': {
+                'create': False,
+                'update': False,
+                'destroy': False,
+            },
         }
         self.assertEqual(
             content['permissions'],

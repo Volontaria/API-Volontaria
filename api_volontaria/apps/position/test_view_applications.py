@@ -5,11 +5,9 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from django.urls import reverse
 
-from api_volontaria.apps.volunteer.models import (
-    Participation,
-    Cell,
-    TaskType,
-    Event,
+from api_volontaria.apps.position.models import (
+    Position,
+    Application,
 )
 from api_volontaria.factories import (
     UserFactory,
@@ -27,12 +25,11 @@ class ParticipationsTests(CustomAPITestCase):
     ATTRIBUTES = [
         'id',
         'url',
-        'event',
+        'position',
         'user',
-        'presence_duration_minutes',
-        'presence_status',
-        'is_standby',
-        'registered_at',
+        'applied_on',
+        'motivation',
+        'application_status',
     ]
 
     def setUp(self):
@@ -50,70 +47,59 @@ class ParticipationsTests(CustomAPITestCase):
         self.admin.set_password('Test123!')
         self.admin.save()
 
-        self.cell = Cell.objects.create(
-            name='My new cell',
-            address_line_1='373 Rue villeneuve E',
-            postal_code='H2T 1M1',
-            city='Montreal',
-            state_province='Quebec',
-            longitude='45.540237',
-            latitude='-73.603421',
+        self.position = Position.objects.create(
+            hourly_wage=14,
+            weekly_hours=15,
+            minimum_duration_commitment=3,
+            is_remote_job=True,
+            is_posted=True,
+        )
+        
+        self.position2 = Position.objects.create(
+            hourly_wage=14.5,
+            weekly_hours=30.5,
+            minimum_duration_commitment=6.5,
+            is_remote_job=False,
+            is_posted=False,
         )
 
-        self.tasktype = TaskType.objects.create(
-            name='My new tasktype',
-        )
-
-        self.event = Event.objects.create(
-            start_time=LOCAL_TIMEZONE.localize(datetime(2140, 1, 15, 8)),
-            end_time=LOCAL_TIMEZONE.localize(datetime(2140, 1, 17, 12)),
-            nb_volunteers_needed=10,
-            nb_volunteers_standby_needed=0,
-            cell=self.cell,
-            task_type=self.tasktype,
-        )
-
-        self.event2 = Event.objects.create(
-            start_time=LOCAL_TIMEZONE.localize(datetime(2140, 1, 15, 8)),
-            end_time=LOCAL_TIMEZONE.localize(datetime(2140, 1, 17, 12)),
-            nb_volunteers_needed=10,
-            nb_volunteers_standby_needed=0,
-            cell=self.cell,
-            task_type=self.tasktype,
-        )
-
-        self.participation = Participation.objects.create(
-            event=self.event2,
+        self.application = Application.objects.create(
+            position=self.position,
             user=self.user,
-            is_standby=False,
+            applied_on=LOCAL_TIMEZONE.localize(datetime(2022, 4, 15, 19)),
+            motivation='passionate about that stuff',
+            application_status='accepted',
         )
-
-        self.participation2 = Participation.objects.create(
-            event=self.event2,
+        
+        self.application2 = Application.objects.create(
+            position=self.position,
             user=self.user2,
-            is_standby=False,
+            applied_on=LOCAL_TIMEZONE.localize(datetime(2023, 1, 15, 8)),
+            motivation='cool mission',
+            application_status='under examination',
         )
 
-    def test_create_new_participation_as_admin(self):
+    def test_create_new_application_as_admin(self):
         """
-        Ensure we can create a new participation if we are an admin.
+        Ensure we can create a new application if we are an admin.
         """
         data_post = {
-            'event': reverse(
-                'event-detail',
-                args=[self.event.id],
+            'application': reverse(
+                'application-detail',
+                args=[self.application.id],
             ),
             'user': reverse(
                 'user-detail',
                 args=[self.admin.id],
             ),
-            'is_standby': False,
+            'position': self.position,
+            'motivation': 'seems fun',
         }
 
         self.client.force_authenticate(user=self.admin)
 
         response = self.client.post(
-            reverse('participation-list'),
+            reverse('application-list'),
             data_post,
             format='json',
         )
@@ -127,26 +113,26 @@ class ParticipationsTests(CustomAPITestCase):
         )
         self.check_attributes(content)
 
-    def test_create_new_participation(self):
+    def test_create_new_application(self):
         """
-        Ensure we can create a new participation if we are a simple user.
+        Ensure we can create a new application if we are a simple user.
         """
         data_post = {
-            'event': reverse(
-                'event-detail',
-                args=[self.event.id],
+            'position': reverse(
+                'position-detail',
+                args=[self.position.id],
             ),
             'user': reverse(
                 'user-detail',
                 args=[self.user.id],
             ),
-            'is_standby': False,
+            'motivation': 'seems fun',
         }
 
         self.client.force_authenticate(user=self.user)
 
         response = self.client.post(
-            reverse('participation-list'),
+            reverse('application-list'),
             data_post,
             format='json',
         )
@@ -160,27 +146,27 @@ class ParticipationsTests(CustomAPITestCase):
         )
         self.check_attributes(content)
 
-    def test_create_new_participation_for_an_other_user(self):
+    def test_create_new_application_for_an_other_user(self):
         """
-        Ensure we can't create a new participation for an other user
+        Ensure we can't create a new application for an other user
         if we are a simple user.
         """
         data_post = {
-            'event': reverse(
-                'event-detail',
-                args=[self.event.id],
+            'application': reverse(
+                'application-detail',
+                args=[self.application.id],
             ),
             'user': reverse(
                 'user-detail',
                 args=[self.user2.id],
             ),
-            'is_standby': False,
+            'motivation': 'seems fun',
         }
 
         self.client.force_authenticate(user=self.user)
 
         response = self.client.post(
-            reverse('participation-list'),
+            reverse('application-list'),
             data_post,
             format='json',
         )
@@ -196,33 +182,33 @@ class ParticipationsTests(CustomAPITestCase):
             content,
             {
                 'user': [
-                    "You don't have the right to create a participation "
+                    "You don't have the right to create an application "
                     "for an other user"
                 ]
             }
         )
 
-    def test_create_new_participation_for_an_other_user_as_admin(self):
+    def test_create_new_application_for_an_other_user_as_admin(self):
         """
-        Ensure we can create a new participation for an other user
+        Ensure we can create a new application for an other user
         if we are an administrator.
         """
         data_post = {
-            'event': reverse(
-                'event-detail',
-                args=[self.event.id],
+            'application': reverse(
+                'application-detail',
+                args=[self.application.id],
             ),
             'user': reverse(
                 'user-detail',
                 args=[self.user2.id],
             ),
-            'is_standby': False,
+            'motivation': 'seems fun',
         }
 
         self.client.force_authenticate(user=self.admin)
 
         response = self.client.post(
-            reverse('participation-list'),
+            reverse('application-list'),
             data_post,
             format='json',
         )
@@ -236,22 +222,22 @@ class ParticipationsTests(CustomAPITestCase):
         )
         self.check_attributes(content)
 
-    def test_update_participation_as_admin(self):
+    def test_update_application_as_admin(self):
         """
-        Ensure we can update a participation if we are an admin.
+        Ensure we can update an application if we are an admin.
         """
-        new_value = True
+        new_value = 'sounds great'
         data_post = {
-            'is_standby': new_value,
+            'motivation': new_value,
         }
 
         self.client.force_authenticate(user=self.admin)
 
         response = self.client.patch(
             reverse(
-                'participation-detail',
+                'application-detail',
                 kwargs={
-                    'pk': self.participation.id
+                    'pk': self.application.id
                 },
             ),
             data_post,
@@ -262,24 +248,24 @@ class ParticipationsTests(CustomAPITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.check_attributes(content)
-        self.assertEqual(content['is_standby'], new_value)
+        self.assertEqual(content['motivation'], new_value)
 
-    def test_update_participation(self):
+    def test_update_application(self):
         """
-        Ensure we can't update a participation if we are a simple user.
+        Ensure we can't update an application if we are a simple user.
         """
-        new_value = True
+        new_value = 'sounds great'
         data_post = {
-            'is_standby': new_value,
+            'motivation': new_value,
         }
 
         self.client.force_authenticate(user=self.user)
 
         response = self.client.patch(
             reverse(
-                'participation-detail',
+                'application-detail',
                 kwargs={
-                    'pk': self.participation.id
+                    'pk': self.application.id
                 },
             ),
             data_post,
@@ -296,17 +282,17 @@ class ParticipationsTests(CustomAPITestCase):
             }
         )
 
-    def test_delete_participation_as_admin(self):
+    def test_delete_application_as_admin(self):
         """
-        Ensure we can delete a participation if we are an admin.
+        Ensure we can delete an application if we are an admin.
         """
         self.client.force_authenticate(user=self.admin)
 
         response = self.client.delete(
             reverse(
-                'participation-detail',
+                'application-detail',
                 kwargs={
-                    'pk': self.participation.id
+                    'pk': self.application.id
                 },
             )
         )
@@ -314,17 +300,17 @@ class ParticipationsTests(CustomAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(response.content, b'')
 
-    def test_delete_participation(self):
+    def test_delete_application(self):
         """
-        Ensure we can't delete a participation if we are a simple user.
+        Ensure we can't delete an application if we are a simple user.
         """
         self.client.force_authenticate(user=self.user)
 
         response = self.client.patch(
             reverse(
-                'participation-detail',
+                'application-detail',
                 kwargs={
-                    'pk': self.participation.id
+                    'pk': self.application.id
                 },
             )
         )
@@ -339,14 +325,14 @@ class ParticipationsTests(CustomAPITestCase):
             }
         )
 
-    def test_list_participations(self):
+    def test_list_applications(self):
         """
-        Ensure we can list participations.
+        Ensure any user can list applications.
         """
         self.client.force_authenticate(user=self.user)
 
         response = self.client.get(
-            reverse('participation-list'),
+            reverse('application-list'),
         )
 
         content = json.loads(response.content)
@@ -355,13 +341,13 @@ class ParticipationsTests(CustomAPITestCase):
         self.assertEqual(len(content['results']), 1)
         self.check_attributes(content['results'][0])
 
-        for participation in content['results']:
+        for application in content['results']:
             self.assertEqual(
-               participation['user']['id'],
+               application['user']['id'],
                self.user.id,
             )
 
-    def test_list_participations_as_admin(self):
+    def test_list_applications_as_admin(self):
         """
         Ensure we can list all the participations where we are administrator
         """
@@ -377,9 +363,9 @@ class ParticipationsTests(CustomAPITestCase):
         self.assertEqual(len(content['results']), 2)
         self.check_attributes(content['results'][0])
 
-        at_least_one_participation_is_owned_by_somebody_else = False
-        for participation in content['results']:
-            if participation['user']['id'] != self.admin.id:
-                at_least_one_participation_is_owned_by_somebody_else = True
+        at_least_one_application_is_owned_by_somebody_else = False
+        for application in content['results']:
+            if application['user']['id'] != self.admin.id:
+                at_least_one_application_is_owned_by_somebody_else = True
 
-        self.assertTrue(at_least_one_participation_is_owned_by_somebody_else)
+        self.assertTrue(at_least_one_application_is_owned_by_somebody_else)

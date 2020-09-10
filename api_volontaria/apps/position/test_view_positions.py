@@ -238,5 +238,5 @@ class PositionsTests(CustomAPITestCase):
         content = json.loads(response.content)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(content['results']), 1)
+        self.assertEqual(len(content['results']), 2)
         self.check_attributes(content['results'][0])
