@@ -368,7 +368,7 @@ class ParticipationsTests(CustomAPITestCase):
         self.client.force_authenticate(user=self.admin)
 
         response = self.client.get(
-            reverse('application-list'),
+            reverse('participation-list'),
         )
 
         content = json.loads(response.content)

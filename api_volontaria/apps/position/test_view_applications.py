@@ -84,15 +84,14 @@ class ParticipationsTests(CustomAPITestCase):
         Ensure we can create a new application if we are an admin.
         """
         data_post = {
-            'application': reverse(
-                'application-detail',
+            'position': reverse(
+                'position-detail',
                 args=[self.application.id],
             ),
             'user': reverse(
                 'user-detail',
                 args=[self.admin.id],
             ),
-            'position': self.position,
             'motivation': 'seems fun',
         }
 
@@ -152,8 +151,8 @@ class ParticipationsTests(CustomAPITestCase):
         if we are a simple user.
         """
         data_post = {
-            'application': reverse(
-                'application-detail',
+            'position': reverse(
+                'position-detail',
                 args=[self.application.id],
             ),
             'user': reverse(
@@ -194,8 +193,8 @@ class ParticipationsTests(CustomAPITestCase):
         if we are an administrator.
         """
         data_post = {
-            'application': reverse(
-                'application-detail',
+            'position': reverse(
+                'position-detail',
                 args=[self.application.id],
             ),
             'user': reverse(
@@ -338,7 +337,7 @@ class ParticipationsTests(CustomAPITestCase):
         content = json.loads(response.content)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(content['results']), 1)
+        self.assertEqual(len(content['results']), 2)
         self.check_attributes(content['results'][0])
 
         for application in content['results']:
@@ -365,6 +364,10 @@ class ParticipationsTests(CustomAPITestCase):
 
         at_least_one_application_is_owned_by_somebody_else = False
         for application in content['results']:
+            a = application['user']['id']
+            self_admin_id = self.admin.id
+            print(f"application_user_id: {a}")
+            print(f"self.admin.id: {self_admin_id}")
             if application['user']['id'] != self.admin.id:
                 at_least_one_application_is_owned_by_somebody_else = True
 
