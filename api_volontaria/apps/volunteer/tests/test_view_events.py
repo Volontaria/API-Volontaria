@@ -1,9 +1,12 @@
 import json
+from io import BytesIO
+from unittest.mock import patch
 
 from rest_framework import status
 from rest_framework.test import APIClient, APIRequestFactory
 from django.urls import reverse
 
+from api_volontaria.apps.volunteer.helpers import InvalidBulkUpdate
 from api_volontaria.apps.volunteer.models import (
     Event,
     Cell,
@@ -260,3 +263,113 @@ class EventsTests(CustomAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(content['results']), 1)
         self.check_attributes(content['results'][0])
+
+    def test_bulk_events_should_not_be_accessible_by_users(self):
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.post(
+            reverse('event-bulk'),
+            data={'file': BytesIO()},
+            format='multipart'
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(
+            content,
+            {'detail': 'You do not have permission to perform this action.'}
+        )
+
+    def test_bulk_events_should_return_bad_request_when_no_file_is_given(self):
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.post(
+            reverse('event-bulk'),
+            data={},
+            format='multipart'
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            content,
+            {'detail': "No file was provided for bulk event creation"}
+        )
+
+    def test_bulk_events_should_return_bad_request_when_mapping_is_not_valid_json(self):
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.post(
+            reverse('event-bulk'),
+            data={
+                "file": BytesIO(),
+                "mapping": '{"detail": "extra bracket making the json invalid"}}'
+            },
+            format='multipart'
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue(
+            "Mapping should be a dictionary represented in json, errors" in content["detail"]
+        )
+
+    def test_bulk_events_should_return_bad_request_when_mapping_is_not_a_dict(self):
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.post(
+            reverse('event-bulk'),
+            data={
+                "file": BytesIO(),
+                "mapping": '["list instead of dict"]'
+            },
+            format='multipart'
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            content,
+            {'detail': "Mapping should be a dictionary pairing "
+                       "the csv column (key) to the element key (value)"}
+        )
+
+    @patch("api_volontaria.apps.volunteer.views.add_bulk_from_file")
+    def test_bulk_events_should_return_bad_request_when_adding_fail(self, add_bulk_from_file):
+        self.client.force_authenticate(user=self.admin)
+
+        error_message = "error message from add_bulk"
+        add_bulk_from_file.side_effect = InvalidBulkUpdate(error_message)
+
+        response = self.client.post(
+            reverse('event-bulk'),
+            data={"file": BytesIO()},
+            format='multipart'
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(content, {'detail': error_message})
+
+    @patch("api_volontaria.apps.volunteer.views.add_bulk_from_file")
+    def test_bulk_events_should_return_created_ids_when_successful(self, add_bulk_from_file):
+        self.client.force_authenticate(user=self.admin)
+
+        ids = [4, 56, 89]
+        add_bulk_from_file.return_value = ids
+
+        response = self.client.post(
+            reverse('event-bulk'),
+            data={"file": BytesIO()},
+            format='multipart'
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(content, {'created': ids})
