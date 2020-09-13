@@ -264,7 +264,11 @@ class EventsTests(CustomAPITestCase):
         self.assertEqual(len(content['results']), 1)
         self.check_attributes(content['results'][0])
 
-    def test_bulk_events_should_not_be_accessible_by_users(self):
+    def test_bulk_events_as_users(self):
+        """
+        Ensure we can't bulk add events if we are a simple user.
+        :return:
+        """
         self.client.force_authenticate(user=self.user)
 
         response = self.client.post(
@@ -281,7 +285,11 @@ class EventsTests(CustomAPITestCase):
             {'detail': 'You do not have permission to perform this action.'}
         )
 
-    def test_bulk_events_should_return_bad_request_when_no_file_is_given(self):
+    def test_bulk_events_no_file_is_given(self):
+        """
+        Ensure bad request with explanation is returned if no file
+        is given as input
+        """
         self.client.force_authenticate(user=self.admin)
 
         response = self.client.post(
@@ -298,14 +306,19 @@ class EventsTests(CustomAPITestCase):
             {'detail': "No file was provided for bulk event creation"}
         )
 
-    def test_bulk_events_should_return_bad_request_when_mapping_is_not_valid_json(self):
+    def test_bulk_events_mapping_is_not_valid_json(self):
+        """
+        Ensure bad request with explanation is returned if mapping
+        is not a valid json string
+        """
         self.client.force_authenticate(user=self.admin)
 
+        invalid_json = '{"detail": "extra bracket at the end "}}'
         response = self.client.post(
             reverse('event-bulk'),
             data={
                 "file": BytesIO(),
-                "mapping": '{"detail": "extra bracket making the json invalid"}}'
+                "mapping": invalid_json
             },
             format='multipart'
         )
@@ -313,11 +326,16 @@ class EventsTests(CustomAPITestCase):
         content = json.loads(response.content)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertTrue(
-            "Mapping should be a dictionary represented in json, errors" in content["detail"]
+        self.assertIn(
+            "Mapping should be a dictionary represented in json, errors",
+            content["detail"]
         )
 
-    def test_bulk_events_should_return_bad_request_when_mapping_is_not_a_dict(self):
+    def test_bulk_events_mapping_is_not_a_dict(self):
+        """
+        Ensure bad request with explanation is returned if mapping
+        is not a json string representing a dictionary
+        """
         self.client.force_authenticate(user=self.admin)
 
         response = self.client.post(
@@ -339,11 +357,17 @@ class EventsTests(CustomAPITestCase):
         )
 
     @patch("api_volontaria.apps.volunteer.views.add_bulk_from_file")
-    def test_bulk_events_should_return_bad_request_when_adding_fail(self, add_bulk_from_file):
+    def test_bulk_events_adding_fail(self, add_bulk_from_file):
+        """
+        Ensure bad request with the caught errors is returned
+        if the bulk operation fails
+        """
         self.client.force_authenticate(user=self.admin)
 
         error_message = "error message from add_bulk"
-        add_bulk_from_file.side_effect = InvalidBulkUpdate(error_message)
+        add_bulk_from_file.side_effect = InvalidBulkUpdate(
+            error_message
+        )
 
         response = self.client.post(
             reverse('event-bulk'),
@@ -357,7 +381,11 @@ class EventsTests(CustomAPITestCase):
         self.assertEqual(content, {'detail': error_message})
 
     @patch("api_volontaria.apps.volunteer.views.add_bulk_from_file")
-    def test_bulk_events_should_return_created_ids_when_successful(self, add_bulk_from_file):
+    def test_bulk_events_successful(self, add_bulk_from_file):
+        """
+        Ensure 201 created with the created ids is returned
+        if the bulk operation succeeds
+        """
         self.client.force_authenticate(user=self.admin)
 
         ids = [4, 56, 89]

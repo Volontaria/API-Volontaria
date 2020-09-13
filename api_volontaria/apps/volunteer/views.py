@@ -11,7 +11,11 @@ from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
-from api_volontaria.apps.volunteer.helpers import InvalidBulkUpdate, add_bulk_from_file, AddBulkConfig
+from api_volontaria.apps.volunteer.helpers import (
+    InvalidBulkUpdate,
+    add_bulk_from_file,
+    AddBulkConfig
+)
 from api_volontaria.apps.volunteer.models import (
     Cell,
     Event,
@@ -86,31 +90,42 @@ class EventViewSet(viewsets.ModelViewSet):
         file_data_bytes = request.data.get("file", None)
         if not file_data_bytes:
             return Response(
-                {"detail": "No file was provided for bulk event creation"}
-                , status=status.HTTP_400_BAD_REQUEST
+                {"detail": "No file was provided for bulk event creation"},
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
             mapping = json.loads(request.data.get("mapping", "{}"))
         except ValueError as e:
-            return Response(
-                {"detail": "Mapping should be a dictionary represented in json, errors: {0}".format(e)}
-                , status=status.HTTP_400_BAD_REQUEST
-            )
+            message = {
+                "detail":
+                    f"Mapping should be a dictionary "
+                    f"represented in json, errors: {e}"
+            }
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
 
         if not isinstance(mapping, dict):
-            return Response(
-                {"detail": "Mapping should be a dictionary pairing the csv column (key) to the element key (value)"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            message = {
+                "detail":
+                    "Mapping should be a dictionary pairing the "
+                    "csv column (key) to the element key (value)"
+            }
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
 
-        config = AddBulkConfig(EventSerializer, request.data.get("format", "csv"), mapping)
+        config = AddBulkConfig(
+            EventSerializer,
+            request.data.get("format", "csv"),
+            mapping
+        )
 
         file_data = TextIOWrapper(file_data_bytes, encoding='utf-8')
         try:
             ids = add_bulk_from_file(file_data, config)
         except InvalidBulkUpdate as e:
-            return Response({"detail": e.error}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": e.error},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         return Response({"created": ids}, status=status.HTTP_201_CREATED)
 
