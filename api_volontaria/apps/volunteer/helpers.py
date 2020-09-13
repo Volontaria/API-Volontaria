@@ -44,8 +44,8 @@ def add_bulk_from_file(file_data: TextIO, config: AddBulkConfig) -> List[int]:
 
 def _add_bulk_from_csv(file_data: TextIO, config: AddBulkConfig) -> List[int]:
     """
-    Add all the elements defined in the file_data which has a csv format according to the
-    given configuration
+    Add all the elements defined in the csv file represented by file_data,
+    according to the given configuration
 
     :param file_data: Sequence of lines containing the events
     :param config: Configuration that should be used for the adding
@@ -68,8 +68,8 @@ def _add_bulk_from_csv(file_data: TextIO, config: AddBulkConfig) -> List[int]:
             serializer = config.serializer(data=data)
             if not serializer.is_valid():
                 raise InvalidBulkUpdate(
-                    f"The following error happened during deserialization of line {i} "
-                    f"of the csv file: {serializer.errors}"
+                    f"The following error happened during deserialization "
+                    f"of line {i} of the csv file: {serializer.errors}"
                 )
             element = serializer.save()
             ids.append(element.id)
@@ -98,7 +98,7 @@ def _check_csv_keys(reader: DictReader, config: AddBulkConfig):
         missing_keys = required_keys.difference(config.mapping.values())
         if missing_keys:
             raise InvalidBulkUpdate(
-                "The following target field are missing from the custom mapping "
+                "The following target field are missing from the mapping "
                 f"to be able to create the objects: {missing_keys}"
             )
     else:
@@ -112,6 +112,6 @@ def _check_csv_keys(reader: DictReader, config: AddBulkConfig):
     missing_keys = set(config.mapping).difference(reader.fieldnames)
     if missing_keys:
         raise InvalidBulkUpdate(
-            "The following source field that were given for custom "
-            f"mapping are not available in the header of the given csv file: {missing_keys}"
+            "The following source field that were given for mapping are not "
+            f"available in the header of the given csv file: {missing_keys}"
         )
