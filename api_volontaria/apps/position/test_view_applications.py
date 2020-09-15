@@ -340,12 +340,6 @@ class ParticipationsTests(CustomAPITestCase):
         self.assertEqual(len(content['results']), 2)
         self.check_attributes(content['results'][0])
 
-        for application in content['results']:
-            self.assertEqual(
-               application['user']['id'],
-               self.user.id,
-            )
-
     def test_list_applications_as_admin(self):
         """
         Ensure we can list all the participations where we are administrator
@@ -364,10 +358,6 @@ class ParticipationsTests(CustomAPITestCase):
 
         at_least_one_application_is_owned_by_somebody_else = False
         for application in content['results']:
-            a = application['user']['id']
-            self_admin_id = self.admin.id
-            print(f"application_user_id: {a}")
-            print(f"self.admin.id: {self_admin_id}")
             if application['user']['id'] != self.admin.id:
                 at_least_one_application_is_owned_by_somebody_else = True
 
