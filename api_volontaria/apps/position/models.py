@@ -9,7 +9,6 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import get_user_model
 from dry_rest_permissions.generics import authenticated_users
-# from api_volontaria.email import EmailAPI
 
 User = get_user_model()
 
@@ -29,7 +28,7 @@ class Position(models.Model):
     )
 
     description = models.TextField(
-        verbose_name="Description",
+        verbose_name=_("Description"),
     )
 
     hourly_wage = models.FloatField(
@@ -123,7 +122,7 @@ class Application(models.Model):
     )
     
     motivation = models.TextField(
-        verbose_name="Motivation",
+        verbose_name=_("Motivation"),
     )
 
     application_status = models.CharField(
@@ -140,8 +139,7 @@ class Application(models.Model):
     )
 
     def __str__(self):
-        return self.application.name
-        # return self.position.name
+        return self.user
 
     @staticmethod
     def has_destroy_permission(request):

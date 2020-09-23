@@ -200,13 +200,13 @@ class PositionsTests(CustomAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(response.content, b'')
 
-    def test_position_event(self):
+    def test_delete_position(self):
         """
         Ensure we can't delete a position if we are a simple user.
         """
         self.client.force_authenticate(user=self.user)
 
-        response = self.client.patch(
+        response = self.client.delete(
             reverse(
                 'position-detail',
                 kwargs={
