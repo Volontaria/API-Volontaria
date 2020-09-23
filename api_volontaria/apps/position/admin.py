@@ -7,5 +7,3 @@ from api_volontaria.apps.position.models import (
 
 admin.site.register(Position)
 admin.site.register(Application)
-
-# TODO: determine whether additional classes needed (see volunteer/admin.py)
