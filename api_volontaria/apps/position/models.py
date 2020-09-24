@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import get_user_model
 from dry_rest_permissions.generics import authenticated_users
+from djmoney.models.fields import MoneyField
 
 User = get_user_model()
 
@@ -31,16 +32,19 @@ class Position(models.Model):
         verbose_name=_("Description"),
     )
 
-    hourly_wage = models.FloatField(
+    hourly_wage = MoneyField(
         verbose_name=_("Hourly wage"),
+        max_digits=10,
+        decimal_places=2,
+        default_currency='CAD',
     )
     
     weekly_hours = models.FloatField(
         verbose_name=_("Weekly hours"),
     )
     
-    minimum_duration_commitment = models.FloatField(
-        verbose_name=_("Minimum duration commitment"),
+    minimum_days_commitment = models.FloatField(
+        verbose_name=_("Minimum days commitment"),
     )
 
     is_remote_job = models.BooleanField(
@@ -75,6 +79,10 @@ class Position(models.Model):
         else:
             return False
 
+    @staticmethod
+    def has_list_permission(request):
+        return True
+        
     @authenticated_users
     def has_object_destroy_permission(self, request):
         if request.user.is_staff:

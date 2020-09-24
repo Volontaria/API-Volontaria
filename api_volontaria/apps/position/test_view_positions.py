@@ -4,6 +4,7 @@ from datetime import datetime
 from rest_framework import status
 from rest_framework.test import APIClient
 from django.urls import reverse
+from djmoney.models.fields import MoneyField
 
 from api_volontaria.apps.position.models import (
     Position,
@@ -28,8 +29,9 @@ class PositionsTests(CustomAPITestCase):
         'name',
         'description',
         'hourly_wage',
+        'hourly_wage_currency',
         'weekly_hours',
-        'minimum_duration_commitment',
+        'minimum_days_commitment',
         'is_remote_job',
         'is_posted',
     ]
@@ -50,17 +52,17 @@ class PositionsTests(CustomAPITestCase):
         self.admin.save()
 
         self.position = Position.objects.create(
-            hourly_wage=14,
+            hourly_wage=14.00,
             weekly_hours=15,
-            minimum_duration_commitment=3,
+            minimum_days_commitment=3,
             is_remote_job=True,
             is_posted=True,
         )
 
         self.position2 = Position.objects.create(
-            hourly_wage=14.5,
+            hourly_wage=14.50,
             weekly_hours=30.5,
-            minimum_duration_commitment=6.5,
+            minimum_days_commitment=6.5,
             is_remote_job=False,
             is_posted=False,
         )
@@ -72,9 +74,10 @@ class PositionsTests(CustomAPITestCase):
         data_post = {
             "name": "My new position name",
             "description": "My new position description",
-            "hourly_wage": 15,
+            "hourly_wage": 15.00,
+            "hourly_wage_currency": "CAD",
             "weekly_hours": 40,
-            "minimum_duration_commitment": 6,
+            "minimum_days_commitment": 6,
             "is_remote_job": True,
             "is_posted": True,
         }
@@ -100,8 +103,9 @@ class PositionsTests(CustomAPITestCase):
             "name": "My new position name",
             "description": "My new position description",
             "hourly_wage": 15,
+            "hourly_wage_currency": "CAD",
             "weekly_hours": 40,
-            "minimum_duration_commitment": 6,
+            "minimum_days_commitment": 6,
             "is_remote_job": True,
             "is_posted": True,
         }
@@ -123,7 +127,7 @@ class PositionsTests(CustomAPITestCase):
         """
         Ensure we can update a position if we are an admin.
         """
-        new_hourly_wage = 16
+        new_hourly_wage = 16.5
         data_post = {
             'hourly_wage': new_hourly_wage,
         }
