@@ -49,16 +49,18 @@ class ParticipationsTests(CustomAPITestCase):
 
         self.position = Position.objects.create(
             hourly_wage=14,
+            hourly_wage_currency='CAD',
             weekly_hours=15,
-            minimum_duration_commitment=3,
+            minimum_days_commitment=3,
             is_remote_job=True,
             is_posted=True,
         )
         
         self.position2 = Position.objects.create(
             hourly_wage=14.5,
+            hourly_wage_currency='CAD',
             weekly_hours=30.5,
-            minimum_duration_commitment=6.5,
+            minimum_days_commitment=6.5,
             is_remote_job=False,
             is_posted=False,
         )

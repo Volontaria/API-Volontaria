@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'api_volontaria.apps.volunteer',
     'api_volontaria.apps.position',
     'django_filters',
+    'djmoney',
 ]
 
 MIDDLEWARE = [

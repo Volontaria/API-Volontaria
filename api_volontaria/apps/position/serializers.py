@@ -7,9 +7,6 @@ from api_volontaria.apps.position.models import (
 )
 
 
-#TODO: consider whether functions should be defined for the classes below (validate_user and to_representation)
-
-
 class PositionSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.ReadOnlyField()
 
