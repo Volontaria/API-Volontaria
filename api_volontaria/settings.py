@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'api_volontaria.apps.position',
     'rest_framework_filters',
     'django_filters',
+    'djmoney',
 ]
 
 MIDDLEWARE = [
