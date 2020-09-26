@@ -303,7 +303,7 @@ class EventsTests(CustomAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             content,
-            {'detail': "No file was provided for bulk event creation"}
+            {'file': ["No file was provided for bulk event creation"]}
         )
 
     def test_bulk_events_mapping_is_not_valid_json(self):
@@ -328,7 +328,7 @@ class EventsTests(CustomAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn(
             "Mapping should be a dictionary represented in json, errors",
-            content["detail"]
+            content["mapping"][0]
         )
 
     def test_bulk_events_mapping_is_not_a_dict(self):
@@ -352,8 +352,11 @@ class EventsTests(CustomAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             content,
-            {'detail': "Mapping should be a dictionary pairing "
-                       "the csv column (key) to the element key (value)"}
+            {
+                "mapping":
+                    ["Mapping should be a dictionary pairing the "
+                     "csv column (key) to the element key (value)"]
+            }
         )
 
     @patch("api_volontaria.apps.volunteer.views.add_bulk_from_file")
@@ -378,7 +381,7 @@ class EventsTests(CustomAPITestCase):
         content = json.loads(response.content)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(content, {'detail': error_message})
+        self.assertEqual(content, {'non_field_errors': [error_message]})
 
     @patch("api_volontaria.apps.volunteer.views.add_bulk_from_file")
     def test_bulk_events_successful(self, add_bulk_from_file):
@@ -398,6 +401,7 @@ class EventsTests(CustomAPITestCase):
         )
 
         content = json.loads(response.content)
+        url_ids = [reverse('event-detail',  kwargs={'pk': id_}) for id_ in ids]
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(content, {'created': ids})
+        self.assertEqual(content, {'created': url_ids})
