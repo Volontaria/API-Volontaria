@@ -1,6 +1,7 @@
 import json
 from io import TextIOWrapper
 
+from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
 from dry_rest_permissions.generics import DRYPermissions, \
     DRYPermissionFiltersBase
@@ -90,7 +91,7 @@ class EventViewSet(viewsets.ModelViewSet):
         file_data_bytes = request.data.get("file", None)
         if not file_data_bytes:
             return Response(
-                {"detail": "No file was provided for bulk event creation"},
+                {'file': ["No file was provided for bulk event creation"]},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -98,17 +99,17 @@ class EventViewSet(viewsets.ModelViewSet):
             mapping = json.loads(request.data.get("mapping", "{}"))
         except ValueError as e:
             message = {
-                "detail":
-                    f"Mapping should be a dictionary "
-                    f"represented in json, errors: {e}"
+                "mapping":
+                    [f"Mapping should be a dictionary "
+                     f"represented in json, errors: {e}"]
             }
             return Response(message, status=status.HTTP_400_BAD_REQUEST)
 
         if not isinstance(mapping, dict):
             message = {
-                "detail":
-                    "Mapping should be a dictionary pairing the "
-                    "csv column (key) to the element key (value)"
+                "mapping":
+                    ["Mapping should be a dictionary pairing the "
+                     "csv column (key) to the element key (value)"]
             }
             return Response(message, status=status.HTTP_400_BAD_REQUEST)
 
@@ -123,11 +124,12 @@ class EventViewSet(viewsets.ModelViewSet):
             ids = add_bulk_from_file(file_data, config)
         except InvalidBulkUpdate as e:
             return Response(
-                {"detail": e.error},
+                {"non_field_errors": [e.error]},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        return Response({"created": ids}, status=status.HTTP_201_CREATED)
+        url_ids = [reverse('event-detail', kwargs={'pk': id_}) for id_ in ids]
+        return Response({"created": url_ids}, status=status.HTTP_201_CREATED)
 
 
 class ParticipationFilterBackend(DRYPermissionFiltersBase):
