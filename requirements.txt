@@ -19,6 +19,7 @@ jsonfield==3.1.0
 django-model-utils==4.0.0
 babel==2.8.0
 django-import-export==2.0.2
+django-money==1.1
 
 # Documentation tools
 mkdocs==1.1.2
