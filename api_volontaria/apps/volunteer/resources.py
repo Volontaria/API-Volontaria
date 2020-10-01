@@ -7,6 +7,7 @@ from import_export.fields import Field
 
 from . import models
 
+# Un commentaire qu'on ne souhaite pas avoir
 
 class ParticipationResource(resources.ModelResource):
     first_name = Field()
