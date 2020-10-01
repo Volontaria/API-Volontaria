@@ -13,6 +13,9 @@ from api_volontaria.email import EmailAPI
 
 User = get_user_model()
 
+# Mon nouveau commentaire super important qu'il faut a tout pris mettre en
+# production
+
 
 class Cell(models.Model):
     """
