@@ -10,6 +10,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import get_user_model
 from dry_rest_permissions.generics import authenticated_users
 from api_volontaria.email import EmailAPI
+from api_volontaria.email import settings
+
 
 User = get_user_model()
 
@@ -325,11 +327,26 @@ class Participation(models.Model):
             },
         }
 
-        EmailAPI().send_template_email(
-            self.user.email,
-            'CONFIRMATION_PARTICIPATION',
-            context,
-        )
+        TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
+        id = TEMPLATES.get('CONFIRMATION_PARTICIPATION')
+        if id:
+            # if Sendinblue template already exists, just send email using such a template 
+            EmailAPI().send_template_email(
+                self.user.email,
+                'CONFIRMATION_PARTICIPATION',
+                context,
+            )
+        else:
+            # use default template
+            merge_data = dict()
+            merge_data['PARTICIPATION'] = self.user.first_name
+            merge_data['TYPE_PARTICIPATION'] = type_participation
+            # TODO: finish defining the variables for template
+            merge_data['FIRST_NAME'] = self.user.first_name
+            merge_data['FIRST_NAME'] = self.user.first_name
+            merge_data['FIRST_NAME'] = self.user.first_name
+
+
 
     def send_email_cancellation_emergency(self):
         """
