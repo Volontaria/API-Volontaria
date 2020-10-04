@@ -5,11 +5,13 @@ from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import get_user_model
 from dry_rest_permissions.generics import authenticated_users
 from api_volontaria.email import EmailAPI
+
 
 User = get_user_model()
 
@@ -325,12 +327,45 @@ class Participation(models.Model):
             },
         }
 
-        EmailAPI().send_template_email(
-            self.user.email,
-            'CONFIRMATION_PARTICIPATION',
-            context,
-        )
+        # Checking whether email template already exists;
+        # If not, use default template
+        TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
+        id = TEMPLATES.get('CONFIRMATION_PARTICIPATION')
+        if id:
+            EmailAPI().send_template_email(
+                self.user.email,
+                'CONFIRMATION_PARTICIPATION',
+                context,
+            )
+        else:
+            merge_data = {
+                'TYPE_PARTICIPATION': type_participation,
+                'FIRST_NAME' : self.user.first_name,
+                'EVENT_NAME' : self.event.description,
+                'TASK_TYPE' : self.event.task_type.name,
+                'START_DATE' : context['ACTIVITY']['START_DATE'],
+                'START_TIME' : context['ACTIVITY']['START_TIME'],
+                'END_TIME' : context['ACTIVITY']['END_TIME'],
+                'LOCATION_NAME': self.event.cell.name,
+                'ADDRESS_LINE_1': self.event.cell.address_line_1,
+                'ADDRESS_LINE_2': self.event.cell.address_line_2,
+                'POSTAL_CODE': self.event.cell.postal_code,
+                'CITY': self.event.cell.city,
+                'STATE_PROVINCE': self.event.cell.state_province,
+            }
 
+            plain_msg = render_to_string("participation_confirmation.txt", merge_data)
+            msg_html = render_to_string("participation_confirmation.html", merge_data)
+
+            try:
+            response_send_mail = send_mail(
+                subject="Mon sujet",
+                message=plain_msg,
+                from_email="email_from@mondomain.ca",
+                recipient_list="email_target@domain.ca",
+                html_message=msg_html,
+            )
+       
     def send_email_cancellation_emergency(self):
         """
         An email to inform the administrator that a user just cancel his
@@ -376,11 +411,45 @@ class Participation(models.Model):
             },
         }
 
-        EmailAPI().send_template_email(
+        # Checking whether email template already exists;
+        # If not, use default template
+        TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
+        id = TEMPLATES.get('CANCELLATION_PARTICIPATION_EMERGENCY')
+        if id:
+            EmailAPI().send_template_email(
             settings.LOCAL_SETTINGS['CONTACT_EMAIL'],
             'CANCELLATION_PARTICIPATION_EMERGENCY',
             context,
-        )
+            )
+        else:
+            merge_data = {
+                'TYPE_PARTICIPATION': type_participation,
+                'FIRST_NAME': self.user.first_name,
+                'LAST_NAME': self.user.last_name,
+                'EVENT_NAME' : self.event.description,
+                'TASK_TYPE' : self.event.task_type.name,
+                'START_DATE' : context['ACTIVITY']['START_DATE'],
+                'START_TIME' : context['ACTIVITY']['START_TIME'],
+                'END_TIME' : context['ACTIVITY']['END_TIME'],
+                'LOCATION_NAME': self.event.cell.name,
+                'ADDRESS_LINE_1': self.event.cell.address_line_1,
+                'ADDRESS_LINE_2': self.event.cell.address_line_2,
+                'POSTAL_CODE': self.event.cell.postal_code,
+                'CITY': self.event.cell.city,
+                'STATE_PROVINCE': self.event.cell.state_province,
+            }
+
+            plain_msg = render_to_string("cancellation_participation_emergency.txt", merge_data)
+            msg_html = render_to_string("cancellation_participation_emergency.html", merge_data)
+
+            try:
+            response_send_mail = send_mail(
+                subject="Mon sujet",
+                message=plain_msg,
+                from_email="email_from@mondomain.ca", #TODO:CHECK accurate email address
+                recipient_list=settings.LOCAL_SETTINGS['CONTACT_EMAIL'],
+                html_message=msg_html,
+            )  
 
     @staticmethod
     def has_destroy_permission(request):

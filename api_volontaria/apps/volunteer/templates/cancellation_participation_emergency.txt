@@ -1,0 +1,27 @@
+Bonjour,
+
+Soyez avisé que {{FIRST_NAME}} {{SECOND_NAME}}}, qui devait participer à l'événement {{}} 
+comme {{PARTICIPATION_TYPE}}, a annulé sa participation.
+
+* Événement: {{EVENT_NAME}}
+
+* Activité que devait effectuer la personne: {{TASK_TYPE}}
+
+* Date: {{START_DATE}}
+* Heure de début: {{START_TIME}}
+* Heure de fin: {{END_TIME}}
+
+* Lieu:
+{{LOCATION_NAME}}
+{{ADDRESS_LINE_1}}
+{{ADDRESS_LINE_2}}
+{{POSTAL_CODE}}
+{{CITY}}
+{{STATE_PROVINCE}}
+
+
+Salutations,
+
+
+--------------------------------------------------
+Ceci est un message généré automatiquement. Veuillez ne pas répondre à cette adresse.

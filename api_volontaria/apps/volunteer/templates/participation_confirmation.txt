@@ -1,0 +1,24 @@
+Bonjour {{FIRST_NAME}},
+
+Nous vous confirmons votre participation à l'événement "{{EVENT_NAME}}" comme {{TYPE_PARTICIPATION}}.
+
+* Activité: {{TASK_TYPE}}
+
+* Date: {{START_DATE}}
+* Heure de début: {{START_TIME}}
+* Heure de fin: {{END_TIME}}
+
+* Lieu:
+{{LOCATION_NAME}}
+{{ADDRESS_LINE_1}}
+{{ADDRESS_LINE_2}}
+{{POSTAL_CODE}}
+{{CITY}}
+{{STATE_PROVINCE}}
+
+Au plaisir de vous y voir.
+
+# Comment insérer le nom de l'OSBL?
+** L'ÉQUIPE XXXXXXXX
+------------------------------------------------------------
+
