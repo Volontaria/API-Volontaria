@@ -20,7 +20,7 @@ from django.conf import settings
 LOCAL_TIMEZONE = pytz.timezone(settings.TIME_ZONE)
 
 
-class ParticipationsTests(CustomAPITestCase):
+class ApplicationsTests(CustomAPITestCase):
 
     ATTRIBUTES = [
         'id',
@@ -79,6 +79,14 @@ class ParticipationsTests(CustomAPITestCase):
             applied_on=LOCAL_TIMEZONE.localize(datetime(2023, 1, 15, 8)),
             motivation='cool mission',
             application_status='under examination',
+        )
+
+        self.user_pending_application = Application.objects.create(
+            position=self.position,
+            user=self.user,
+            applied_on=LOCAL_TIMEZONE.localize(datetime(2022, 4, 15, 19)),
+            motivation='passionate about that stuff',
+            application_status='pending',
         )
 
     def test_create_new_application_as_admin(self):
@@ -251,10 +259,43 @@ class ParticipationsTests(CustomAPITestCase):
         self.check_attributes(content)
         self.assertEqual(content['motivation'], new_value)
 
-    def test_update_application(self):
+    def test_update_pending_application(self):
         """
-        Ensure we can't update an application if we are a simple user.
+        Ensure a simple user can update their own application
+        as long as the application is still under examination.
         """
+
+        new_value = 'sounds great'
+        data_post = {
+            'motivation': new_value,
+        }
+
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.patch(
+            reverse(
+                'application-detail',
+                kwargs={
+                    'pk': self.user_pending_application.id,
+                },
+            ),
+            data_post,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.check_attributes(content)
+        self.assertEqual(content['motivation'], new_value)
+
+
+def test_update_non_pending_application(self):
+        """
+        Ensure a simple user cannot update their own application
+        once the application has been either accepted or rejected.
+        """
+
         new_value = 'sounds great'
         data_post = {
             'motivation': new_value,
@@ -283,6 +324,7 @@ class ParticipationsTests(CustomAPITestCase):
             }
         )
 
+
     def test_delete_application_as_admin(self):
         """
         Ensure we can delete an application if we are an admin.
@@ -301,13 +343,35 @@ class ParticipationsTests(CustomAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(response.content, b'')
 
-    def test_delete_application(self):
+
+    def test_delete_pending_application(self):
         """
-        Ensure we can't delete an application if we are a simple user.
+        Ensure a simple user can delete their own application
+        as long as it is still under examination.
         """
         self.client.force_authenticate(user=self.user)
 
-        response = self.client.patch(
+        response = self.client.delete(
+            reverse(
+                'application-detail',
+                kwargs={
+                    'pk': self.user_pending_application.id
+                },
+            )
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.content, b'')
+
+
+    def test_delete_non_pending_application(self):
+        """
+        Ensure a simple user cannot delete their own application
+        once the application has been either accepted or rejected.
+        """
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.delete(
             reverse(
                 'application-detail',
                 kwargs={
@@ -325,6 +389,7 @@ class ParticipationsTests(CustomAPITestCase):
                 'detail': 'You do not have permission to perform this action.'
             }
         )
+    
 
     def test_list_applications(self):
         """
@@ -344,7 +409,7 @@ class ParticipationsTests(CustomAPITestCase):
 
     def test_list_applications_as_admin(self):
         """
-        Ensure we can list all the participations where we are administrator
+        Ensure we can list all the applications where we are administrator
         """
         self.client.force_authenticate(user=self.admin)
 

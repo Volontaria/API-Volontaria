@@ -173,7 +173,8 @@ class Application(models.Model):
 
     @authenticated_users
     def has_object_update_permission(self, request):
-        if self.user == request.user:
+        if self.user == request.user and \
+        self.application_status == APPLICATION_UNDER_EXAMINATION:
             return True
         if request.user.is_staff:
             return True
@@ -182,7 +183,8 @@ class Application(models.Model):
 
     @authenticated_users
     def has_object_destroy_permission(self, request):
-        if self.user == request.user:
+        if self.user == request.user and \
+        self.application_status == APPLICATION_UNDER_EXAMINATION:
             return True
         if request.user.is_staff:
             return True
