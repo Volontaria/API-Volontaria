@@ -16,7 +16,8 @@ User = get_user_model()
 
 class Position(models.Model):
     """
-    This class represents a position that an organization can advertise and that volunteer can apply to.
+    This class represents a position that an organization
+    can advertise and that volunteer can apply to.
     """
 
     class Meta:
@@ -38,11 +39,11 @@ class Position(models.Model):
         decimal_places=2,
         default_currency='CAD',
     )
-    
+
     weekly_hours = models.FloatField(
         verbose_name=_("Weekly hours"),
     )
-    
+
     minimum_days_commitment = models.FloatField(
         verbose_name=_("Minimum days commitment"),
     )
@@ -50,7 +51,7 @@ class Position(models.Model):
     is_remote_job = models.BooleanField(
         verbose_name=_("Is remote")
     )
-    
+
     is_posted = models.BooleanField(
         verbose_name=_("Is posted")
     )
@@ -82,7 +83,7 @@ class Position(models.Model):
     @staticmethod
     def has_list_permission(request):
         return True
-        
+
     @authenticated_users
     def has_object_destroy_permission(self, request):
         if request.user.is_staff:
@@ -100,7 +101,8 @@ class Position(models.Model):
 
 class Application(models.Model):
     """
-    This class represents an application made by volunteer for a given position.
+    This class represents an application made by volunteer
+    for a given position.
     """
 
     APPLICATION_PENDING = 'PENDING'
@@ -123,12 +125,12 @@ class Application(models.Model):
         blank=False,
         on_delete=models.CASCADE,
     )
-    
+
     applied_on = models.DateTimeField(
         verbose_name=_("Applied on"),
         auto_now_add=True,
     )
-    
+
     motivation = models.TextField(
         verbose_name=_("Motivation"),
     )
@@ -174,7 +176,7 @@ class Application(models.Model):
     @authenticated_users
     def has_object_update_permission(self, request):
         if self.user == request.user and \
-        self.application_status == APPLICATION_PENDING:
+                self.application_status == APPLICATION_PENDING:
             return True
         if request.user.is_staff:
             return True
@@ -184,7 +186,7 @@ class Application(models.Model):
     @authenticated_users
     def has_object_destroy_permission(self, request):
         if self.user == request.user and \
-        self.application_status == APPLICATION_PENDING:
+                self.application_status == APPLICATION_PENDING:
             return True
         if request.user.is_staff:
             return True

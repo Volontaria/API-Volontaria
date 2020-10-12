@@ -55,7 +55,7 @@ class ApplicationsTests(CustomAPITestCase):
             is_remote_job=True,
             is_posted=True,
         )
-        
+
         self.position2 = Position.objects.create(
             hourly_wage=14.5,
             hourly_wage_currency='CAD',
@@ -72,7 +72,7 @@ class ApplicationsTests(CustomAPITestCase):
             motivation='passionate about that stuff',
             application_status='accepted',
         )
-        
+
         self.application2 = Application.objects.create(
             position=self.position,
             user=self.user2,
@@ -289,13 +289,11 @@ class ApplicationsTests(CustomAPITestCase):
         self.check_attributes(content)
         self.assertEqual(content['motivation'], new_value)
 
-
-def test_update_non_pending_application(self):
+    def test_update_non_pending_application(self):
         """
         Ensure a simple user cannot update their own application
         once the application has been either accepted or rejected.
         """
-
         new_value = 'sounds great'
         data_post = {
             'motivation': new_value,
@@ -324,7 +322,6 @@ def test_update_non_pending_application(self):
             }
         )
 
-
     def test_delete_application_as_admin(self):
         """
         Ensure we can delete an application if we are an admin.
@@ -342,7 +339,6 @@ def test_update_non_pending_application(self):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(response.content, b'')
-
 
     def test_delete_pending_application(self):
         """
@@ -362,7 +358,6 @@ def test_update_non_pending_application(self):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(response.content, b'')
-
 
     def test_delete_non_pending_application(self):
         """
@@ -389,7 +384,6 @@ def test_update_non_pending_application(self):
                 'detail': 'You do not have permission to perform this action.'
             }
         )
-    
 
     def test_list_applications(self):
         """
