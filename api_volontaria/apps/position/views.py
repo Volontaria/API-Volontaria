@@ -21,7 +21,7 @@ class PositionViewSet(viewsets.ModelViewSet):
     queryset = Position.objects.all()
     filter_fields = '__all__'
     permission_classes = (DRYPermissions,)
-    
+
 
 class ApplicationViewSet(viewsets.ModelViewSet):
 
