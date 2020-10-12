@@ -78,7 +78,7 @@ class ApplicationsTests(CustomAPITestCase):
             user=self.user2,
             applied_on=LOCAL_TIMEZONE.localize(datetime(2023, 1, 15, 8)),
             motivation='cool mission',
-            application_status='under examination',
+            application_status='pending',
         )
 
         self.user_pending_application = Application.objects.create(
@@ -262,7 +262,7 @@ class ApplicationsTests(CustomAPITestCase):
     def test_update_pending_application(self):
         """
         Ensure a simple user can update their own application
-        as long as the application is still under examination.
+        as long as the application is still pending.
         """
 
         new_value = 'sounds great'
@@ -347,7 +347,7 @@ def test_update_non_pending_application(self):
     def test_delete_pending_application(self):
         """
         Ensure a simple user can delete their own application
-        as long as it is still under examination.
+        as long as it is still pending.
         """
         self.client.force_authenticate(user=self.user)
 
