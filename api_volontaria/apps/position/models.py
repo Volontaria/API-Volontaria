@@ -103,12 +103,12 @@ class Application(models.Model):
     This class represents an application made by volunteer for a given position.
     """
 
-    APPLICATION_UNDER_EXAMINATION = 'UNDER_EXAMINATION'
+    APPLICATION_PENDING = 'PENDING'
     APPLICATION_ACCEPTED = 'ACCEPTED'
     APPLICATION_DECLINED = 'DECLINED'
 
     APPLICATION_CHOICES = (
-        (APPLICATION_UNDER_EXAMINATION, _('Under examination')),
+        (APPLICATION_PENDING, _('Pending')),
         (APPLICATION_ACCEPTED, _('Accepted')),
         (APPLICATION_DECLINED, _('Declined')),
     )
@@ -137,7 +137,7 @@ class Application(models.Model):
         verbose_name=_("Application status"),
         max_length=100,
         choices=APPLICATION_CHOICES,
-        default=APPLICATION_UNDER_EXAMINATION
+        default=APPLICATION_PENDING
     )
 
     user = models.ForeignKey(
@@ -174,7 +174,7 @@ class Application(models.Model):
     @authenticated_users
     def has_object_update_permission(self, request):
         if self.user == request.user and \
-        self.application_status == APPLICATION_UNDER_EXAMINATION:
+        self.application_status == APPLICATION_PENDING:
             return True
         if request.user.is_staff:
             return True
@@ -184,7 +184,7 @@ class Application(models.Model):
     @authenticated_users
     def has_object_destroy_permission(self, request):
         if self.user == request.user and \
-        self.application_status == APPLICATION_UNDER_EXAMINATION:
+        self.application_status == APPLICATION_PENDING:
             return True
         if request.user.is_staff:
             return True
