@@ -10,6 +10,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import get_user_model
 from dry_rest_permissions.generics import authenticated_users
 from api_volontaria.email import EmailAPI
+from config import settings
 
 User = get_user_model()
 
@@ -325,11 +326,31 @@ class Participation(models.Model):
             },
         }
 
-        EmailAPI().send_template_email(
-            self.user.email,
-            'CONFIRMATION_PARTICIPATION',
-            context,
-        )
+        TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
+        id = TEMPLATES.get(CONFIRMATION_PARTICIPATION)
+        if id:
+            EmailAPI().send_template_email(
+                self.user.email,
+                'CONFIRMATION_PARTICIPATION',
+                context,
+            )
+        else:
+            merge_data = {
+                'context': context,                
+                'CELL': self.event.cell,
+                'organization_name': settings.LOCAL_SETTINGS['ORGANIZATION'],
+                'type_participation': type_participation,
+            }
+            plain_msg = render_to_string("participation_confirmation_email.txt", merge_data)
+            msg_html = render_to_string("participation_confirmation_email.html", merge_data)
+            try:
+                response_send_mail = EmailAPI().send_mail(
+                    "Mon sujet",
+                    plain_msg,
+                    "email_from@mondomain.ca",
+                    "email_target@domain.ca",
+                    html_message=msg_html,
+                )
 
     def send_email_cancellation_emergency(self):
         """
