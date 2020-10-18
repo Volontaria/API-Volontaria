@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+      @import url('https://fonts.googleapis.com/css?family=Nunito+Sans');
+
+      body {
+        margin: 0;
+        font-family: 'Nunito Sans', sans-serif;
+        color: #142823;
+      }
+
+      ul {
+        margin: 30px 0 0 0;
+        padding: 0;
+        list-style-type: none;
+      }
+
+      ul2 {
+        margin: 60px 0 0 0;
+        padding: 0;
+        list-style-type: none;
+      }
+
+      .email {
+        background-color: #F7EDD9;
+        height:auto;
+        padding: 20px;
+      }
+
+      .email__logo {
+        margin: 20px;
+        text-align: center;
+      }
+
+      .email__logo img {
+        height: 60px;
+        margin: auto;
+      }
+
+      .email__content {
+        background-color: #FCF7EF;
+        max-width: 600px;
+        padding: 20px;
+        margin: auto;
+      }
+
+
+      .email__content__title {
+        font-size: 24px;
+        font-weight: 900;
+      }
+
+      .email__content__subtitle {
+        font-size: 18px;
+        margin-top: 50px;
+      }
+
+      .email__content__summary__item {
+        line-height: 15px;
+        margin: 5px 0;
+      }
+
+      .email__content__summary__item--total {
+        font-weight: bold;
+      }
+
+      .email__content__summary__item__spacer {
+        border-bottom: 1px dotted #142823;
+        height: 12px;
+        float: right;
+
+      }
+
+      .email__content__summary__item__price {
+        float: right;
+      }
+
+      .email__content__summary__item__details {
+        margin: 12px 12px;
+        font-size: 12px;
+        color: #142823;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="email">
+      <div class="email__logo">
+        {% load static %}
+        <img src="{% static 'images/logo_general.png'%}" alt="">
+      </div>
+      <div class="email__content">
+        <h1 class="email__content__title">
+            {{ORGANIZATION_NAME}}
+        </h1>
+        <p>
+            <b>Merci de votre inscription!</b>
+        </p>
+            
+        <p>
+            Nous avons bien reçu votre inscription à l'activité suivante:
+        </p>    
+           
+        <p>
+            <it>{{TYPE_PARTICIPATION}}</it>
+        </p> 
+            
+        <p>
+            <b>{{CONTEXT['ACTIVITY']['NAME']}}</b>
+        </p>
+            
+        <p>
+            {{CONTEXT['ACTIVITY']['START_DATE']}}
+        </p>
+            
+        <p>
+            De {{CONTEXT['ACTIVITY']['START_TIME']}} à {{CONTEXT['ACTIVITY']['END_TIME']}}
+        </p>
+
+        <it><b>{{CONTEXT['CELL']['NAME']}}</b></it>
+
+        <p>
+            {{CONTEXT['CELL']['ADDRESS_LINE_1']}}
+        </p>
+            
+        <p>
+            {{CONTEXT['CELL']['ADDRESS_LINE_2']}}
+        </p>
+            
+        <p>
+            {{CONTEXT['CELL']['CITY']}}, {{CONTEXT['CELL']['POSTAL_CODE']}}, {{CONTEXT['CELL']['STATE_PROVINCE']}}
+        </p>
+            
+        <p>
+            Merci de votre inscription et nous avons hâte de vous voir à l'activité!
+        </p>
+        <p> 
+            N'hésitez pas à relire les informations de l'activité sur votre compte Volontaria avant votre venue.
+        </p>
+        <p> 
+            À très bientôt!
+        </p>
+        <p> 
+            L'équipe de {{ORGANIZATION_NAME}}
+        </p> 
+        <p>
+            <div>
+            ©2020 {{ORGANIZATION_NAME}}
+            </div>
+            Propulsé par Volontaria.
+        </p>
+            

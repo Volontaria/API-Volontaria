@@ -336,10 +336,9 @@ class Participation(models.Model):
             )
         else:
             merge_data = {
-                'context': context,                
-                'CELL': self.event.cell,
-                'organization_name': settings.LOCAL_SETTINGS['ORGANIZATION'],
-                'type_participation': type_participation,
+                'CONTEXT': context,
+                'ORGANIZATION_NAME': settings.LOCAL_SETTINGS['ORGANIZATION'],
+                'TYPE_PARTICIPATION': type_participation,
             }
             plain_msg = render_to_string("participation_confirmation_email.txt", merge_data)
             msg_html = render_to_string("participation_confirmation_email.html", merge_data)
