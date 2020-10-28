@@ -6,25 +6,29 @@ Merci de votre inscription!
 
 Nous avons bien reçu votre inscription à l'activité suivante:
 
-{{TYPE_PARTICIPATION}}
+{{context.PARTICIPATION.TYPE}}
 
 
-{{CONTEXT['ACTIVITY']['NAME']}}
+{{context.ACTIVITY.NAME}}
 
-{{CONTEXT['ACTIVITY']['START_DATE']}}
+{{context.ACTIVITY.START_DATE}}
 
-{{CONTEXT['ACTIVITY']['START_TIME']}}
+{{context.ACTIVITY.START_TIME}}
 
 {{ORGANIZATION_NAME}}
 
 
-{{CONTEXT['CELL']['NAME']}}
+{{context.CELL.NAME}}
 
-{{CONTEXT['CELL']['ADDRESS_LINE_1']}}
+{{context.CELL.ADDRESS_LINE_1}}
 
-{{CONTEXT['CELL']['ADDRESS_LINE_2']}}
+{% if context.CELL.ADDRESS_LINE_2 %}
 
-{{CONTEXT['CELL']['CITY']}}, {{CONTEXT['CELL']['POSTAL_CODE']}}, {{CONTEXT['CELL']['STATE_PROVINCE']}}
+{{context.CELL.ADDRESS_LINE_2}}
+
+{% endif %}
+
+{{context.CELL.CITY}}, {{context.CELL.POSTAL_CODE}}, {{context.CELL.STATE_PROVINCE}}
 
 
 Merci de votre inscription et nous avons hâte de vous voir à l'activité!

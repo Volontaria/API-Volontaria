@@ -5,12 +5,12 @@ from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import get_user_model
 from dry_rest_permissions.generics import authenticated_users
 from api_volontaria.email import EmailAPI
-from config import settings
 
 User = get_user_model()
 
@@ -324,30 +324,27 @@ class Participation(models.Model):
                 'CITY': self.event.cell.city,
                 'STATE_PROVINCE': self.event.cell.state_province,
             },
+            'ORGANIZATION_NAME': settings.LOCAL_SETTINGS['ORGANIZATION'],
         }
 
         TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
-        id = TEMPLATES.get(CONFIRMATION_PARTICIPATION)
-        if id:
+        id = TEMPLATES.get('CONFIRMATION_PARTICIPATION')
+        if id: 
             EmailAPI().send_template_email(
                 self.user.email,
                 'CONFIRMATION_PARTICIPATION',
                 context,
             )
         else:
-            merge_data = {
-                'CONTEXT': context,
-                'ORGANIZATION_NAME': settings.LOCAL_SETTINGS['ORGANIZATION'],
-                'TYPE_PARTICIPATION': type_participation,
-            }
-            plain_msg = render_to_string("participation_confirmation_email.txt", merge_data)
-            msg_html = render_to_string("participation_confirmation_email.html", merge_data)
-            try:
-                response_send_mail = EmailAPI().send_mail(
+            plain_msg = render_to_string(
+                "participation_confirmation_email.txt", context)
+            msg_html = render_to_string(
+                "participation_confirmation_email.html", context)
+            EmailAPI().send_email(
                     "Mon sujet",
                     plain_msg,
                     "email_from@mondomain.ca",
-                    "email_target@domain.ca",
+                    ["email_target@domain.ca"],
                     html_message=msg_html,
                 )
 

@@ -5,6 +5,9 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from django.urls import reverse
 
+from django.core import mail
+from api_volontaria.email import EmailAPI
+
 from api_volontaria.apps.volunteer.models import (
     Participation,
     Cell,
@@ -383,3 +386,66 @@ class ParticipationsTests(CustomAPITestCase):
                 at_least_one_participation_is_owned_by_somebody_else = True
 
         self.assertTrue(at_least_one_participation_is_owned_by_somebody_else)
+
+    def test_send_email_confirmation(self):
+        """
+        Ensure an email is sent to participant when a participation gets created. 
+        """
+        data_post = {
+            'event': reverse(
+                'event-detail',
+                args=[self.event.id],
+            ),
+            'user': reverse(
+                'user-detail',
+                args=[self.admin.id],
+            ),
+            'is_standby': False,
+        }
+
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.post(
+            reverse('participation-list'),
+            data_post,
+            format='json',
+        )
+
+        TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
+        id = TEMPLATES.get('CONFIRMATION_PARTICIPATION')
+
+        self.assertEqual(len(mail.outbox), 1)
+
+    # def test_send_email_confirmation_using_default_template_when_no_user_defined_template(self):
+    # TODO: code this test function
+    #     """
+    #     Ensure default template is used when there is no user-defined template available.
+    #     """
+    #     data_post = {
+    #         'event': reverse(
+    #             'event-detail',
+    #             args=[self.event.id],
+    #         ),
+    #         'user': reverse(
+    #             'user-detail',
+    #             args=[self.admin.id],
+    #         ),
+    #         'is_standby': False,
+    #     }
+
+    #     self.client.force_authenticate(user=self.admin)
+
+    #     response = self.client.post(
+    #         reverse('participation-list'),
+    #         data_post,
+    #         format='json',
+    #     )
+
+    #     content = json.loads(response.content)
+
+    #     self.assertEqual(
+    #         response.status_code,
+    #         status.HTTP_201_CREATED,
+    #         content
+    #     )
+    #     self.check_attributes(content)

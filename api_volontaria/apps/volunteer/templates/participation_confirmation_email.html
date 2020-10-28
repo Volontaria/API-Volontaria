@@ -104,33 +104,35 @@
         </p>    
            
         <p>
-            <it>{{TYPE_PARTICIPATION}}</it>
+            <it>{{context.TYPE.PARTICIPATION}}</it>
         </p> 
             
         <p>
-            <b>{{CONTEXT['ACTIVITY']['NAME']}}</b>
+            <b>{{context.ACTIVITY.NAME}}</b>
         </p>
             
         <p>
-            {{CONTEXT['ACTIVITY']['START_DATE']}}
+            {{context.ACTIVITY.START_DATE}}
         </p>
             
         <p>
-            De {{CONTEXT['ACTIVITY']['START_TIME']}} à {{CONTEXT['ACTIVITY']['END_TIME']}}
+            De {{context.ACTIVITY.START_TIME}} à {{context.ACTIVITY.END_TIME}}
         </p>
 
-        <it><b>{{CONTEXT['CELL']['NAME']}}</b></it>
+        <it><b>{{context.CELL.NAME}}</b></it>
 
         <p>
-            {{CONTEXT['CELL']['ADDRESS_LINE_1']}}
+            {{context.CELL.ADDRESS_LINE_1}}
         </p>
-            
+
+        {% if context.CELL.ADDRESS_LINE_2 %}
         <p>
-            {{CONTEXT['CELL']['ADDRESS_LINE_2']}}
+          {{context.CELL.ADDRESS_LINE_2}}
         </p>
-            
+        {% endif %}
+
         <p>
-            {{CONTEXT['CELL']['CITY']}}, {{CONTEXT['CELL']['POSTAL_CODE']}}, {{CONTEXT['CELL']['STATE_PROVINCE']}}
+            {{context.CELL.CITY}}, {{context.CELL.POSTAL_CODE}}, {{context.CELL.STATE_PROVINCE}}
         </p>
             
         <p>
@@ -151,4 +153,3 @@
             </div>
             Propulsé par Volontaria.
         </p>
-            
