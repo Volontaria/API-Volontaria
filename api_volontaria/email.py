@@ -4,6 +4,8 @@ from django.core.mail import EmailMessage
 
 from api_volontaria import settings, front_end_url
 
+from api_volontaria.apps.log_management.models import EmailLog
+
 TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
 
 
@@ -14,6 +16,14 @@ class EmailAPI:
             subject, message, from_email, recipient_list,
             fail_silently=False, auth_user=None, auth_password=None,
             connection=None, html_message=None):
+
+        EmaiLog.objects.create(
+            user_email=[recipient_list],
+            type_email='default template email'
+            nb_email_sent=len([receipient_list])
+        )
+
+
         return django_send_mail(
                 subject, message, from_email, recipient_list,
                 fail_silently, auth_user, auth_password,
@@ -41,7 +51,13 @@ class EmailAPI:
         message.from_email = None  # required for SendinBlue templates
         # use this SendinBlue template
         message.template_id = TEMPLATES.get(template)
-        message.merge_global_data = email_context
+        message.merge_global_data = email_context    
+        
+        EmaiLog.objects.create(
+            user_email=[email],
+            type_email='organization custom template email'
+            nb_email_sent=len([email])
+        )
 
         # return number of successfully sent emails
         return message.send()

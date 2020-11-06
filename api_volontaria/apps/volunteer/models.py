@@ -341,7 +341,7 @@ class Participation(models.Model):
             msg_html = render_to_string(
                 "participation_confirmation_email.html", context)
             EmailAPI().send_email(
-                    "Mon sujet",
+                    "Objet: Confirmation de participation",
                     plain_msg,
                     "email_from@mondomain.ca",
                     ["email_target@domain.ca"],

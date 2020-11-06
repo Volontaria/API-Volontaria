@@ -105,3 +105,6 @@ ENV/
 
 # IDE
 .idea
+
+# tests for sendin blue
+test_sendinblue_transactional_emails.py

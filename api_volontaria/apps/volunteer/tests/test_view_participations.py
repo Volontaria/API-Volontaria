@@ -6,6 +6,10 @@ from rest_framework.test import APIClient
 from django.urls import reverse
 
 from django.core import mail
+from django.test.utils import override_settings
+
+import responses
+
 from api_volontaria.email import EmailAPI
 
 from api_volontaria.apps.volunteer.models import (
@@ -387,10 +391,22 @@ class ParticipationsTests(CustomAPITestCase):
 
         self.assertTrue(at_least_one_participation_is_owned_by_somebody_else)
 
-    def test_send_email_confirmation(self):
+    @responses.activate
+    @override_settings(
+        LOCAL_SETTINGS={
+            "EMAIL_SERVICE": True,
+            "FRONTEND_INTEGRATION": {
+                "POLICY_URL": "fake_url",
+                "LINK_TO_BE_PREPARED_FOR_VIRTUAL_RETREAT": "fake_url",
+                "PROFILE_URL": "fake_url"
+            }
+        }
+    )
+    def test_send_organization_custom_template_confirmation_email(self):
         """
         Ensure an email is sent to participant when a participation gets created. 
         """
+
         data_post = {
             'event': reverse(
                 'event-detail',
@@ -398,12 +414,14 @@ class ParticipationsTests(CustomAPITestCase):
             ),
             'user': reverse(
                 'user-detail',
-                args=[self.admin.id],
+                args=[self.user.id],
             ),
             'is_standby': False,
         }
 
-        self.client.force_authenticate(user=self.admin)
+        self.client.force_authenticate(user=self.user)
+
+        email_count = len(len(mail.outbox))
 
         response = self.client.post(
             reverse('participation-list'),
@@ -414,38 +432,51 @@ class ParticipationsTests(CustomAPITestCase):
         TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
         id = TEMPLATES.get('CONFIRMATION_PARTICIPATION')
 
-        self.assertEqual(len(mail.outbox), 1)
+        print(mail.outbox[0])
 
-    # def test_send_email_confirmation_using_default_template_when_no_user_defined_template(self):
-    # TODO: code this test function
-    #     """
-    #     Ensure default template is used when there is no user-defined template available.
-    #     """
-    #     data_post = {
-    #         'event': reverse(
-    #             'event-detail',
-    #             args=[self.event.id],
-    #         ),
-    #         'user': reverse(
-    #             'user-detail',
-    #             args=[self.admin.id],
-    #         ),
-    #         'is_standby': False,
-    #     }
+        self.assertEqual(len(mail.outbox), email_count + 1)
 
-    #     self.client.force_authenticate(user=self.admin)
+    @responses.activate
+    @override_settings(
+        LOCAL_SETTINGS={
+            "EMAIL_SERVICE": True,
+            "FRONTEND_INTEGRATION": {
+                "POLICY_URL": "fake_url",
+                "LINK_TO_BE_PREPARED_FOR_VIRTUAL_RETREAT": "fake_url",
+                "PROFILE_URL": "fake_url"
+            }
+        }
+    )
+    def test_send_default_template_confirmation_email(self):
+        """
+        Ensure an email is sent to participant when a participation gets created. 
+        """
 
-    #     response = self.client.post(
-    #         reverse('participation-list'),
-    #         data_post,
-    #         format='json',
-    #     )
+        data_post = {
+            'event': reverse(
+                'event-detail',
+                args=[self.event.id],
+            ),
+            'user': reverse(
+                'user-detail',
+                args=[self.user.id],
+            ),
+            'is_standby': False,
+        }
 
-    #     content = json.loads(response.content)
+        self.client.force_authenticate(user=self.user)
 
-    #     self.assertEqual(
-    #         response.status_code,
-    #         status.HTTP_201_CREATED,
-    #         content
-    #     )
-    #     self.check_attributes(content)
+        email_count = len(len(mail.outbox))
+
+        response = self.client.post(
+            reverse('participation-list'),
+            data_post,
+            format='json',
+        )
+
+        TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
+        id = TEMPLATES.get('CONFIRMATION_PARTICIPATION')
+
+        print(mail.outbox[0])
+
+        self.assertEqual(len(mail.outbox), email_count + 1)
