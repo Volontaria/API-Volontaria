@@ -227,7 +227,8 @@ ACTIVATION_TOKENS = {
 # Refer to Anymail's documentation for configuration details.
 
 ANYMAIL = {
-    'SENDINBLUE_API_KEY': config('SENDINBLUE_API_KEY', default='placeholder_key'),
+    'SENDINBLUE_API_KEY':
+    config('SENDINBLUE_API_KEY', default='placeholder_key'),
     'REQUESTS_TIMEOUT': (30, 30),
     'TEMPLATES': {
         'CONFIRMATION_PARTICIPATION': config(
@@ -250,14 +251,18 @@ EMAIL_BACKEND = 'anymail.backends.sendinblue.EmailBackend'
 DEFAULT_FROM_EMAIL = 'noreply@example.org'
 
 # User specific settings
-
 LOCAL_SETTINGS = {
-    'ORGANIZATION': "volontaria",
+    'ORGANIZATION': config(
+        'ORGANIZATION',
+        default='Volontaria'),
     'CONTACT_EMAIL': config(
             'CONTACT_EMAIL',
             default='noreply@volontaria.org',
     ),
-    'EMAIL_SERVICE': False,
+    'EMAIL_SERVICE': config(
+        'EMAIL_SERVICE',
+        default=False,
+    ),
     'AUTO_ACTIVATE_USER': False,
     'FRONTEND_URLS': {
         'BASE_URL': 'http://localhost:4200/',

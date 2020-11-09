@@ -24,9 +24,9 @@ class EmailAPI:
             )
         
         return EmailLog.add(
-                [recipient_list],
+                user_email=[recipient_list],
                 type_email='default template email',
-                nb_email_successfully_sent,
+                nb_email_sent=nb_email_successfully_sent,
             )
 
     def get_generic_information(self):
