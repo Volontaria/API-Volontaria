@@ -17,17 +17,16 @@ class EmailAPI:
             fail_silently=False, auth_user=None, auth_password=None,
             connection=None, html_message=None):
 
-        EmaiLog.objects.create(
-            user_email=[recipient_list],
-            type_email='default template email'
-            nb_email_sent=len([receipient_list])
-        )
-
-
-        return django_send_mail(
+        nb_email_successfully_sent = django_send_mail(
                 subject, message, from_email, recipient_list,
                 fail_silently, auth_user, auth_password,
                 connection, html_message
+            )
+        
+        return EmailLog.add(
+                [recipient_list],
+                type_email='default template email',
+                nb_email_successfully_sent,
             )
 
     def get_generic_information(self):
@@ -51,13 +50,14 @@ class EmailAPI:
         message.from_email = None  # required for SendinBlue templates
         # use this SendinBlue template
         message.template_id = TEMPLATES.get(template)
-        message.merge_global_data = email_context    
-        
-        EmaiLog.objects.create(
-            user_email=[email],
-            type_email='organization custom template email'
-            nb_email_sent=len([email])
-        )
+        message.merge_global_data = email_context
 
-        # return number of successfully sent emails
-        return message.send()
+        nb_email_successfully_sent = message.send()
+
+        # return list of recipient email addresses,
+        # type of email and number of successfully sent emails
+        return EmailLog.add(
+            user_email=[email],
+            type_email='organization custom template email',
+            nb_email_sent=nb_email_successfully_sent
+        )
