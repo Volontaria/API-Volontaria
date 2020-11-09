@@ -329,7 +329,7 @@ class Participation(models.Model):
 
         TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
         id = TEMPLATES.get('CONFIRMATION_PARTICIPATION')
-        if id: 
+        if id:
             EmailAPI().send_template_email(
                 self.user.email,
                 'CONFIRMATION_PARTICIPATION',
