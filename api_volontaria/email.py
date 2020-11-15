@@ -23,11 +23,13 @@ class EmailAPI:
                 connection, html_message
             )
         
-        return EmailLog.add(
+        EmailLog.add(
                 user_email=[recipient_list],
                 type_email='default template email',
                 nb_email_sent=nb_email_successfully_sent,
             )
+
+        return nb_email_successfully_sent
 
     def get_generic_information(self):
         contact_email = settings.LOCAL_SETTINGS['CONTACT_EMAIL']
@@ -56,8 +58,10 @@ class EmailAPI:
 
         # return list of recipient email addresses,
         # type of email and number of successfully sent emails
-        return EmailLog.add(
+        EmailLog.add(
             user_email=[email],
             type_email='organization custom template email',
             nb_email_sent=nb_email_successfully_sent
         )
+
+        return nb_email_successfully_sent

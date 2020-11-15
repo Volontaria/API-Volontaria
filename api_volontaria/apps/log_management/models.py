@@ -96,6 +96,14 @@ class EmailLog(models.Model):
     class Meta:
         verbose_name = _("Email Log")
         verbose_name_plural = _("Email Logs")
+    
+    def __repr__(self):
+        return{
+            'user_email': user_email,
+            'type_email': type_email,
+            'nb_email_sent': nb_email_sent,
+            'created': created,
+        }        
 
     @classmethod
     def add(cls, user_email, type_email, nb_email_sent):
@@ -107,3 +115,5 @@ class EmailLog(models.Model):
         )
 
         return new_email_log
+
+    

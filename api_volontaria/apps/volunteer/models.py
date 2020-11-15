@@ -12,6 +12,8 @@ from django.contrib.auth import get_user_model
 from dry_rest_permissions.generics import authenticated_users
 from api_volontaria.email import EmailAPI
 
+# from config import settings
+
 User = get_user_model()
 
 
@@ -331,15 +333,18 @@ class Participation(models.Model):
         id = TEMPLATES.get('CONFIRMATION_PARTICIPATION')
         if id:
             EmailAPI().send_template_email(
-                self.user.email,
-                'CONFIRMATION_PARTICIPATION',
-                context,
+            self.user.email,
+            'CONFIRMATION_PARTICIPATION',
+            context,
             )
+            msg_file_name = 'not applicable'
+            # print(f'Custom template exists. id number is: {id}')
         else:
+            msg_file_name = 'participation_confirmation_email' 
             plain_msg = render_to_string(
-                "participation_confirmation_email.txt", context)
+                '.'.join([msg_file_name, 'txt']), context)
             msg_html = render_to_string(
-                "participation_confirmation_email.html", context)
+                '.'.join([msg_file_name, 'html']), context)
             EmailAPI().send_email(
                     "Objet: Confirmation de participation",
                     plain_msg,
@@ -347,6 +352,8 @@ class Participation(models.Model):
                     ["email_target@domain.ca"],
                     html_message=msg_html,
                 )
+            # print(f'No Custom template exists. id number should be 0: it is {id}')
+        return (msg_file_name)
 
     def send_email_cancellation_emergency(self):
         """
