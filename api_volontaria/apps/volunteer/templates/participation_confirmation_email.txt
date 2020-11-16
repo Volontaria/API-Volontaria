@@ -1,4 +1,5 @@
 {% load static %}
+<img src="{% static 'apps/volunteer/logo_general.png' %}" alt="logo organisation">
 
 ***{{ORGANIZATION_NAME}}***
 
@@ -15,7 +16,7 @@ Nous avons bien reçu votre inscription à l'activité suivante:
 
 {{context.ACTIVITY.START_TIME}}
 
-{{ORGANIZATION_NAME}}
+
 
 
 {{context.CELL.NAME}}
@@ -41,3 +42,4 @@ L'équipe de {{ORGANIZATION_NAME}}
 
 ©2020 {{ORGANIZATION_NAME}}
 Propulsé par Volontaria.
+

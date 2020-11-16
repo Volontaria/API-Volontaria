@@ -1,0 +1,38 @@
+{% load static %}
+<img src="{% static 'apps/volunteer/logo_general.png' %}" alt="logo organisation">
+
+***{{ORGANIZATION_NAME}}***
+
+Un participant vient d'annuler sa participation à une activité qui débute dans {{context.ACTIVITY.HOURS_BEFORE_EMERGENCY}} heures.
+
+Participant: {{context.PARTICIPANT.FIRST_NAME}} {{context.PARTICIPATION.LAST_NAME}}
+
+Activité: {{context.ACTIVITY.NAME}}
+Date: {{context.ACTIVITY.START_DATE}}
+Heure de début: {{context.ACTIVITY.START_TIME}}
+
+{{context.CELL.NAME}}
+
+{{context.CELL.ADDRESS_LINE_1}}
+
+{% if context.CELL.ADDRESS_LINE_2 %}
+
+{{context.CELL.ADDRESS_LINE_2}}
+
+{% endif %}
+
+{{context.CELL.CITY}}, {{context.CELL.POSTAL_CODE}}, {{context.CELL.STATE_PROVINCE}}
+
+Statut des inscriptions après cette annulation: 
+
+Nombre de bénévoles requis: {{context.ACTIVITY.NUMBER_OF_VOLUNTEERS_NEEDED}}
+Nombre de bénévoles remplaçants requis: {{context.ACTIVITY.NUMBER_OF_VOLUNTEERS_STANDBY_NEEDED}}
+
+Nombre de bénévoles inscrits: {{context.ACTIVITY.NUMBER_OF_VOLUNTEERS}}
+Nombre de bénévoles remplaçants inscrits: {{context.ACTIVITY.NUMBER_OF_VOLUNTEERS_STANDBY}}
+
+
+
+©2020 {{ORGANIZATION_NAME}}
+Propulsé par Volontaria.
+

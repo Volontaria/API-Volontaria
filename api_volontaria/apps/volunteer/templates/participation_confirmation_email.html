@@ -1,9 +1,11 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    {% load static %}
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <style>
-      @import url('https://fonts.googleapis.com/css?family=Nunito+Sans');
+    <link rel='stylesheet' href='{% static "volunteer/css/stylesheet.css"%}'/>
+    <!-- <style> -->
+      /* @import url('https://fonts.googleapis.com/css?family=Nunito+Sans');
 
       body {
         margin: 0;
@@ -44,6 +46,7 @@
         max-width: 600px;
         padding: 20px;
         margin: auto;
+        text-align: center;
       }
 
 
@@ -57,39 +60,13 @@
         margin-top: 50px;
       }
 
-      .email__content__summary__item {
-        line-height: 15px;
-        margin: 5px 0;
-      }
-
-      .email__content__summary__item--total {
-        font-weight: bold;
-      }
-
-      .email__content__summary__item__spacer {
-        border-bottom: 1px dotted #142823;
-        height: 12px;
-        float: right;
-
-      }
-
-      .email__content__summary__item__price {
-        float: right;
-      }
-
-      .email__content__summary__item__details {
-        margin: 12px 12px;
-        font-size: 12px;
-        color: #142823;
-      }
-
-    </style>
+    </style> */
   </head>
   <body>
     <div class="email">
       <div class="email__logo">
         {% load static %}
-        <img src="{% static 'images/logo_general.png'%}" alt="">
+        <img src="{% static 'volunteer/img/logo_general.png'%}" alt="logo organisation">
       </div>
       <div class="email__content">
         <h1 class="email__content__title">
@@ -139,7 +116,8 @@
             Merci de votre inscription et nous avons hâte de vous voir à l'activité!
         </p>
         <p> 
-            N'hésitez pas à relire les informations de l'activité sur votre compte Volontaria avant votre venue.
+            N'hésitez pas à relire les informations de l'activité<br>
+            sur votre compte Volontaria avant votre venue.
         </p>
         <p> 
             À très bientôt!
@@ -153,3 +131,6 @@
             </div>
             Propulsé par Volontaria.
         </p>
+      </div>
+    </div>
+  </body>

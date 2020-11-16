@@ -419,15 +419,14 @@ class ParticipationsTests(CustomAPITestCase):
             }
         },
     )
-    def test_send_custom_template_confirmation_email(self):
+    def test_send_custom_confirmation_email(self):
         """
-        When organization has defined a template
-        on their Sendinblue account,
-        ensure that:
+        Ensure that
         1. an email is sent to participant
         when a participation gets created
-        2. such an email is based on that organization's 
-        Sendinblue custom template.
+        2. email uses organization custom template
+        (case when organization has set up a custom template
+        on their Sendinblue account)
         """
         
         outbox_initial_email_count = len(mail.outbox)
@@ -452,18 +451,179 @@ class ParticipationsTests(CustomAPITestCase):
             format='json',
         )
 
-        TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
-        id = TEMPLATES.get('CONFIRMATION_PARTICIPATION')
-
-        self.assertEqual(id, 57)
-
+        # 1. email sent?
         nb_email_sent = len(mail.outbox) - outbox_initial_email_count
 
         self.assertEqual(nb_email_sent, 1)
 
-        # TODO: be able to call the below:
-        msg_file_name = send_email_confirmation() 
+        # 2. proper template?
+        TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
+        id = TEMPLATES.get('CONFIRMATION_PARTICIPATION')
 
+        self.assertEqual(id, 57)
+        
+        msg_file_name = self.participation.send_email_confirmation() 
+    
+        self.assertEqual(msg_file_name, 'not applicable')
+
+        #TODO: investigate error:
+        # email_log = EmailLog.objects.all()
+        # email_log = EmailLog.objects.latest('pub date')
+        # print(email_log)
+       
+        # NameError: name 'user_email' is not defined
+
+        # self.assertEqual(
+        #     email_log.get(type_email),
+        #     'organization custom template email',
+        #     )
+
+    @responses.activate
+    @override_settings(
+        ANYMAIL = {
+            'SENDINBLUE_API_KEY':
+            config('SENDINBLUE_API_KEY', default='placeholder_key'),
+            'REQUESTS_TIMEOUT': (30, 30),
+            'TEMPLATES': {
+                'CONFIRMATION_PARTICIPATION': 0,
+                    # Template numbering starts at 1
+                    # in SendinBlue Email templates lists,
+                    # so id=0 here implies no template has been defined
+                    # by non-profit organization
+                'CANCELLATION_PARTICIPATION_EMERGENCY': config(
+                    'TEMPLATE_ID_CANCELLATION_PARTICIPATION_EMERGENCY',
+                    default=0,
+                    cast=int
+                ),
+                'RESET_PASSWORD': config(
+                    'RESET_PASSWORD_EMAIL_TEMPLATE',
+                    default=0
+                ),
+            }
+        }
+    )
+    def test_send_default_confirmation_email(self):
+        """
+        Ensure that
+        1. an email is sent to participant
+        when a participation gets created
+        2. email uses Volontaria default template
+        (case when no template has been set up by organization
+        on their Sendinblue account)
+        """
+        
+        outbox_initial_email_count = len(mail.outbox)
+
+        data_post = {
+            'event': reverse(
+                'event-detail',
+                args=[self.event.id],
+            ),
+            'user': reverse(
+                'user-detail',
+                args=[self.admin.id],
+            ),
+            'is_standby': False,
+        }
+
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.post(
+            reverse('participation-list'),
+            data_post,
+            format='json',
+        )
+
+        # 1. email sent?
+        nb_email_sent = len(mail.outbox) - outbox_initial_email_count
+
+        self.assertEqual(nb_email_sent, 1)
+
+        # 2. proper template?
+        TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
+        id = TEMPLATES.get('CONFIRMATION_PARTICIPATION')
+
+        self.assertEqual(id, 0)
+
+        msg_file_name = self.participation.send_email_confirmation() 
+
+        self.assertEqual(
+            msg_file_name,
+            'participation_confirmation_email')
+
+        #TODO: investigatel logging
+        # email_log = EmailLog.objects.all()
+        # # email_log = EmailLog.objects.latest('pub date')
+        # print(email_log)
+
+        # self.assertEqual(
+        #     email_log.get(type_email),
+        #     'default template email',
+        #     )
+
+        # # print(EmailLog.objects.all())
+
+        # # print(email_log)
+
+        # # print(self.user.email)
+        # # print(EmailLog.objects.filter(id=1)[0])
+
+    @responses.activate
+    @override_settings(
+        ANYMAIL={
+            'SENDINBLUE_API_KEY':
+            config('SENDINBLUE_API_KEY', default='placeholder_key'),
+            'REQUESTS_TIMEOUT': (30, 30),
+            'TEMPLATES': {
+                'CONFIRMATION_PARTICIPATION': config(
+                    'TEMPLATE_ID_CONFIRMATION_PARTICIPATION',
+                    default=0,
+                    cast=int
+                ),
+                'CANCELLATION_PARTICIPATION_EMERGENCY': 18,
+                'RESET_PASSWORD': config(
+                    'RESET_PASSWORD_EMAIL_TEMPLATE',
+                    default=0
+                ),
+            }
+        },
+    )
+    def test_send_custom_cancellation_email(self):
+        """
+        Ensure that
+        1. an email is sent to organization
+        when a participation gets cancelled
+        2. email uses organization custom template
+        (case when organization has set up a custom template
+        on their Sendinblue account)
+        """
+        
+        outbox_initial_email_count = len(mail.outbox)
+
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.delete(
+            reverse(
+                'participation-detail',
+                kwargs={
+                    'pk': self.participation.id
+                },
+            )
+        )
+
+        # 1. email sent?
+        nb_email_sent = len(mail.outbox) - outbox_initial_email_count
+
+        self.assertEqual(nb_email_sent, 1)
+
+        # 2. proper template?
+        TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
+        id = TEMPLATES.get('CANCELLATION_PARTICIPATION_EMERGENCY')
+
+        self.assertEqual(id, 18)
+        
+        msg_file_name = self.participation.send_email_confirmation() 
+    
         self.assertEqual(msg_file_name, 'not applicable')
 
         #TODO: investigate error:
@@ -486,19 +646,15 @@ class ParticipationsTests(CustomAPITestCase):
             'REQUESTS_TIMEOUT': (30, 30),
             'TEMPLATES': {
                 'CONFIRMATION_PARTICIPATION': config(
+                    'TEMPLATE_ID_CONFIRMATION_PARTICIPATION',
+                    default=0,
+                    cast=int
+                ),
+                'CANCELLATION_PARTICIPATION_EMERGENCY': 0,
                     # Template numbering starts at 1
                     # in SendinBlue Email templates lists,
                     # so id=0 here implies no template has been defined
                     # by non-profit organization
-                    '0',
-                    default=0,
-                    cast=int
-                ),
-                'CANCELLATION_PARTICIPATION_EMERGENCY': config(
-                    'TEMPLATE_ID_CANCELLATION_PARTICIPATION_EMERGENCY',
-                    default=0,
-                    cast=int
-                ),
                 'RESET_PASSWORD': config(
                     'RESET_PASSWORD_EMAIL_TEMPLATE',
                     default=0
@@ -506,68 +662,42 @@ class ParticipationsTests(CustomAPITestCase):
             }
         }
     )
-    def test_send_default_confirmation_email(self):
+    def test_send_default_cancellation_email(self):
         """
-        When organization has defined no template
-        on their Sendinblue account,
-        ensure that:
-        1. an email is sent to participant
-        when a participation gets created
-        2. such an email is based on Volontaria default template.
+        Ensure that
+        1. an email is sent to organization
+        when a participation gets cancelled
+        2. email uses Volontaria default template
+        (case when no template has been set up by organization
+        on their Sendinblue account)
         """
         
         outbox_initial_email_count = len(mail.outbox)
 
-        data_post = {
-            'event': reverse(
-                'event-detail',
-                args=[self.event.id],
-            ),
-            'user': reverse(
-                'user-detail',
-                args=[self.admin.id],
-            ),
-            'is_standby': False,
-        }
-
         self.client.force_authenticate(user=self.admin)
 
-        response = self.client.post(
-            reverse('participation-list'),
-            data_post,
-            format='json',
+        response = self.client.delete(
+            reverse(
+                'participation-detail',
+                kwargs={
+                    'pk': self.participation.id
+                },
+            )
         )
 
-        TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
-        id = TEMPLATES.get('CONFIRMATION_PARTICIPATION')
-
-        print(f'template id is expected to 0: it is {id}')
-        print(f'the type of id is : {type(id)}')
-        self.assertEqual(id, 0)
-
-        self.assertEqual(
-            msg_file_name,
-            'participation_confirmation_email')
-
-        # print(f'The id of the template is expected to be empty: {id}')
-
+        # 1. email sent?
         nb_email_sent = len(mail.outbox) - outbox_initial_email_count
 
         self.assertEqual(nb_email_sent, 1)
 
-        #TODO: investigatel logging
-        # email_log = EmailLog.objects.all()
-        # # email_log = EmailLog.objects.latest('pub date')
-        # print(email_log)
+        # 2. proper template?
+        TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
+        id = TEMPLATES.get('CANCELLATION_PARTICIPATION_EMERGENCY')
 
-        # self.assertEqual(
-        #     email_log.get(type_email),
-        #     'default template email',
-        #     )
+        self.assertEqual(id, 0)
 
-        # # print(EmailLog.objects.all())
+        msg_file_name = self.participation.send_email_confirmation() 
 
-        # # print(email_log)
-
-        # # print(self.user.email)
-        # # print(EmailLog.objects.filter(id=1)[0])
+        self.assertEqual(
+            msg_file_name,
+            'participation_cancellation_email')

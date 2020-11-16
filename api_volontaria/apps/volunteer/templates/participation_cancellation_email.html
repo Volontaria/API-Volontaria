@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel='stylesheet' href='{% static "volunteer/css/stylesheet.css" %}'/>
+  </head>
+  <body>
+    <div class="email">
+      <div class="email__logo">
+        {% load static %}
+        <img src="{% static volunteer/img/'logo_general.png'%}" alt="logo organisation">
+      </div>
+      <div class="email__content">
+        <h1 class="email__content__title">
+            Avis d'annulation
+        </h1>
+        <h2 class="email__content__subtitle">
+            {{ORGANIZATION_NAME}}
+        </h2>
+        <p>
+            <b>Un participant vient d'annuler sa participation à une activité<br>
+              qui débute dans {{context.ACTIVITY.HOURS_BEFORE_EMERGENCY}} heures.
+            </b>
+        </p>
+            
+        <p>
+          Participant: {{context.PARTICIPANT.FIRST_NAME}} {{context.PARTICIPATION.LAST_NAME}}
+        </p>    
+
+        <p>
+            <b>Activité: {{context.ACTIVITY.NAME}}</b>
+        </p>
+            
+        <p>
+            {{context.ACTIVITY.START_DATE}}
+        </p>
+            
+        <p>
+            {{context.ACTIVITY.START_TIME}}
+        </p>
+
+        <it><b>{{context.CELL.NAME}}</b></it>
+
+        <p>
+            {{context.CELL.ADDRESS_LINE_1}}
+        </p>
+
+        {% if context.CELL.ADDRESS_LINE_2 %}
+        <p>
+          {{context.CELL.ADDRESS_LINE_2}}
+        </p>
+        {% endif %}
+
+        <p>
+            {{context.CELL.CITY}}, {{context.CELL.POSTAL_CODE}}, {{context.CELL.STATE_PROVINCE}}
+        </p>
+            
+        <p>
+          <b>Statut des inscriptions après cette annulation:</b>
+        </p>
+
+        <table id=participation_status>
+          <tr>
+            <th>Type de participant</th>
+            <th>Nombre requis</th>
+            <th>Nombre inscrit</th>  
+          </tr>
+          <tr>
+            <td>Bénévole</td>
+            <td>{{context.ACTIVITY.NUMBER_OF_VOLUNTEERS_NEEDED}}</td>
+            <td>{{context.ACTIVITY.NUMBER_OF_VOLUNTEERS}}</td>
+          </tr>
+          <tr>
+            <td>Bénévole remplaçant</td>
+            <td>{{context.ACTIVITY.NUMBER_OF_VOLUNTEERS_STANDBY_NEEDED}}</td>
+            <td>{{context.ACTIVITY.NUMBER_OF_VOLUNTEERS_STANDBY}}</td>
+          </tr>
+        </table>  
+            
+        
+            <div>
+            ©2020 {{ORGANIZATION_NAME}}
+            </div>
+            Propulsé par Volontaria.
+        </p>
+      </div>
+    </div>
+  </body>

@@ -338,7 +338,6 @@ class Participation(models.Model):
             context,
             )
             msg_file_name = 'not applicable'
-            # print(f'Custom template exists. id number is: {id}')
         else:
             msg_file_name = 'participation_confirmation_email' 
             plain_msg = render_to_string(
@@ -352,14 +351,14 @@ class Participation(models.Model):
                     ["email_target@domain.ca"],
                     html_message=msg_html,
                 )
-            # print(f'No Custom template exists. id number should be 0: it is {id}')
         return (msg_file_name)
 
     def send_email_cancellation_emergency(self):
         """
         An email to inform the administrator that a user just cancel his
         reservation despite the fact that the event is really soon
-        :return: Nothing
+        :return: message file name (helps determine which type of email
+        template has been used, for example when testing application)
         """
         start_time = self.event.start_time
         start_time = start_time.astimezone(pytz.timezone('US/Eastern'))
@@ -400,11 +399,29 @@ class Participation(models.Model):
             },
         }
 
-        EmailAPI().send_template_email(
-            settings.LOCAL_SETTINGS['CONTACT_EMAIL'],
+        TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
+        id = TEMPLATES.get('CANCELLATION_PARTICIPATION_EMERGENCY')
+        if id:
+            EmailAPI().send_template_email(
+            self.user.email,
             'CANCELLATION_PARTICIPATION_EMERGENCY',
             context,
-        )
+            )
+            msg_file_name = 'not applicable'
+        else:
+            msg_file_name = 'participation_cancellation_email' 
+            plain_msg = render_to_string(
+                '.'.join([msg_file_name, 'txt']), context)
+            msg_html = render_to_string(
+                '.'.join([msg_file_name, 'html']), context)
+            EmailAPI().send_email(
+                    "Objet: Annulation de participation",
+                    plain_msg,
+                    "email_from@mondomain.ca",
+                    ["email_target@domain.ca"],
+                    html_message=msg_html,
+                )
+        return (msg_file_name)
 
     @staticmethod
     def has_destroy_permission(request):
