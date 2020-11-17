@@ -1,8 +1,7 @@
 from django.core.mail import send_mail as django_send_mail
-from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 
-from api_volontaria import settings, front_end_url
+from api_volontaria import settings
 
 from api_volontaria.apps.log_management.models import EmailLog
 
@@ -24,10 +23,10 @@ class EmailAPI:
             )
         
         EmailLog.add(
-                user_email=[recipient_list],
-                type_email='default template email',
-                nb_email_sent=nb_email_successfully_sent,
-            )
+            user_email=recipient_list,
+            type_email='default template email',
+            nb_email_sent=nb_email_successfully_sent,
+        )
 
         return nb_email_successfully_sent
 
@@ -61,7 +60,8 @@ class EmailAPI:
         EmailLog.add(
             user_email=[email],
             type_email='organization custom template email',
-            nb_email_sent=nb_email_successfully_sent
+            nb_email_sent=nb_email_successfully_sent,
+            template_id=TEMPLATES.get(template),
         )
 
         return nb_email_successfully_sent

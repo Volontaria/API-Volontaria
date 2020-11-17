@@ -1,10 +1,6 @@
 import json
 from datetime import datetime
-
-import os
-from pathlib import Path
-from decouple import config, Csv
-from dj_database_url import parse as db_url
+from decouple import config
 
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -464,7 +460,6 @@ class ParticipationsTests(CustomAPITestCase):
         
         msg_file_name = self.participation.send_email_confirmation() 
     
-        self.assertEqual(msg_file_name, 'not applicable')
 
         #TODO: investigate error:
         # email_log = EmailLog.objects.all()
@@ -547,10 +542,6 @@ class ParticipationsTests(CustomAPITestCase):
 
         msg_file_name = self.participation.send_email_confirmation() 
 
-        self.assertEqual(
-            msg_file_name,
-            'participation_confirmation_email')
-
         #TODO: investigatel logging
         # email_log = EmailLog.objects.all()
         # # email_log = EmailLog.objects.latest('pub date')
@@ -570,6 +561,7 @@ class ParticipationsTests(CustomAPITestCase):
 
     @responses.activate
     @override_settings(
+        NUMBER_OF_DAYS_BEFORE_EMERGENCY_CANCELLATION=99999,
         ANYMAIL={
             'SENDINBLUE_API_KEY':
             config('SENDINBLUE_API_KEY', default='placeholder_key'),
@@ -600,6 +592,15 @@ class ParticipationsTests(CustomAPITestCase):
         
         outbox_initial_email_count = len(mail.outbox)
 
+        TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
+        id = TEMPLATES.get('CANCELLATION_PARTICIPATION_EMERGENCY')
+
+        email_log_count = EmailLog.objects.filter(
+            user_email=[settings.LOCAL_SETTINGS['CONTACT_EMAIL']],
+            type_email='organization custom template email',
+            template_id=id
+        ).count()
+
         self.client.force_authenticate(user=self.admin)
 
         response = self.client.delete(
@@ -617,30 +618,29 @@ class ParticipationsTests(CustomAPITestCase):
         self.assertEqual(nb_email_sent, 1)
 
         # 2. proper template?
-        TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
-        id = TEMPLATES.get('CANCELLATION_PARTICIPATION_EMERGENCY')
-
         self.assertEqual(id, 18)
-        
-        msg_file_name = self.participation.send_email_confirmation() 
-    
-        self.assertEqual(msg_file_name, 'not applicable')
 
-        #TODO: investigate error:
-        # email_log = EmailLog.objects.all()
-        # email_log = EmailLog.objects.latest('pub date')
-        # print(email_log)
-       
-        # NameError: name 'user_email' is not defined
+        email_log_count_after = EmailLog.objects.filter(
+            user_email=[settings.LOCAL_SETTINGS['CONTACT_EMAIL']],
+            type_email='organization custom template email',
+            template_id=id,
+        )
 
-        # self.assertEqual(
-        #     email_log.get(type_email),
-        #     'organization custom template email',
-        #     )
+        print('custom')
+        print(EmailLog.objects.filter(
+            user_email=[settings.LOCAL_SETTINGS['CONTACT_EMAIL']],
+            type_email='organization custom template email',
+        ))
+
+        self.assertEqual(
+            email_log_count,
+            email_log_count_after.count() - 1,
+        )
 
     @responses.activate
     @override_settings(
-        ANYMAIL = {
+        NUMBER_OF_DAYS_BEFORE_EMERGENCY_CANCELLATION=99999,
+        ANYMAIL={
             'SENDINBLUE_API_KEY':
             config('SENDINBLUE_API_KEY', default='placeholder_key'),
             'REQUESTS_TIMEOUT': (30, 30),
@@ -674,6 +674,15 @@ class ParticipationsTests(CustomAPITestCase):
         
         outbox_initial_email_count = len(mail.outbox)
 
+        TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
+        id = TEMPLATES.get('CANCELLATION_PARTICIPATION_EMERGENCY')
+
+        email_log_count = EmailLog.objects.filter(
+            user_email=[settings.LOCAL_SETTINGS['CONTACT_EMAIL']],
+            type_email='default template email',
+            template_id=None,
+        ).count()
+
         self.client.force_authenticate(user=self.admin)
 
         response = self.client.delete(
@@ -691,13 +700,16 @@ class ParticipationsTests(CustomAPITestCase):
         self.assertEqual(nb_email_sent, 1)
 
         # 2. proper template?
-        TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
-        id = TEMPLATES.get('CANCELLATION_PARTICIPATION_EMERGENCY')
 
         self.assertEqual(id, 0)
 
-        msg_file_name = self.participation.send_email_confirmation() 
+        email_log_count_after = EmailLog.objects.filter(
+            user_email=[settings.LOCAL_SETTINGS['CONTACT_EMAIL']],
+            type_email='default template email',
+            template_id=None,
+        )
 
         self.assertEqual(
-            msg_file_name,
-            'participation_cancellation_email')
+            email_log_count,
+            email_log_count_after.count() - 1,
+        )
