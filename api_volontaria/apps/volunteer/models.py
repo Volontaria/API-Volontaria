@@ -333,25 +333,27 @@ class Participation(models.Model):
         id = TEMPLATES.get('CONFIRMATION_PARTICIPATION')
         if id:
             EmailAPI().send_template_email(
-            self.user.email,
-            'CONFIRMATION_PARTICIPATION',
-            context,
+                self.user.email,
+                'CONFIRMATION_PARTICIPATION',
+                context,
             )
-            msg_file_name = 'not applicable'
         else:
-            msg_file_name = 'participation_confirmation_email' 
+            msg_file_name = 'participation_confirmation_email'
             plain_msg = render_to_string(
-                '.'.join([msg_file_name, 'txt']), context)
+                '.'.join([msg_file_name, 'txt']),
+                context
+            )
             msg_html = render_to_string(
-                '.'.join([msg_file_name, 'html']), context)
+                '.'.join([msg_file_name, 'html']),
+                context
+            )
             EmailAPI().send_email(
-                    "Objet: Confirmation de participation",
-                    plain_msg,
-                    "email_from@mondomain.ca",
-                    ["email_target@domain.ca"],
-                    html_message=msg_html,
-                )
-        return (msg_file_name)
+                "Objet: Confirmation de participation",
+                plain_msg,
+                "email_from@mondomain.ca",
+                [self.user.email],
+                html_message=msg_html,
+            )
 
     def send_email_cancellation_emergency(self):
         """
@@ -403,25 +405,27 @@ class Participation(models.Model):
         id = TEMPLATES.get('CANCELLATION_PARTICIPATION_EMERGENCY')
         if id:
             EmailAPI().send_template_email(
-            self.user.email,
-            'CANCELLATION_PARTICIPATION_EMERGENCY',
-            context,
+                settings.LOCAL_SETTINGS['CONTACT_EMAIL'],
+                'CANCELLATION_PARTICIPATION_EMERGENCY',
+                context,
             )
-            msg_file_name = 'not applicable'
         else:
             msg_file_name = 'participation_cancellation_email' 
             plain_msg = render_to_string(
-                '.'.join([msg_file_name, 'txt']), context)
+                '.'.join([msg_file_name, 'txt']),
+                context
+            )
             msg_html = render_to_string(
-                '.'.join([msg_file_name, 'html']), context)
+                '.'.join([msg_file_name, 'html']),
+                context
+            )
             EmailAPI().send_email(
-                    "Objet: Annulation de participation",
-                    plain_msg,
-                    "email_from@mondomain.ca",
-                    ["email_target@domain.ca"],
-                    html_message=msg_html,
-                )
-        return (msg_file_name)
+                "Objet: Annulation de participation",
+                plain_msg,
+                "email_from@mondomain.ca",
+                [settings.LOCAL_SETTINGS['CONTACT_EMAIL']],
+                html_message=msg_html,
+            )
 
     @staticmethod
     def has_destroy_permission(request):
@@ -471,7 +475,7 @@ def send_participation_confirmation(sender, instance, created, **kwargs):
 
 
 @receiver(pre_delete, sender=Participation)
-def send_cancellattion_email_emergency(sender, instance, using, **kwargs):
+def send_cancellation_email_emergency(sender, instance, using, **kwargs):
     if not instance.is_standby:
         start_time = instance.event.start_time
         start_time = start_time.astimezone(pytz.timezone('US/Eastern'))
@@ -480,5 +484,5 @@ def send_cancellattion_email_emergency(sender, instance, using, **kwargs):
         )
 
         now = datetime.now(pytz.timezone('US/Eastern'))
-        if now > limit_date:
+        if now >= limit_date:
             instance.send_email_cancellation_emergency()
