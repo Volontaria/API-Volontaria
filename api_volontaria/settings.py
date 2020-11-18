@@ -225,6 +225,27 @@ ACTIVATION_TOKENS = {
 
 # Email service configuration (using Anymail).
 # Refer to Anymail's documentation for configuration details.
+# class Anymail(object):
+#     # need to uppercase class name for django to recognize it as settings; see below
+#     # see https://stackoverflow.com/questions/53942999/can-i-define-classes-in-django-settings-and-how-can-i-override-such-settings-in?noredirect=1&lq=1
+#     SENDINBLUE_API_KEY = config(
+#         'SENDINBLUE_API_KEY', default='placeholder_key'
+#         )
+#     REQUESTS_TIMEOUT = (30, 30)
+#     CONFIRMATION_PARTICIPATION_TEMPLATE_ID = config(
+#             'TEMPLATE_ID_CONFIRMATION_PARTICIPATION',
+#             default=0,
+#             cast=int
+#         )
+#     CANCELLATION_PARTICIPATION_EMERGENCY_TEMPLATE_ID = config(
+#             'TEMPLATE_ID_CANCELLATION_PARTICIPATION_EMERGENCY',
+#             default=0,
+#             cast=int
+#         )
+#     RESET_PASSWORD = config(
+#             'RESET_PASSWORD_EMAIL_TEMPLATE',
+#             default=0
+#         )
 
 ANYMAIL = {
     'SENDINBLUE_API_KEY':
@@ -247,6 +268,7 @@ ANYMAIL = {
         ),
     }
 }
+
 EMAIL_BACKEND = 'anymail.backends.sendinblue.EmailBackend'
 DEFAULT_FROM_EMAIL = 'noreply@example.org'
 

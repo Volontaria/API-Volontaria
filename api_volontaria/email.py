@@ -7,7 +7,6 @@ from api_volontaria.apps.log_management.models import EmailLog
 
 TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
 
-
 class EmailAPI:
 
     def send_email(
@@ -21,7 +20,7 @@ class EmailAPI:
                 fail_silently, auth_user, auth_password,
                 connection, html_message
             )
-        
+
         EmailLog.add(
             user_email=recipient_list,
             type_email='default template email',
@@ -39,18 +38,23 @@ class EmailAPI:
         }
 
     def send_template_email(self, email, template, context):
-
+        # print('template as input in send template_email_function')
+        # print(template)
         email_context = context
         email_context['GENERIC'] = self.get_generic_information()
 
         message = EmailMessage(
             subject=None,  # required for SendinBlue templates
             body='',  # required for SendinBlue templates
-            to=[email]
+            to=[email],
         )
         message.from_email = None  # required for SendinBlue templates
-        # use this SendinBlue template
+        
+        # use this SendinBlue template       
         message.template_id = TEMPLATES.get(template)
+        # print('template_id in send_template_email function')
+        # print(message.template_id)
+        
         message.merge_global_data = email_context
 
         nb_email_successfully_sent = message.send()
