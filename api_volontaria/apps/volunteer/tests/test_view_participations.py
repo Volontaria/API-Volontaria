@@ -33,8 +33,6 @@ LOCAL_TIMEZONE = pytz.timezone(settings.TIME_ZONE)
 
 class ParticipationsTests(CustomAPITestCase):
 
-    # BASE_DIR = Path(__file__).absolute().parent.parent
-
     ATTRIBUTES = [
         'id',
         'url',
@@ -421,9 +419,6 @@ class ParticipationsTests(CustomAPITestCase):
         # so we do not test for a specific template id #)  
         ).count()
 
-        # print('custom confirmation log before')
-        # print(EmailLog.objects.all())  
-
         data_post = {
             'event': reverse(
                 'event-detail',
@@ -455,9 +450,6 @@ class ParticipationsTests(CustomAPITestCase):
             type_email='CONFIRMATION_PARTICIPATION',
             template_id__isnull=False,
         ).count()
-
-        # print('custom confirmation log after')
-        # print(EmailLog.objects.all())
 
         self.assertEqual(
             email_log_final_count,
@@ -498,16 +490,11 @@ class ParticipationsTests(CustomAPITestCase):
         
         outbox_initial_email_count = len(mail.outbox)
         
-        # print(self.user.email)
-
         email_log_initial_count = EmailLog.objects.filter(
             user_email=[self.user.email],
             type_email='Objet: Confirmation de participation',
             template_id__isnull=True,
         ).count()
-
-        # print('custom confirmation log before')
-        # print(EmailLog.objects.all())  
 
         data_post = {
             'event': reverse(
@@ -541,9 +528,6 @@ class ParticipationsTests(CustomAPITestCase):
             template_id__isnull=True,
         ).count()
 
-        # print('custom confirmation log after')
-        # print(EmailLog.objects.all())
-
         self.assertEqual(
             email_log_final_count,
             email_log_initial_count + 1,
@@ -573,9 +557,6 @@ class ParticipationsTests(CustomAPITestCase):
             template_id__isnull=False,
         ).count()
 
-        # print('custom cancellation email_log before')
-        # print(EmailLog.objects.all())
-
         self.client.force_authenticate(user=self.admin)
 
         response = self.client.delete(
@@ -599,9 +580,6 @@ class ParticipationsTests(CustomAPITestCase):
             type_email='CANCELLATION_PARTICIPATION_EMERGENCY',
             template_id__isnull=False,
         ).count()
-
-        # print('custom log after')
-        # print(EmailLog.objects.all())
 
         self.assertEqual(
             email_log_final_count,
@@ -653,9 +631,6 @@ class ParticipationsTests(CustomAPITestCase):
             template_id__isnull = True,
         ).count()
 
-        # print('default log before')
-        # print(EmailLog.objects.all())
-
         self.client.force_authenticate(user=self.admin)
 
         response = self.client.delete(
@@ -677,9 +652,6 @@ class ParticipationsTests(CustomAPITestCase):
             type_email='Objet: Annulation de participation',
             template_id__isnull = True,
         ).count()
-
-        # print('default log after')
-        # print(EmailLog.objects.all())
 
         self.assertEqual(
             email_log_final_count,

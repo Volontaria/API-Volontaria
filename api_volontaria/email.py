@@ -14,7 +14,8 @@ class EmailAPI:
             subject, message, from_email, recipient_list,
             fail_silently=False, auth_user=None, auth_password=None,
             connection=None, html_message=None):
-
+        ''' sending and logging emails '''
+        
         nb_email_successfully_sent = django_send_mail(
                 subject, message, from_email, recipient_list,
                 fail_silently, auth_user, auth_password,
@@ -38,8 +39,10 @@ class EmailAPI:
         }
 
     def send_template_email(self, email, template, context):
-        # print('template as input in send template_email_function')
-        # print(template)
+        ''' sending email using SendinBlue templates,
+        and logging email
+        '''
+        
         email_context = context
         email_context['GENERIC'] = self.get_generic_information()
 
@@ -52,15 +55,11 @@ class EmailAPI:
         
         # use this SendinBlue template       
         message.template_id = TEMPLATES.get(template)
-        # print('template_id in send_template_email function')
-        # print(message.template_id)
-        # print()
+        
         message.merge_global_data = email_context
 
         nb_email_successfully_sent = message.send()
 
-        # return list of recipient email addresses,
-        # type of email and number of successfully sent emails
         EmailLog.add(
             user_email=[email],
             type_email=template,
