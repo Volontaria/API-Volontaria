@@ -23,8 +23,8 @@ class EmailAPI:
 
         EmailLog.add(
             user_email=recipient_list,
-            type_email='default template email',
             nb_email_sent=nb_email_successfully_sent,
+            type_email=subject,
         )
 
         return nb_email_successfully_sent
@@ -54,7 +54,7 @@ class EmailAPI:
         message.template_id = TEMPLATES.get(template)
         # print('template_id in send_template_email function')
         # print(message.template_id)
-        
+        # print()
         message.merge_global_data = email_context
 
         nb_email_successfully_sent = message.send()
@@ -63,7 +63,7 @@ class EmailAPI:
         # type of email and number of successfully sent emails
         EmailLog.add(
             user_email=[email],
-            type_email='organization custom template email',
+            type_email=template,
             nb_email_sent=nb_email_successfully_sent,
             template_id=TEMPLATES.get(template),
         )

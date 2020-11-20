@@ -83,6 +83,8 @@ class EmailLog(models.Model):
         max_length=1024,
         verbose_name=_("Type email")
     )
+    # either email "subject" when using django_send_email function via send_email
+    # or template key in ANYMAIL settings  
 
     template_id = models.CharField(
         max_length=1024,
