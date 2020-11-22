@@ -84,7 +84,7 @@ class EmailLog(models.Model):
         verbose_name=_("Type email")
     )
     # either email "subject" when using django_send_email function via send_email
-    # or template key in ANYMAIL settings  
+    # or template key in ANYMAIL settings
 
     template_id = models.CharField(
         max_length=1024,
@@ -105,7 +105,7 @@ class EmailLog(models.Model):
     class Meta:
         verbose_name = _("Email Log")
         verbose_name_plural = _("Email Logs")
-    
+
     def __repr__(self):
         return str({
             'user_email': self.user_email,

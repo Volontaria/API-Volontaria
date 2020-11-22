@@ -395,6 +395,29 @@ class ParticipationsTests(CustomAPITestCase):
 
     @override_settings(
         EMAIL_BACKEND='anymail.backends.test.EmailBackend',
+        ANYMAIL = {
+            'SENDINBLUE_API_KEY':
+            config('SENDINBLUE_API_KEY', default='placeholder_key'),
+            'REQUESTS_TIMEOUT': (30, 30),
+            'TEMPLATES': {
+                'CONFIRMATION_PARTICIPATION': 3,
+                # set template id to 3 when no template has been defined
+                # in settings.py (or .env)
+                # if template id already set in settings,
+                # then 3 does not override 
+                # that template id (see comment further below about
+                # test logic as a result)
+                'CANCELLATION_PARTICIPATION_EMERGENCY': config(
+                    'TEMPLATE_ID_CANCELLATION_PARTICIPATION_EMERGENCY',
+                    default=0,
+                    cast=int
+                ),
+                'RESET_PASSWORD': config(
+                    'RESET_PASSWORD_EMAIL_TEMPLATE',
+                    default=0
+                ),
+            }
+        }
     )
     def test_send_custom_confirmation_email(self):
         """ Ensure that
@@ -536,6 +559,21 @@ class ParticipationsTests(CustomAPITestCase):
     @override_settings(
         EMAIL_BACKEND='anymail.backends.test.EmailBackend',
         NUMBER_OF_DAYS_BEFORE_EMERGENCY_CANCELLATION=99999,
+        ANYMAIL = {
+            'SENDINBLUE_API_KEY':
+            config('SENDINBLUE_API_KEY', default='placeholder_key'),
+            'REQUESTS_TIMEOUT': (30, 30),
+            'TEMPLATES': {
+                'CONFIRMATION_PARTICIPATION': 3,
+                'CANCELLATION_PARTICIPATION_EMERGENCY': 4,
+                # same logic 
+                # as in test_send_custom_confirmation_email)
+                'RESET_PASSWORD': config(
+                    'RESET_PASSWORD_EMAIL_TEMPLATE',
+                    default=0
+                ),
+            }
+        }
     )
     def test_send_custom_cancellation_email(self):
         """
