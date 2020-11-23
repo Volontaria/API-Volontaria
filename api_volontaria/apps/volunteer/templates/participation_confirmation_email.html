@@ -1,11 +1,11 @@
+{% load static %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    {% load static %}
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <link rel='stylesheet' href='{% static "volunteer/css/stylesheet.css"%}'/>
-    <!-- <style> -->
-      /* @import url('https://fonts.googleapis.com/css?family=Nunito+Sans');
+    <!-- <link rel='stylesheet' href='{% static "volunteer/css/stylesheet.css"%}'/> -->
+    <style>
+      @import url('https://fonts.googleapis.com/css?family=Nunito+Sans');
 
       body {
         margin: 0;
@@ -60,60 +60,73 @@
         margin-top: 50px;
       }
 
-    </style> */
+      .italics{
+        font-style: italic;
+      }
+
+      .bold_and_italics{
+        font-style: italic;
+        font-weight: bold;
+      }
+
+      .gap-10 { 
+				width:100%; 
+				height:10px; 
+			}
+
+    </style>
   </head>
   <body>
     <div class="email">
       <div class="email__logo">
-        {% load static %}
-        <img src="{% static 'volunteer/img/logo_general.png'%}" alt="logo organisation">
+        <img src="{% static 'volunteer/img/logo_general.png'%}" alt="logo {{ORGANIZATION_NAME}}">
       </div>
       <div class="email__content">
         <h1 class="email__content__title">
-            {{ORGANIZATION_NAME}}
-        </h1>
-        <p>
-            <b>Merci de votre inscription!</b>
-        </p>
-            
+          Merci de votre inscription!
+        </h1>    
         <p>
             Nous avons bien reçu votre inscription à l'activité suivante:
         </p>    
            
         <p>
-            <it>{{context.TYPE.PARTICIPATION}}</it>
+            <span class="italics">{{PARTICIPATION.TYPE}}</span>
         </p> 
             
         <p>
-            <b>{{context.ACTIVITY.NAME}}</b>
+            <b>{{ACTIVITY.NAME}}</b>
         </p>
             
         <p>
-            {{context.ACTIVITY.START_DATE}}
+            {{ACTIVITY.START_DATE}}
         </p>
             
         <p>
-            De {{context.ACTIVITY.START_TIME}} à {{context.ACTIVITY.END_TIME}}
+            De {{ACTIVITY.START_TIME}} à {{ACTIVITY.END_TIME}}
         </p>
 
-        <it><b>{{context.CELL.NAME}}</b></it>
-
         <p>
-            {{context.CELL.ADDRESS_LINE_1}}
+        <span class="bold_and_italics">{{CELL.NAME}}</span>
         </p>
 
-        {% if context.CELL.ADDRESS_LINE_2 %}
         <p>
-          {{context.CELL.ADDRESS_LINE_2}}
+            {{CELL.ADDRESS_LINE_1}}
+        </p>
+
+        {% if CELL.ADDRESS_LINE_2 %}
+        <p>
+          {{CELL.ADDRESS_LINE_2}}
         </p>
         {% endif %}
 
         <p>
-            {{context.CELL.CITY}}, {{context.CELL.POSTAL_CODE}}, {{context.CELL.STATE_PROVINCE}}
+            {{CELL.CITY}}, {{CELL.POSTAL_CODE}}, {{CELL.STATE_PROVINCE}}
         </p>
-            
+        
+        <div class="gap-10"></div> 
+        
         <p>
-            Merci de votre inscription et nous avons hâte de vous voir à l'activité!
+            Nous avons hâte de vous voir à l'activité!
         </p>
         <p> 
             N'hésitez pas à relire les informations de l'activité<br>
