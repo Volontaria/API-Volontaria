@@ -3,11 +3,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <!-- <link rel='stylesheet' href='{% static "volunteer/css/stylesheet.css"%}'/> -->
-    <style>
-      @import url('https://fonts.googleapis.com/css?family=Nunito+Sans');
+    <link href="{% static 'stylesheet.css' %}" rel='stylesheet' >
+    <!-- <link rel='Pacifico-Regular' href='{% static "volunteer/fonts/Pacifico-Regular.ttf" %}'>
+    <link rel='Nunito Sans' href='{% static "volunteer/fonts/NunitoSans-Regular.ttf" %}'> -->
+     
+    <!-- <style>
+      
 
-      body {
+      body { 
         margin: 0;
         font-family: 'Nunito Sans', sans-serif;
         color: #142823;
@@ -26,7 +29,7 @@
       }
 
       .email {
-        background-color: #F7EDD9;
+        background-color: #ffffff;
         height:auto;
         padding: 20px;
       }
@@ -42,13 +45,12 @@
       }
 
       .email__content {
-        background-color: #FCF7EF;
+        background-color: #ffffff;
         max-width: 600px;
         padding: 20px;
         margin: auto;
         text-align: center;
       }
-
 
       .email__content__title {
         font-size: 24px;
@@ -74,16 +76,26 @@
 				height:10px; 
 			}
 
-    </style>
+      .volontaria_font{
+        font-family: 'Pacifico', sans-serif;
+        color: #142823;
+      }
+
+    </style> -->
   </head>
   <body>
     <div class="email">
       <div class="email__logo">
-        <img src="{% static 'volunteer/img/logo_general.png'%}" alt="logo {{ORGANIZATION_NAME}}">
+        <img src="{% static 'volunteer/img/logo_general.png' %}" alt="logo {{ORGANIZATION_NAME}}">
       </div>
+      <div class="test_div"> ligne test </div>
       <div class="email__content">
         <h1 class="email__content__title">
-          Merci de votre inscription!
+          {% if PARTICIPATION.FIRST_NAME %}
+            Merci de votre inscription, {{PARTICIPATION.FIRST_NAME}}!
+          {% else %}
+            Merci de votre inscription !
+          {% endif %}
         </h1>    
         <p>
             Nous avons bien reçu votre inscription à l'activité suivante:
@@ -130,7 +142,8 @@
         </p>
         <p> 
             N'hésitez pas à relire les informations de l'activité<br>
-            sur votre compte Volontaria avant votre venue.
+            sur votre compte <span class=volontaria_font>Volontaria</span>
+             avant votre venue.
         </p>
         <p> 
             À très bientôt!
@@ -142,8 +155,8 @@
             <div>
             ©2020 {{ORGANIZATION_NAME}}
             </div>
-            Propulsé par Volontaria.
+            Propulsé par <span class=volontaria_font>Volontaria</span>.
         </p>
       </div>
     </div>
-  </body>
+</body>

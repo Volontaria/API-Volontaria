@@ -1,15 +1,17 @@
 {% load static %}
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link rel='stylesheet' href='{% static "volunteer/css/stylesheet.css" %}'/>
+    <link rel='Pacifico-Regular' href='{% static "volunteer/fonts/Pacifico-Regular.ttf" %}'>
   </head>
   <body>
     <div class="email">
       <div class="email__logo">
-        <img src="{% static 'volunteer/img/logo_general.png'%}" alt="logo organisation">
+        <img src="{% static 'volunteer/img/logo_volontaria.png'%}" alt="logo Volontaria">
+        <img src="{% static 'volunteer/img/logo_general.png'%}" alt="logo {{ORGANIZATION_NAME}}">
+
       </div>
       <div class="email__content">
         <h1 class="email__content__title">

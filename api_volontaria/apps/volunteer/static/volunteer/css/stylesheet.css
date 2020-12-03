@@ -19,7 +19,7 @@ ul2 {
 }
 
 .email {
-  background-color: #F7EDD9;
+  background-color: #ffffff;
   height:auto;
   padding: 20px;
 }
@@ -35,13 +35,12 @@ ul2 {
 }
 
 .email__content {
-  background-color: #FCF7EF;
+  background-color: #ffffff;
   max-width: 600px;
   padding: 20px;
   margin: auto;
   text-align: center;
 }
-
 
 .email__content__title {
   font-size: 24px;
@@ -53,71 +52,32 @@ ul2 {
   margin-top: 50px;
 }
 
-#participation_status {
-  font-family: 'Nunito Sans', sans-serif;
-  border-collapse: collapse;
-  width: 10%;
-  word-wrap: break-word;
-  overflow-x:auto;
-  text-align: center;
-  /* word-break: break-all; */
+.italics{
+  font-style: italic;
 }
 
-#participation_status td, #participation_status th {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: center;
-  word-wrap: break-word;
+.bold_and_italics{
+  font-style: italic;
+  font-weight: bold;
 }
 
-#participation_status tr:nth-child(even){background-color: #f2f2f2;}
+.gap-10 { 
+  width:100%; 
+  height:10px; 
+}
 
-#participation_status tr:hover {background-color: #ddd;}
+.volontaria_font{
+  font-family: 'Pacifico', sans-serif;
+  color: #142823;
+}
 
-#participation_status th {
-  padding-top: 12px;
-  padding-bottom: 12px;
-  text-align: center;
-  background-color: #4CAF50;
+.test_div {
+  background-color: #000;
+  padding: 10px;
+  font-size: 20px;
   color: white;
 }
-/* What it does: Stops Outlook from adding extra spacing to tables. */
-/* table,
-td {
-  mso-table-lspace: 0pt !important;
-  mso-table-rspace: 0pt !important;
-} */
 
-/* What it does: Fixes webkit padding issue. Fix for Yahoo mail table alignment bug. Applies table-layout to the first 2 tables then removes for anything nested deeper. */
-/* table {
-  border-spacing: 0 !important;
-  border-collapse: collapse !important;
-  table-layout: fixed !important;
-  margin: 0 auto !important;
+.main_content{
+  color: red;
 }
-table table table {
-  table-layout: auto;
-} */
-/* What it does: Forces table cells into full-width rows. */
-/* .stack-column,
-.stack-column-center {
-  display: block !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  direction: ltr !important;
-} */
-/* And center justify these ones. */
-/* .stack-column-center {
-  text-align: center !important;
-} */
-/* What it does: Generic utility class for centering. Useful for images, buttons, and nested tables.
-.center-on-narrow {
-  text-align: center !important;
-  display: block !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-  float: none !important;
-} */
-/* table.center-on-narrow {
-  display: inline-block !important;
-} */

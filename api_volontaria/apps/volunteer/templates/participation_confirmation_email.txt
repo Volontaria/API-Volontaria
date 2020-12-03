@@ -1,38 +1,40 @@
 {% load static %}
-<img src="{% static 'apps/volunteer/logo_general.png' %}" alt="logo organisation">
+<img src="{% static 'volunteer/img/logo_general.png'%}" alt="logo {{ORGANIZATION_NAME}}">
 
-***{{ORGANIZATION_NAME}}***
-
-Merci de votre inscription!
+{% if PARTICIPATION.FIRST_NAME %}
+    Merci de votre inscription, {{PARTICIPATION.FIRST_NAME}}!
+{% else %}
+    Merci de votre inscription!
+{% endif %}
 
 Nous avons bien reçu votre inscription à l'activité suivante:
 
-{{context.PARTICIPATION.TYPE}}
+{{PARTICIPATION.TYPE}}
 
 
-{{context.ACTIVITY.NAME}}
+{{ACTIVITY.NAME}}
 
-{{context.ACTIVITY.START_DATE}}
+{{ACTIVITY.START_DATE}}
 
-{{context.ACTIVITY.START_TIME}}
-
-
+De {{ACTIVITY.START_TIME}} à {{ACTIVITY.END_TIME}}
 
 
-{{context.CELL.NAME}}
 
-{{context.CELL.ADDRESS_LINE_1}}
 
-{% if context.CELL.ADDRESS_LINE_2 %}
+{{CELL.NAME}}
 
-{{context.CELL.ADDRESS_LINE_2}}
+{{CELL.ADDRESS_LINE_1}}
+
+{% if CELL.ADDRESS_LINE_2 %}
+
+{{CELL.ADDRESS_LINE_2}}
 
 {% endif %}
 
-{{context.CELL.CITY}}, {{context.CELL.POSTAL_CODE}}, {{context.CELL.STATE_PROVINCE}}
+{{CELL.CITY}}, {{CELL.POSTAL_CODE}}, {{CELL.STATE_PROVINCE}}
 
 
-Merci de votre inscription et nous avons hâte de vous voir à l'activité!
+Nous avons hâte de vous voir à l'activité!
 
 N'hésitez pas à relire les informations de l'activité sur votre compte Volontaria avant votre venue.
 
