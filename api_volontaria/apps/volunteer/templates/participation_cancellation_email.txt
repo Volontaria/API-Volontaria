@@ -1,36 +1,43 @@
 {% load static %}
-<img src="{% static 'apps/volunteer/logo_general.png' %}" alt="logo organisation">
+<img src="{% static 'apps/volunteer/logo_volontaria.png' %}" alt="logo organisation">
+<img src="{% static 'apps/volunteer/logo_general.png' %}" alt="logo Volontaria">
 
-***{{ORGANIZATION_NAME}}***
+Un bénévole vient de se désinscrire.
 
-Un participant vient d'annuler sa participation à une activité qui débute dans {{context.ACTIVITY.HOURS_BEFORE_EMERGENCY}} heures.
+Un participant vient d'annuler sa participation à une activité qui débute dans {{ACTIVITY.HOURS_BEFORE_EMERGENCY}} heures.
 
-Participant: {{context.PARTICIPANT.FIRST_NAME}} {{context.PARTICIPATION.LAST_NAME}}
+{{PARTICIPANT.FIRST_NAME}} {{PARTICIPATION.LAST_NAME}} vient d'annuler sa participation à l'activité suivante qui se déroule dans moins de 48h:
 
-Activité: {{context.ACTIVITY.NAME}}
-Date: {{context.ACTIVITY.START_DATE}}
-Heure de début: {{context.ACTIVITY.START_TIME}}
 
-{{context.CELL.NAME}}
+{{ACTIVITY.NAME}}
 
-{{context.CELL.ADDRESS_LINE_1}}
+{{ACTIVITY.START_DATE}}
 
-{% if context.CELL.ADDRESS_LINE_2 %}
+De {{ACTIVITY.START_TIME}} à {{ACTIVITY.END_TIME}}
 
-{{context.CELL.ADDRESS_LINE_2}}
+{{CELL.NAME}}
+
+{{CELL.ADDRESS_LINE_1}}
+
+{% if CELL.ADDRESS_LINE_2 %}
+
+{{CELL.ADDRESS_LINE_2}}
 
 {% endif %}
 
-{{context.CELL.CITY}}, {{context.CELL.POSTAL_CODE}}, {{context.CELL.STATE_PROVINCE}}
+{{CELL.CITY}}, {{CELL.POSTAL_CODE}}, {{CELL.STATE_PROVINCE}}
 
 Statut des inscriptions après cette annulation: 
 
-Nombre de bénévoles requis: {{context.ACTIVITY.NUMBER_OF_VOLUNTEERS_NEEDED}}
-Nombre de bénévoles remplaçants requis: {{context.ACTIVITY.NUMBER_OF_VOLUNTEERS_STANDBY_NEEDED}}
+Nombre de bénévoles: {{ACTIVITY.NUMBER_OF_VOLUNTEERS}} / {{ACTIVITY.NUMBER_OF_VOLUNTEERS_NEEDED}}
+Nombre de remplaçants: {{ACTIVITY.NUMBER_OF_VOLUNTEERS_STANDBY}} / {{ACTIVITY.NUMBER_OF_VOLUNTEERS_STANDBY_NEEDED}}
 
-Nombre de bénévoles inscrits: {{context.ACTIVITY.NUMBER_OF_VOLUNTEERS}}
-Nombre de bénévoles remplaçants inscrits: {{context.ACTIVITY.NUMBER_OF_VOLUNTEERS_STANDBY}}
+Si vous disposez de remplaçants, n'hésitez pas à les contacter le plus rapidement possiblement si vous avez besoin de combler cette annulation.
 
+
+Bonne journée
+
+L'équipe de Volontaria 
 
 
 ©2020 {{ORGANIZATION_NAME}}
