@@ -286,11 +286,11 @@ STATIC_DIR = os.path.join(BASE_DIR, 'static')
 # https://stackoverflow.com/questions/19929244/href-static-files-django-static-url-and-staticfiles-dirs
 STATICFILES_DIR = (os.path.join(BASE_DIR, "static"),)
 
-# https://stackoverflow.com/questions/21765741/serving-static-files-django-development#21775359
-STATICFILES_FINDERS = [
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-]
+# # https://stackoverflow.com/questions/21765741/serving-static-files-django-development#21775359
+# STATICFILES_FINDERS = [
+#     'django.contrib.staticfiles.finders.FileSystemFinder',
+#     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+# ]
 
 
 # STATICFILES_FINDERS = (

@@ -347,6 +347,9 @@ class Participation(models.Model):
                 '.'.join([msg_file_name, 'html']),
                 context
             )
+            print('===')
+            print(msg_html)
+            print('===')
             EmailAPI().send_email(
                 "Objet: Confirmation de participation",
                 plain_msg,

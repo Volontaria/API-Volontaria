@@ -17,6 +17,8 @@ nav:
       - Suggesting enhancement: 'contributing/suggesting_enhancement.md'
       - Contributing to code: 'contributing/code_contribution.md'
       - Style guide: 'contributing/style_guide.md'
+  - Developer guide:
+      - 'developer_guide/email_management.md' 
   - Policies:
     - Code of conduct: 'CODE_OF_CONDUCT.md'
 theme:

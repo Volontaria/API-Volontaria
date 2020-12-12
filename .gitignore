@@ -108,3 +108,9 @@ ENV/
 
 # tests for sendin blue
 test_sendinblue_transactional_emails.py
+
+
+.vscode/launch.json
+api_volontaria/apps/volunteer/static/volunteer/fonts/OFL.txt
+docs/developer_guide/
+env3/

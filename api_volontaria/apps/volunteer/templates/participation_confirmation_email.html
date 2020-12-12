@@ -1,94 +1,118 @@
-{% load static %}
+<!-- {% load static %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <link href="{% static 'stylesheet.css' %}" rel='stylesheet' >
-    <!-- <link rel='Pacifico-Regular' href='{% static "volunteer/fonts/Pacifico-Regular.ttf" %}'>
-    <link rel='Nunito Sans' href='{% static "volunteer/fonts/NunitoSans-Regular.ttf" %}'> -->
-     
-    <!-- <style>
-      
+    <style>
+        @import url('https://fonts.googleapis.com/css?family=Nunito+Sans');
+        @import url('https://fonts.googleapis.com/css?family=Pacifico+Sans');
 
-      body { 
-        margin: 0;
-        font-family: 'Nunito Sans', sans-serif;
-        color: #142823;
-      }
+        body { 
+            margin: 0;
+            font-family: 'Nunito Sans', sans-serif;
+            color: #142823;
+        }
 
-      ul {
+        /* ul {
         margin: 30px 0 0 0;
         padding: 0;
         list-style-type: none;
-      }
+        }
 
-      ul2 {
+        ul2 {
         margin: 60px 0 0 0;
         padding: 0;
         list-style-type: none;
-      }
+        } */
 
-      .email {
-        background-color: #ffffff;
-        height:auto;
-        padding: 20px;
-      }
+        .email {
+            background-color: #ffffff;
+            height:auto;
+            padding: 20px;
+        }
 
-      .email__logo {
-        margin: 20px;
-        text-align: center;
-      }
+        .email__single_logo {
+            margin: 20px;
+            text-align: center;
+        }
 
-      .email__logo img {
-        height: 60px;
-        margin: auto;
-      }
+        .email__single__logo img {
+            height: 60px;
+            margin: auto;
+        }
 
-      .email__content {
-        background-color: #ffffff;
-        max-width: 600px;
-        padding: 20px;
-        margin: auto;
-        text-align: center;
-      }
+        .email__content {
+            background-color: #ffffff;
+            max-width: 600px;
+            padding: 20px;
+            margin: auto;
+            text-align: center;
+        }
 
-      .email__content__title {
-        font-size: 24px;
-        font-weight: 900;
-      }
+        .email__content__title {
+            font-size: 24px;
+            font-weight: 900;
+            text-align: center;
+        }
 
-      .email__content__subtitle {
-        font-size: 18px;
-        margin-top: 50px;
-      }
+        .email__introduction {
+            font-size: 18px;
+            margin-top: 50px;
+        }
 
-      .italics{
-        font-style: italic;
-      }
+        .email__content__participation__type {
+            font-style: italic;
+        }
 
-      .bold_and_italics{
-        font-style: italic;
-        font-weight: bold;
-      }
+        .email__content__cell__name {
+            font-style: italic;
+            font-weight: bold;
+        }
 
-      .gap-10 { 
-				width:100%; 
-				height:10px; 
-			}
+        .email__content__time__and__location__details {
+            font-size: 20px;
+        }
 
-      .volontaria_font{
+        .email__conclusion {
+            font-size: 18px;
+            margin-top: 50px;
+        }
+
+        .email__sign__off {
+            text-align: right;
+        }
+
+        .email__organization__signature {
+            text-align: right;
+            font-style: italic;
+        }
+
+        .email__footer {
+            text-align: center;
+            color: rgba(128, 128, 128, 0.267);
+            background-color: rgb(131, 124, 124);
+        }
+
+        .gap-10 { 
+                width:100%; 
+                height:10px; 
+            }
+
+        .volontaria__font{
         font-family: 'Pacifico', sans-serif;
         color: #142823;
-      }
+        }
 
-    </style> -->
-  </head>
-  <body>
-    <div class="email">
+    </style>
+  </head> -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+  
       <div class="email__logo">
         <img src="{% static 'volunteer/img/logo_general.png' %}" alt="logo {{ORGANIZATION_NAME}}">
       </div>
-      <div class="test_div"> ligne test </div>
       <div class="email__content">
         <h1 class="email__content__title">
           {% if PARTICIPATION.FIRST_NAME %}
@@ -151,12 +175,8 @@
         <p> 
             L'équipe de {{ORGANIZATION_NAME}}
         </p> 
-        <p>
-            <div>
-            ©2020 {{ORGANIZATION_NAME}}
-            </div>
-            Propulsé par <span class=volontaria_font>Volontaria</span>.
-        </p>
-      </div>
-    </div>
-</body>
+</div>
+
+  
+{% endblock content %}
+  
