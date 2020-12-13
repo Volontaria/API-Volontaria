@@ -369,6 +369,14 @@ class Participation(models.Model):
         end_time = self.event.end_time
         end_time = end_time.astimezone(pytz.timezone('US/Eastern'))
 
+        # Headcount is "pre-delete";
+        # but email needs to show headcount after deletion.
+        # (and this only applies to actual participations (i.e. non-standby) since,
+        # when standby participation gets cancelled, 
+        # no email gets sent)
+        if not self.is_standby: 
+            updated_volunteer_count = self.event.nb_volunteers - 1
+
         context = {
             'PARTICIPANT': {
                 'FIRST_NAME': self.user.first_name,
@@ -385,10 +393,10 @@ class Participation(models.Model):
                 'END_TIME': end_time.strftime('%-Hh%M'),
                 'HOURS_BEFORE_EMERGENCY':
                     settings.NUMBER_OF_DAYS_BEFORE_EMERGENCY_CANCELLATION * 24,
-                'NUMBER_OF_VOLUNTEERS': self.event.nb_volunteers,
+                
+                'NUMBER_OF_VOLUNTEERS': updated_volunteer_count,
                 'NUMBER_OF_VOLUNTEERS_NEEDED': self.event.nb_volunteers_needed,
-                'NUMBER_OF_VOLUNTEERS_STANDBY':
-                    self.event.nb_volunteers_standby,
+                'NUMBER_OF_VOLUNTEERS_STANDBY': self.event.nb_volunteers_standby,
                 'NUMBER_OF_VOLUNTEERS_STANDBY_NEEDED':
                     self.event.nb_volunteers_standby_needed,
             },

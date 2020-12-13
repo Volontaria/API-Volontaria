@@ -127,7 +127,7 @@
           Un bénévole vient de se désinscrire.
         </h1>
         <div class="email__introduction">
-          {{PARTICIPANT.FIRST_NAME}} {{PARTICIPATION.LAST_NAME}} vient d'annuler sa participation à l'activité suivante qui se déroule dans moins de 48h:
+          {{PARTICIPANT.FIRST_NAME}} {{PARTICIPANT.LAST_NAME}} vient d'annuler sa participation à l'activité suivante qui se déroule dans moins de 48h:
         </div>
 
         <div class="email__content__activity__name">
@@ -170,7 +170,15 @@
         </ul>
 
         <div class='email__conclusion'>
-          Si vous disposez de remplaçants, n'hésitez pas à les contacter le plus rapidement possiblement si vous avez besoin de combler cette annulation.
+          {% if ACTIVITY.NUMBER_OF_VOLUNTEERS_STANDBY > 1 %}
+            N'hésitez pas à contacter des remplaçants 
+            le plus rapidement possible 
+            si vous avez besoin de combler cette annulation.
+          {% elif ACTIVITY.NUMBER_OF_VOLUNTEERS_STANDBY == 1 %}
+            N'hésitez pas à contacter un remplaçant 
+            le plus rapidement possible 
+            si vous avez besoin de combler cette annulation.
+          {% endif %}
         </div>
         <div class="email__sign__off">
           <p>
