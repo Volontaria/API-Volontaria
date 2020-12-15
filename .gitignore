@@ -106,6 +106,9 @@ env3
 .vscode
 
 
+static
+
+
 *.sqlite3
 
 # IDE
