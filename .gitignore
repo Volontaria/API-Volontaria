@@ -102,6 +102,10 @@ env3
 .mypy_cache/
 
 # Database
+
+.vscode
+
+
 *.sqlite3
 
 # IDE

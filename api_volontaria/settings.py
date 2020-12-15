@@ -172,19 +172,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
-# Force local storage for unittests. Temporary.
-# if len(sys.argv) > 1 and sys.argv[1] == 'test':
-#     STATIC_URL = '/static/'
-#     STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
-# else:
-#     STATIC_URL = config('STATIC_URL', default='/static/')
-#     STATICFILES_STORAGE = config('STATICFILES_STORAGE',
-#                                  default='django.contrib.staticfiles.storage.StaticFilesStorage')
-# if STATICFILES_STORAGE == 'django.contrib.staticfiles.storage.StaticFilesStorage':
-#     STATIC_ROOT = 'static/'
-
-
 # Django Rest Framework
 
 REST_FRAMEWORK = {
@@ -276,25 +263,7 @@ LOCAL_SETTINGS = {
 NUMBER_OF_DAYS_BEFORE_EMERGENCY_CANCELLATION = 2
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.0/howto/static-files/
-# https://docs.djangoproject.com/en/2.2/ref/settings/#static-files
-
 STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 STATIC_ROOT = './static/'
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
-# https://stackoverflow.com/questions/19929244/href-static-files-django-static-url-and-staticfiles-dirs
 STATICFILES_DIR = (os.path.join(BASE_DIR, "static"),)
-
-# # https://stackoverflow.com/questions/21765741/serving-static-files-django-development#21775359
-# STATICFILES_FINDERS = [
-#     'django.contrib.staticfiles.finders.FileSystemFinder',
-#     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-# ]
-
-
-# STATICFILES_FINDERS = (
-#     'django.contrib.staticfiles.finders.FileSystemFinder',
-#     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#     'django.contrib.staticfiles.finders.DefaultStorageFinder',
-#     )

@@ -14,8 +14,6 @@ from api_volontaria.factories import UserFactory, AdminFactory
 from ..models import ActionToken
 from ....testClasses import CustomAPITestCase
 
-from api_volontaria.apps.log_management.models import EmailLog
-
 User = get_user_model()
 
 

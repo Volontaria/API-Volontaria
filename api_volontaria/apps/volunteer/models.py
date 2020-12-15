@@ -12,7 +12,6 @@ from django.contrib.auth import get_user_model
 from dry_rest_permissions.generics import authenticated_users
 from api_volontaria.email import EmailAPI
 
-# from config import settings
 
 User = get_user_model()
 
