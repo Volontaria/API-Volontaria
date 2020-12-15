@@ -1,6 +1,3 @@
-{% load static %}
-<img src="{% static 'volunteer/img/logo_general.png'%}" alt="logo {{ORGANIZATION_NAME}}">
-
 {% if PARTICIPATION.FIRST_NAME %}
     Merci de votre inscription, {{PARTICIPATION.FIRST_NAME}}!
 {% else %}

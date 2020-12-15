@@ -1,7 +1,3 @@
-{% load static %}
-<img src="{% static 'apps/volunteer/logo_volontaria.png' %}" alt="logo organisation">
-<img src="{% static 'apps/volunteer/logo_general.png' %}" alt="logo Volontaria">
-
 Un bénévole vient de se désinscrire.
 
 Un participant vient d'annuler sa participation à une activité qui débute dans {{ACTIVITY.HOURS_BEFORE_EMERGENCY}} heures.
