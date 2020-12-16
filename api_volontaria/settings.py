@@ -266,3 +266,8 @@ LOCAL_SETTINGS = {
 }
 
 NUMBER_OF_DAYS_BEFORE_EMERGENCY_CANCELLATION = 2
+
+try:
+    from api_volontaria.local_settings import *
+except ImportError:
+    pass
