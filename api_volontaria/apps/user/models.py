@@ -1,5 +1,6 @@
 import binascii
 import os
+# from secrets import token_urlsafe
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -11,6 +12,8 @@ from rest_framework.authtoken.models import Token
 from django.utils import timezone
 from django.conf import settings
 from django.template.loader import render_to_string
+
+from api_volontaria.apps.user.crypto import KeyGenerator
 
 
 class User(AbstractUser):
@@ -177,6 +180,32 @@ class ActionToken(models.Model):
             type='password_change',
             expired=False,
         )
+
+
+class ApplicationKey(models.Model):
+    # inspired from https://github.com/florimondmanca/djangorestframework-api-key/tree/master/src/rest_framework_api_key
+    name = models.CharField(
+        max_length=45,
+        blank=False,
+        default=None,
+        verbose_name=_("Name"),
+        help_text=_(
+            "A free-form name for the API key. "
+            "Need not be unique. "
+            "45 characters max."
+        ),
+    )
+    created = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
+    hashed_key = KeyGenerator().generate[1]
+    # TODO: ensure admin has access to key and can take note of it
+    # before key vanishes
+
+
+
+
+
+
 
 
 class Address(models.Model):

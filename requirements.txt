@@ -2,6 +2,7 @@ Django==2.2.12
 djangorestframework==3.11.0
 django-allauth==0.40
 django-rest_auth==0.9.5
+# dj-rest-auth==2.1.2
 django-dry-rest-permissions==1.1.0
 django-simple-history==2.10.0
 django-cors-headers==3.2.1

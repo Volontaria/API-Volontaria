@@ -44,8 +44,11 @@ router = OptionalSlashDefaultRouter()
 router.register('users', views.UserViewSet)
 
 urlpatterns = [
+    # url(r'^dj-rest-auth/', include('dj_rest_auth.urls')),
     url(r'^rest-auth/', include('rest_auth.urls')),
     url(r'^accounts/', include('allauth.urls'), name='socialaccount_signup'),
+    # url(r'^dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),
+    # url(r'^dj-rest-auth/facebook/', FacebookLogin.as_view(), name='fb_login'),
     url(r'^rest-auth/registration/', include('rest_auth.registration.urls')),
     url(r'^rest-auth/facebook/$', FacebookLogin.as_view(), name='fb_login'),
     path('', include(router.urls)),  # includes router generated URL
