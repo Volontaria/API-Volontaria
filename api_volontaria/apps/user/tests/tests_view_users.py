@@ -14,7 +14,6 @@ from api_volontaria.factories import UserFactory, AdminFactory
 from ..models import ActionToken
 from ....testClasses import CustomAPITestCase
 
-
 User = get_user_model()
 
 

@@ -1,0 +1,44 @@
+{% if PARTICIPATION.FIRST_NAME %}
+    Merci de votre inscription, {{PARTICIPATION.FIRST_NAME}}!
+{% else %}
+    Merci de votre inscription!
+{% endif %}
+
+Nous avons bien reçu votre inscription à l'activité suivante:
+
+{{PARTICIPATION.TYPE}}
+
+
+{{ACTIVITY.NAME}}
+
+{{ACTIVITY.START_DATE}}
+
+De {{ACTIVITY.START_TIME}} à {{ACTIVITY.END_TIME}}
+
+
+
+
+{{CELL.NAME}}
+
+{{CELL.ADDRESS_LINE_1}}
+
+{% if CELL.ADDRESS_LINE_2 %}
+
+{{CELL.ADDRESS_LINE_2}}
+
+{% endif %}
+
+{{CELL.CITY}}, {{CELL.POSTAL_CODE}}, {{CELL.STATE_PROVINCE}}
+
+
+Nous avons hâte de vous voir à l'activité!
+
+N'hésitez pas à relire les informations de l'activité sur votre compte Volontaria avant votre venue.
+
+À très bientôt!
+
+L'équipe de {{ORGANIZATION_NAME}}
+
+©2020 {{ORGANIZATION_NAME}}
+Propulsé par Volontaria.
+

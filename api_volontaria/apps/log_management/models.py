@@ -83,6 +83,15 @@ class EmailLog(models.Model):
         max_length=1024,
         verbose_name=_("Type email")
     )
+    # either email "subject" when using django_send_email
+    # function via send_email or template key in ANYMAIL settings
+
+    template_id = models.CharField(
+        max_length=1024,
+        verbose_name=_("Template ID"),
+        null=True,
+        blank=True,
+    )
 
     nb_email_sent = models.IntegerField(
         verbose_name=_("Number email sent")
@@ -97,13 +106,23 @@ class EmailLog(models.Model):
         verbose_name = _("Email Log")
         verbose_name_plural = _("Email Logs")
 
+    def __repr__(self):
+        return str({
+            'user_email': self.user_email,
+            'type_email': self.type_email,
+            'nb_email_sent': self.nb_email_sent,
+            'template_id': self.template_id,
+            'created': self.created,
+        })
+
     @classmethod
-    def add(cls, user_email, type_email, nb_email_sent):
+    def add(cls, user_email, type_email, nb_email_sent, template_id=None):
 
         new_email_log = cls.objects.create(
             user_email=user_email,
             type_email=type_email,
-            nb_email_sent=nb_email_sent
+            nb_email_sent=nb_email_sent,
+            template_id=template_id
         )
 
         return new_email_log
