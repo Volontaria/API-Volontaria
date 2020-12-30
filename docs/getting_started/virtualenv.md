@@ -108,3 +108,8 @@ To create an administrator, just use this command line and respond to some quest
 ```
 python manage.py createsuperuser
 ```
+
+## Custom settings
+
+If you need to have custom settings on your local environment, you can override global 
+settings using `api_volontaria/local_settings.py`.

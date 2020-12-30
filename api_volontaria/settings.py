@@ -267,3 +267,8 @@ STATIC_URL = '/static/'
 STATIC_ROOT = './static/'
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIR = (os.path.join(BASE_DIR, "static"),)
+
+try:
+    from api_volontaria.local_settings import *
+except ImportError:
+    pass
