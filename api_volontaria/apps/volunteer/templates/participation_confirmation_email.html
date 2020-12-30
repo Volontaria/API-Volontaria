@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="email__single__logo">
+    <img src="{% static 'volunteer/img/logo_general.png' %}" alt="logo {{ORGANIZATION_NAME}}">
+</div>
+<div class="email__content">
+  <h1 class="email__content__title">
+    {% if PARTICIPATION.FIRST_NAME %}
+      Merci de votre inscription, {{PARTICIPATION.FIRST_NAME}}!
+    {% else %}
+      Merci de votre inscription !
+    {% endif %}
+  </h1>    
+  <div class="email__introduction">
+      Nous avons bien reçu votre inscription à l'activité suivante:
+  </div>    
+    
+  <div class="email__content__participation__type">
+      {{PARTICIPATION.TYPE}}
+  </div>
+      
+  <div class="email__content__activity__name">
+      {{ACTIVITY.NAME}}
+  </div>
+  
+  <div class="email__content__time__and__location__details">
+    <p>
+        {{ACTIVITY.START_DATE}}
+    </p>
+        
+    <p>
+        De {{ACTIVITY.START_TIME}} à {{ACTIVITY.END_TIME}}
+    </p>
+
+    <div class="email__content__cell__name">
+      {{CELL.NAME}}
+    </div>
+  
+    <p>
+        {{CELL.ADDRESS_LINE_1}}
+    </p>
+
+    {% if CELL.ADDRESS_LINE_2 %}
+    <p>
+      {{CELL.ADDRESS_LINE_2}}
+    </p>
+    {% endif %}
+
+    <p>
+        {{CELL.CITY}}, {{CELL.POSTAL_CODE}}, {{CELL.STATE_PROVINCE}}
+    </p>
+  </div>
+  
+  <div class="email__conclusion">
+    <div>
+      Nous avons hâte de vous voir à l'activité!
+    </div>
+    <div> 
+      N'hésitez pas à relire les informations de l'activité<br>
+      sur votre compte <span class=volontaria__font>Volontaria</span>
+      avant votre venue.
+    </div>
+  </div>
+  <div class="email__sign__off">
+    <p> 
+      À très bientôt!
+    </p>
+  </div>
+  <div class="email__organization__signature">
+    <p> 
+      L'équipe de {{ORGANIZATION_NAME}}
+    </p>
+  </div>
+{% endblock content %}
