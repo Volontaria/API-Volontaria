@@ -137,23 +137,98 @@ REST_AUTH_REGISTER_SERIALIZERS = {
 OLD_PASSWORD_FIELD_ENABLED = True
 
 # Password validation
-# https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
+# https://docs.djangoproject.com/en/2.0/ref/settings/#auth-    pass
+
+
+SECURE_HSTS_SECONDS = 3600
+
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT_ENABLED') != 'False'
+
+SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE_ENABLED') != 'False'
+
+CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE_ENABLED') != 'False'
+
+SECURE_HSTS_PRELOAD = Trueword-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.'
+        'NAME': 'django.contrib.auth.    pass
+
+
+SECURE_HSTS_SECONDS = 3600
+
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT_ENABLED') != 'False'
+
+SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE_ENABLED') != 'False'
+
+CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE_ENABLED') != 'False'
+
+SECURE_HSTS_PRELOAD = Trueword_validation.'
                 'UserAttributeSimilarityValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.'
+        'NAME': 'django.contrib.auth.    pass
+
+
+SECURE_HSTS_SECONDS = 3600
+
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT_ENABLED') != 'False'
+
+SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE_ENABLED') != 'False'
+
+CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE_ENABLED') != 'False'
+
+SECURE_HSTS_PRELOAD = Trueword_validation.'
                 'MinimumLengthValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.'
+        'NAME': 'django.contrib.auth.    pass
+
+
+SECURE_HSTS_SECONDS = 3600
+
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT_ENABLED') != 'False'
+
+SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE_ENABLED') != 'False'
+
+CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE_ENABLED') != 'False'
+
+SECURE_HSTS_PRELOAD = Trueword_validation.'
                 'CommonPasswordValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.'
+        'NAME': 'django.contrib.auth.    pass
+
+
+SECURE_HSTS_SECONDS = 3600
+
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT_ENABLED') != 'False'
+
+SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE_ENABLED') != 'False'
+
+CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE_ENABLED') != 'False'
+
+SECURE_HSTS_PRELOAD = Trueword_validation.'
                 'NumericPasswordValidator',
     },
 ]
@@ -162,11 +237,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+
 
 TIME_ZONE = 'US/Eastern'
 
-USE_I18N = True
+
 
 USE_L10N = True
 
@@ -256,7 +331,22 @@ LOCAL_SETTINGS = {
     'AUTO_ACTIVATE_USER': False,
     'FRONTEND_URLS': {
         'BASE_URL': 'http://localhost:4200/',
-        'RESET_PASSWORD': 'reset-password/{uid}/{token}',
+        'RESET_PASSWORD': 'reset-    pass
+
+
+SECURE_HSTS_SECONDS = 3600
+
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT_ENABLED') != 'False'
+
+SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE_ENABLED') != 'False'
+
+CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE_ENABLED') != 'False'
+
+SECURE_HSTS_PRELOAD = Trueword/{uid}/{token}',
     },
 }
 
@@ -271,4 +361,19 @@ STATICFILES_DIR = (os.path.join(BASE_DIR, "static"),)
 try:
     from api_volontaria.local_settings import *
 except ImportError:
-    pass
+        pass
+
+
+SECURE_HSTS_SECONDS = 3600
+
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT_ENABLED') != 'False'
+
+SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE_ENABLED') != 'False'
+
+CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE_ENABLED') != 'False'
+
+SECURE_HSTS_PRELOAD = True
