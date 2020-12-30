@@ -172,13 +172,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.0/howto/static-files/
-
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
-
 # Django Rest Framework
 
 REST_FRAMEWORK = {
@@ -222,12 +215,9 @@ ACTIVATION_TOKENS = {
     'MINUTES': 2880,
 }
 
-
-# Email service configuration (using Anymail).
-# Refer to Anymail's documentation for configuration details.
-
 ANYMAIL = {
-    'SENDINBLUE_API_KEY': config('SENDINBLUE_API_KEY', default='placeholder_key'),
+    'SENDINBLUE_API_KEY':
+    config('SENDINBLUE_API_KEY', default='placeholder_key'),
     'REQUESTS_TIMEOUT': (30, 30),
     'TEMPLATES': {
         'CONFIRMATION_PARTICIPATION': config(
@@ -246,18 +236,23 @@ ANYMAIL = {
         ),
     }
 }
+
 EMAIL_BACKEND = 'anymail.backends.sendinblue.EmailBackend'
 DEFAULT_FROM_EMAIL = 'noreply@example.org'
 
 # User specific settings
-
 LOCAL_SETTINGS = {
-    'ORGANIZATION': "volontaria",
+    'ORGANIZATION': config(
+        'ORGANIZATION',
+        default='Volontaria'),
     'CONTACT_EMAIL': config(
             'CONTACT_EMAIL',
             default='noreply@volontaria.org',
     ),
-    'EMAIL_SERVICE': False,
+    'EMAIL_SERVICE': config(
+        'EMAIL_SERVICE',
+        default=False,
+    ),
     'AUTO_ACTIVATE_USER': False,
     'FRONTEND_URLS': {
         'BASE_URL': 'http://localhost:4200/',
@@ -266,3 +261,9 @@ LOCAL_SETTINGS = {
 }
 
 NUMBER_OF_DAYS_BEFORE_EMERGENCY_CANCELLATION = 2
+
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+STATIC_ROOT = './static/'
+STATIC_DIR = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIR = (os.path.join(BASE_DIR, "static"),)

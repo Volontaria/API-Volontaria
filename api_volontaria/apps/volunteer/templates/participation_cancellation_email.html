@@ -1,0 +1,200 @@
+{% load static %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+      @import url('https://fonts.googleapis.com/css?family=Nunito+Sans');
+      @import url('https://fonts.googleapis.com/css?family=Pacifico+Sans');
+
+      body { 
+        margin: 0;
+        font-family: 'Nunito Sans', sans-serif;
+        color: #142823;
+      }
+
+      ul {
+        margin: 20px 0 0 0;
+        padding: 0;
+        list-style-type: none;
+      }
+
+      .email {
+        background-color: #ffffff;
+        height:auto;
+        padding: 20px;
+      }
+
+      .email__single__logo {
+        margin: 20px;
+        text-align: center;
+      }
+
+      .email__single__logo img {
+        height: 60px;
+        margin: auto;
+      }
+
+      .email__double__logo {
+        margin: 20px;
+        text-align: center;
+      }
+
+      .email__double__logo img {
+        height: 60px;
+        margin: auto;
+        margin-inline: 100px;
+      }
+
+      .email__content {
+        background-color: #ffffff;
+        max-width: 600px;
+        padding: 20px;
+        margin: auto;
+        text-align: center;
+      }
+
+      .email__content__title {
+        font-size: 24px;
+        font-weight: 900;
+        text-align: center;
+      }
+
+      .email__introduction {
+        font-size: 18px;
+        margin-top: 50px;
+        margin-bottom: 50px;
+      }
+
+      .email__content__participation__type {
+        margin-top: 20px;
+        font-style: italic;
+      }
+
+      .email__content__activity__name {
+        margin-top: 10px;
+        font-size: 20px;
+        font-weight: 900;
+      }
+
+      .email__content__cell__name {
+        font-style: italic;
+        font-weight: 900;
+      }
+
+      .email__content__time__and__location__details {
+        margin-top: 10px;
+        font-size: 20px;
+      }
+
+      .email__conclusion {
+        font-size: 18px;
+        margin-top: 20px;
+      }
+
+      .email__sign__off {
+        text-align: right;
+      }
+
+      .email__organization__signature {
+        text-align: right;
+        font-style: italic;
+      }
+
+      .email__footer {
+        padding: 20px;
+        text-align: center;
+        color: rgba(54, 54, 54, 0.644);
+        background-color: rgb(251, 250, 250);
+      }
+
+      .volontaria__font{
+        font-family: 'Pacifico', sans-serif;
+        font-style: normal;
+        color: #142823;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class='email'>
+      <div class="email__double__logo">
+        <img src="{% static 'apps/volunteer/logo_volontaria.png' %}" alt="logo organisation">
+        <img src="{% static 'apps/volunteer/logo_general.png' %}" alt="logo Volontaria">
+      </div>
+      <div class="email__content">
+        <h1 class="email__content__title">
+          Un bénévole vient de se désinscrire.
+        </h1>
+        <div class="email__introduction">
+          {{PARTICIPANT.FIRST_NAME}} {{PARTICIPANT.LAST_NAME}} vient d'annuler sa participation à l'activité suivante qui se déroule dans moins de 48h:
+        </div>
+
+        <div class="email__content__activity__name">
+          {{ACTIVITY.NAME}}
+        </div>  
+        <div class="email__content__time__and__location__details">
+          <p>
+              {{ACTIVITY.START_DATE}}
+          </p>
+              
+          <p>
+              De {{ACTIVITY.START_TIME}} à {{ACTIVITY.END_TIME}}
+          </p>
+
+          <div class="email__content__cell__name">
+            {{CELL.NAME}}
+          </div>
+        
+          <p>
+              {{CELL.ADDRESS_LINE_1}}
+          </p>
+
+          {% if CELL.ADDRESS_LINE_2 %}
+          <p>
+            {{CELL.ADDRESS_LINE_2}}
+          </p>
+          {% endif %}
+
+          <p>
+              {{CELL.CITY}}, {{CELL.POSTAL_CODE}}, {{CELL.STATE_PROVINCE}}
+          </p>
+        </div>
+
+        <div>
+          Statut des inscriptions après cette annulation: 
+        </div>
+        <ul>
+          <li>Nombre de bénévoles: {{ACTIVITY.NUMBER_OF_VOLUNTEERS}} / {{ACTIVITY.NUMBER_OF_VOLUNTEERS_NEEDED}}</li>
+          <li>Nombre de remplaçants: {{ACTIVITY.NUMBER_OF_VOLUNTEERS_STANDBY}} / {{ACTIVITY.NUMBER_OF_VOLUNTEERS_STANDBY_NEEDED}}</li>
+        </ul>
+
+        <div class='email__conclusion'>
+          {% if ACTIVITY.NUMBER_OF_VOLUNTEERS_STANDBY > 1 %}
+            N'hésitez pas à contacter des remplaçants 
+            le plus rapidement possible 
+            si vous avez besoin de combler cette annulation.
+          {% elif ACTIVITY.NUMBER_OF_VOLUNTEERS_STANDBY == 1 %}
+            N'hésitez pas à contacter un remplaçant 
+            le plus rapidement possible 
+            si vous avez besoin de combler cette annulation.
+          {% endif %}
+        </div>
+        <div class="email__sign__off">
+          <p>
+            Bonne journée
+          </p>
+        </div>
+        <div class="email__organization__signature">
+          <p>
+            L'équipe de <span class=volontaria__font>Volontaria</span>
+          </p>
+        </div>
+        <div class="email__footer">
+          <div>©2020 {{ORGANIZATION_NAME}}</div>
+          <div>Propulsé par <span class=volontaria__font>Volontaria</span>.</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

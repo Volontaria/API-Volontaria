@@ -1,0 +1,48 @@
+Un bénévole vient de se désinscrire.
+
+Un participant vient d'annuler sa participation à une activité qui débute dans {{ACTIVITY.HOURS_BEFORE_EMERGENCY}} heures.
+
+{{PARTICIPANT.FIRST_NAME}} {{PARTICIPANT.LAST_NAME}} vient d'annuler sa participation à l'activité suivante qui se déroule dans moins de 48h:
+
+
+{{ACTIVITY.NAME}}
+
+{{ACTIVITY.START_DATE}}
+
+De {{ACTIVITY.START_TIME}} à {{ACTIVITY.END_TIME}}
+
+{{CELL.NAME}}
+
+{{CELL.ADDRESS_LINE_1}}
+
+{% if CELL.ADDRESS_LINE_2 %}
+
+{{CELL.ADDRESS_LINE_2}}
+
+{% endif %}
+
+{{CELL.CITY}}, {{CELL.POSTAL_CODE}}, {{CELL.STATE_PROVINCE}}
+
+Statut des inscriptions après cette annulation: 
+
+Nombre de bénévoles: {{ACTIVITY.NUMBER_OF_VOLUNTEERS}} / {{ACTIVITY.NUMBER_OF_VOLUNTEERS_NEEDED}}
+Nombre de remplaçants: {{ACTIVITY.NUMBER_OF_VOLUNTEERS_STANDBY}} / {{ACTIVITY.NUMBER_OF_VOLUNTEERS_STANDBY_NEEDED}}
+
+{% if ACTIVITY.NUMBER_OF_VOLUNTEERS_STANDBY > 1 %}
+    N'hésitez pas à contacter des remplaçants 
+    le plus rapidement possible 
+    si vous avez besoin de combler cette annulation.
+{% elif ACTIVITY.NUMBER_OF_VOLUNTEERS_STANDBY == 1 %}
+    N'hésitez pas à contacter un remplaçant 
+    le plus rapidement possible 
+    si vous avez besoin de combler cette annulation.
+{% endif %}
+
+Bonne journée
+
+L'équipe de Volontaria 
+
+
+©2020 {{ORGANIZATION_NAME}}
+Propulsé par Volontaria.
+
