@@ -370,10 +370,10 @@ class Participation(models.Model):
 
         # Headcount is "pre-delete";
         # but email needs to show headcount after deletion.
-        # (and this only applies to actual participations (i.e. non-standby) since,
-        # when standby participation gets cancelled, 
-        # no email gets sent)
-        if not self.is_standby: 
+        # (and this only applies to actual participations
+        # (i.e. non-standby) since, when standby participation gets
+        # cancelled, no email gets sent)
+        if not self.is_standby:
             updated_volunteer_count = self.event.nb_volunteers - 1
 
         context = {
@@ -392,10 +392,11 @@ class Participation(models.Model):
                 'END_TIME': end_time.strftime('%-Hh%M'),
                 'HOURS_BEFORE_EMERGENCY':
                     settings.NUMBER_OF_DAYS_BEFORE_EMERGENCY_CANCELLATION * 24,
-                
+
                 'NUMBER_OF_VOLUNTEERS': updated_volunteer_count,
                 'NUMBER_OF_VOLUNTEERS_NEEDED': self.event.nb_volunteers_needed,
-                'NUMBER_OF_VOLUNTEERS_STANDBY': self.event.nb_volunteers_standby,
+                'NUMBER_OF_VOLUNTEERS_STANDBY':
+                    self.event.nb_volunteers_standby,
                 'NUMBER_OF_VOLUNTEERS_STANDBY_NEEDED':
                     self.event.nb_volunteers_standby_needed,
             },
@@ -418,7 +419,7 @@ class Participation(models.Model):
                 context,
             )
         else:
-            msg_file_name = 'participation_cancellation_email' 
+            msg_file_name = 'participation_cancellation_email'
             plain_msg = render_to_string(
                 '.'.join([msg_file_name, 'txt']),
                 context

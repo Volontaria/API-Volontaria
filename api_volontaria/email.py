@@ -7,6 +7,7 @@ from api_volontaria.apps.log_management.models import EmailLog
 
 TEMPLATES = settings.ANYMAIL.get('TEMPLATES')
 
+
 class EmailAPI:
 
     def send_email(
@@ -15,7 +16,7 @@ class EmailAPI:
             fail_silently=False, auth_user=None, auth_password=None,
             connection=None, html_message=None):
         ''' sending and logging emails '''
-        
+
         nb_email_successfully_sent = django_send_mail(
                 subject, message, from_email, recipient_list,
                 fail_silently, auth_user, auth_password,
@@ -42,7 +43,7 @@ class EmailAPI:
         ''' sending email using SendinBlue templates,
         and logging email
         '''
-        
+
         email_context = context
         email_context['GENERIC'] = self.get_generic_information()
 
@@ -52,10 +53,10 @@ class EmailAPI:
             to=[email],
         )
         message.from_email = None  # required for SendinBlue templates
-        
-        # use this SendinBlue template       
+
+        # use this SendinBlue template
         message.template_id = TEMPLATES.get(template)
-        
+
         message.merge_global_data = email_context
 
         nb_email_successfully_sent = message.send()

@@ -395,7 +395,7 @@ class ParticipationsTests(CustomAPITestCase):
 
     @override_settings(
         EMAIL_BACKEND='anymail.backends.test.EmailBackend',
-        ANYMAIL = {
+        ANYMAIL={
             'SENDINBLUE_API_KEY':
             config('SENDINBLUE_API_KEY', default='placeholder_key'),
             'REQUESTS_TIMEOUT': (30, 30),
@@ -404,7 +404,7 @@ class ParticipationsTests(CustomAPITestCase):
                 # set template id to 3 when no template has been defined
                 # in settings.py (or .env)
                 # if template id already set in settings,
-                # then 3 does not override 
+                # then 3 does not override
                 # that template id (see comment further below about
                 # test logic as a result)
                 'CANCELLATION_PARTICIPATION_EMERGENCY': config(
@@ -426,20 +426,20 @@ class ParticipationsTests(CustomAPITestCase):
         2.a. email uses custom template vs. Volontaria default
         (case when a template has been set up by organization
         on their Sendinblue account)
-        2.b. the right template is sent 
-        (participation confirmation vs. cancellation) 
+        2.b. the right template is sent
+        (participation confirmation vs. cancellation)
         """
         outbox_initial_email_count = len(mail.outbox)
-        
+
         email_log_initial_count = EmailLog.objects.filter(
             user_email=[self.user.email],
             type_email='CONFIRMATION_PARTICIPATION',
             template_id__isnull=False,
-        # template_id in settings cannot be overriden 
-        # (some cache applied to ANYMAIL settings?)
-        # see https://stackoverflow.com/questions/53953444/
-        # overriding-settings-in-django-when-used-by-the-models#59043355
-        # so we do not test for a specific template id #)  
+            # template_id in settings cannot be overriden
+            # (some cache applied to ANYMAIL settings?)
+            # see https://stackoverflow.com/questions/53953444/
+            # overriding-settings-in-django-when-used-by-the-models#59043355
+            # so we do not test for a specific template id #)
         ).count()
 
         data_post = {
@@ -466,8 +466,8 @@ class ParticipationsTests(CustomAPITestCase):
         # 1. email sent?
         nb_email_sent = len(mail.outbox) - outbox_initial_email_count
 
-        # 2.a and 2.b: proper template? 
-        
+        # 2.a and 2.b: proper template?
+
         email_log_final_count = EmailLog.objects.filter(
             user_email=[self.user.email],
             type_email='CONFIRMATION_PARTICIPATION',
@@ -481,7 +481,7 @@ class ParticipationsTests(CustomAPITestCase):
 
     @override_settings(
         EMAIL_BACKEND='anymail.backends.test.EmailBackend',
-        ANYMAIL = {
+        ANYMAIL={
             'SENDINBLUE_API_KEY':
             config('SENDINBLUE_API_KEY', default='placeholder_key'),
             'REQUESTS_TIMEOUT': (30, 30),
@@ -507,12 +507,12 @@ class ParticipationsTests(CustomAPITestCase):
         2.a. email uses Volontaria default template
         (case when no template has been set up by organization
         on their Sendinblue account)
-        2.b. the right template is sent 
-        (participation confirmation vs. cancellation) 
+        2.b. the right template is sent
+        (participation confirmation vs. cancellation)
         """
-        
+
         outbox_initial_email_count = len(mail.outbox)
-        
+
         email_log_initial_count = EmailLog.objects.filter(
             user_email=[self.user.email],
             type_email='Objet: Confirmation de participation',
@@ -543,8 +543,8 @@ class ParticipationsTests(CustomAPITestCase):
         # 1. email sent?
         nb_email_sent = len(mail.outbox) - outbox_initial_email_count
 
-        # 2.a and 2.b: proper template? 
-        
+        # 2.a and 2.b: proper template?
+
         email_log_final_count = EmailLog.objects.filter(
             user_email=[self.user.email],
             type_email='Objet: Confirmation de participation',
@@ -559,14 +559,14 @@ class ParticipationsTests(CustomAPITestCase):
     @override_settings(
         EMAIL_BACKEND='anymail.backends.test.EmailBackend',
         NUMBER_OF_DAYS_BEFORE_EMERGENCY_CANCELLATION=99999,
-        ANYMAIL = {
+        ANYMAIL={
             'SENDINBLUE_API_KEY':
             config('SENDINBLUE_API_KEY', default='placeholder_key'),
             'REQUESTS_TIMEOUT': (30, 30),
             'TEMPLATES': {
                 'CONFIRMATION_PARTICIPATION': 3,
                 'CANCELLATION_PARTICIPATION_EMERGENCY': 4,
-                # same logic 
+                # same logic
                 # as in test_send_custom_confirmation_email)
                 'RESET_PASSWORD': config(
                     'RESET_PASSWORD_EMAIL_TEMPLATE',
@@ -583,10 +583,10 @@ class ParticipationsTests(CustomAPITestCase):
         2.a. email uses custom template
         (case when a template has been set up by organization
         on their Sendinblue account)
-        2.b. the right template is sent 
-        (cancellation) 
+        2.b. the right template is sent
+        (cancellation)
         """
-        
+
         outbox_initial_email_count = len(mail.outbox)
 
         email_log_initial_count = EmailLog.objects.filter(
@@ -638,10 +638,10 @@ class ParticipationsTests(CustomAPITestCase):
                     cast=int
                 ),
                 'CANCELLATION_PARTICIPATION_EMERGENCY': 0,
-                    # Template numbering starts at 1
-                    # in SendinBlue Email templates lists,
-                    # so id=0 here implies no template has been defined
-                    # by non-profit organization
+                # Template numbering starts at 1
+                # in SendinBlue Email templates lists,
+                # so id=0 here implies no template has been defined
+                # by non-profit organization
                 'RESET_PASSWORD': config(
                     'RESET_PASSWORD_EMAIL_TEMPLATE',
                     default=0
@@ -657,16 +657,16 @@ class ParticipationsTests(CustomAPITestCase):
         2.a. email uses Volontaria default template
         (case when no template has been set up by organization
         on their Sendinblue account)
-        2.b. the right template is sent 
+        2.b. the right template is sent
         (cancellation)
         """
-        
+
         outbox_initial_email_count = len(mail.outbox)
 
         email_log_initial_count = EmailLog.objects.filter(
             user_email=[settings.LOCAL_SETTINGS['CONTACT_EMAIL']],
             type_email='Objet: Annulation de participation',
-            template_id__isnull = True,
+            template_id__isnull=True,
         ).count()
 
         self.client.force_authenticate(user=self.admin)
@@ -688,7 +688,7 @@ class ParticipationsTests(CustomAPITestCase):
         email_log_final_count = EmailLog.objects.filter(
             user_email=[settings.LOCAL_SETTINGS['CONTACT_EMAIL']],
             type_email='Objet: Annulation de participation',
-            template_id__isnull = True,
+            template_id__isnull=True,
         ).count()
 
         self.assertEqual(
