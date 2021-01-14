@@ -22,12 +22,14 @@ from api_volontaria.apps.volunteer.models import (
     Event,
     TaskType,
     Participation,
+    Tag
 )
 from api_volontaria.apps.volunteer.serializers import (
     CellSerializer,
     EventSerializer,
     TaskTypeSerializer,
     ParticipationSerializer,
+    TagSerializer
 )
 
 
@@ -157,3 +159,11 @@ class ParticipationViewSet(viewsets.ModelViewSet):
     }
     permission_classes = (DRYPermissions,)
     filter_backends = (ParticipationFilterBackend, DjangoFilterBackend)
+
+
+class TagViewSet(viewsets.ModelViewSet):
+
+    serializer_class = TagSerializer
+    queryset = Tag.objects.all()
+    filter_fields = '__all__'
+    permission_classes = (DRYPermissions,)
