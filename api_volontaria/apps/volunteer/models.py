@@ -131,48 +131,6 @@ class TaskType(models.Model):
             return False
 
 
-class Tag(models.Model):
-    """
-    This class represents a event tag.
-    """
-
-    class Meta:
-        verbose_name = _('Tag')
-        verbose_name_plural = _('Tags')
-
-    name = models.CharField(
-        verbose_name="Name",
-        max_length=100,
-    )
-
-    def __str__(self):
-        return self.name
-
-    @staticmethod
-    def has_create_permission(request):
-        return request.user.is_staff
-
-    @staticmethod
-    def has_write_permission(request):
-        return request.user.is_staff
-
-    @staticmethod
-    def has_delete_permission(request):
-        return request.user.is_staff
-
-    @staticmethod
-    def has_list_permission(request):
-        return True
-
-    @authenticated_users
-    def has_object_update_permission(self, request):
-        return request.user.is_staff
-
-    @authenticated_users
-    def has_object_destroy_permission(self, request):
-        return request.user.is_staff
-
-
 class Event(models.Model):
     """
     This class represents an event where volunteer can come to help.
@@ -224,11 +182,6 @@ class Event(models.Model):
         verbose_name="Task type",
         blank=False,
         on_delete=models.PROTECT,
-    )
-
-    tags = models.ManyToManyField(
-        Tag,
-        related_name='tags',
     )
 
     def __str__(self):
