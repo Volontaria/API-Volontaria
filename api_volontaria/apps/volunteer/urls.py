@@ -21,7 +21,6 @@ router.register('cells', views.CellViewSet)
 router.register('task_types', views.TaskTypeViewSet)
 router.register('events', views.EventViewSet)
 router.register('participations', views.ParticipationViewSet)
-router.register('tags', views.TagViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),  # includes router generated URL

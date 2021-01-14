@@ -6,7 +6,7 @@ from api_volontaria.apps.volunteer.models import (
     TaskType,
     Participation,
     Cell,
-    Tag)
+)
 
 
 class ParticipationAdmin(ImportExportActionModelAdmin):
@@ -107,11 +107,9 @@ class EventAdmin(admin.ModelAdmin):
     list_filter = [
         'cell__name',
         'task_type__name',
-        'tags'
     ]
     date_hierarchy = 'start_time'
     ordering = ('start_time',)
-    filter_horizontal = ('tags', )
 
     @staticmethod
     def status_volunteers(obj):
@@ -124,7 +122,6 @@ class EventAdmin(admin.ModelAdmin):
                str(obj.nb_volunteers_standby_needed)
 
 
-admin.site.register(Tag)
 admin.site.register(Event, EventAdmin)
 admin.site.register(TaskType)
 admin.site.register(Participation, ParticipationAdmin)

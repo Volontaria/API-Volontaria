@@ -1,4 +1,3 @@
-from drf_writable_nested import WritableNestedModelSerializer
 from rest_framework import serializers
 
 from api_volontaria.apps.user.serializers import UserLightSerializer
@@ -7,7 +6,7 @@ from api_volontaria.apps.volunteer.models import (
     Participation,
     Cell,
     Event,
-    Tag)
+)
 
 
 class CellSerializer(serializers.HyperlinkedModelSerializer):
@@ -61,20 +60,8 @@ class ParticipationSerializer(serializers.HyperlinkedModelSerializer):
         return data
 
 
-class TagSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Tag
-        fields = [
-            'id',
-            'url',
-            'name',
-        ]
-
-
-class EventSerializer(serializers.HyperlinkedModelSerializer,
-                      WritableNestedModelSerializer):
+class EventSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.ReadOnlyField()
-    tags = TagSerializer(many=True)
 
     class Meta:
         model = Event
@@ -90,7 +77,6 @@ class EventSerializer(serializers.HyperlinkedModelSerializer,
             'nb_volunteers_standby',
             'cell',
             'task_type',
-            'tags',
         ]
 
     def to_representation(self, instance):

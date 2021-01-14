@@ -37,8 +37,7 @@ class EventsTests(CustomAPITestCase):
         'cell',
         'task_type',
         'nb_volunteers_standby',
-        'nb_volunteers',
-        'tags',
+        'nb_volunteers'
     ]
 
     def setUp(self):
@@ -95,15 +94,7 @@ class EventsTests(CustomAPITestCase):
             "task_type": reverse(
                 'tasktype-detail',
                 args=[self.tasktype.id],
-            ),
-            "tags": [
-                {
-                    "name": "Tag 1",
-                },
-                {
-                    "name": "Tag 2",
-                },
-            ],
+            )
         }
 
         self.client.force_authenticate(user=self.admin)

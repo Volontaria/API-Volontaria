@@ -83,12 +83,7 @@ class UsersTests(CustomAPITestCase):
                 'update': False,
                 'destroy': False,
             },
-            'tag': {
-                'create': False,
-                'write': False
-            }
         }
-
         self.assertEqual(
             content['permissions'],
             permissions
