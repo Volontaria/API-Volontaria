@@ -11,7 +11,7 @@ from api_volontaria.apps.volunteer.models import (
     Event,
     Cell,
     TaskType,
-)
+    Tag)
 from api_volontaria.factories import (
     UserFactory,
     AdminFactory,
@@ -37,7 +37,8 @@ class EventsTests(CustomAPITestCase):
         'cell',
         'task_type',
         'nb_volunteers_standby',
-        'nb_volunteers'
+        'nb_volunteers',
+        'tags',
     ]
 
     def setUp(self):
@@ -68,6 +69,10 @@ class EventsTests(CustomAPITestCase):
             name='My new tasktype',
         )
 
+        self.tag = Tag.objects.create(
+            name='My Tag',
+        )
+
         self.event = Event.objects.create(
             start_time=LOCAL_TIMEZONE.localize(datetime(2140, 1, 15, 8)),
             end_time=LOCAL_TIMEZONE.localize(datetime(2140, 1, 17, 12)),
@@ -76,6 +81,8 @@ class EventsTests(CustomAPITestCase):
             cell=self.cell,
             task_type=self.tasktype,
         )
+
+        self.event.tags.add(self.tag)
 
     def test_create_new_event_as_admin(self):
         """
@@ -94,7 +101,15 @@ class EventsTests(CustomAPITestCase):
             "task_type": reverse(
                 'tasktype-detail',
                 args=[self.tasktype.id],
-            )
+            ),
+            "tags": [
+                {
+                    "name": "Tag 1",
+                },
+                {
+                    "name": "Tag 2",
+                },
+            ],
         }
 
         self.client.force_authenticate(user=self.admin)
@@ -108,7 +123,56 @@ class EventsTests(CustomAPITestCase):
         content = json.loads(response.content)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.assertEqual(len(content['tags']), 2)
+
         self.check_attributes(content)
+
+    # def test_create_new_event_as_admin_with_existing_tag(self):
+    #     """
+    #     Ensure we can create a new event if we are
+    #     an admin and add existing tag.
+    #     """
+    #     data_post = {
+    #         "description": "My new event description",
+    #         "start_time": LOCAL_TIMEZONE.localize(datetime(2100, 1, 13, 9)),
+    #         "end_time": LOCAL_TIMEZONE.localize(datetime(2100, 1, 15, 10)),
+    #         "nb_volunteers_needed": 10,
+    #         "nb_volunteers_standby_needed": 0,
+    #         "cell": reverse(
+    #             'cell-detail',
+    #             args=[self.cell.id],
+    #         ),
+    #         "task_type": reverse(
+    #             'tasktype-detail',
+    #             args=[self.tasktype.id],
+    #         ),
+    #         "tags": [
+    #             {
+    #                 "url": "http://testserver/tags/" + str(self.tag.id),
+    #             }
+    #         ]
+    #     }
+    #
+    #     self.client.force_authenticate(user=self.admin)
+    #
+    #     response = self.client.post(
+    #         reverse('event-list'),
+    #         data_post,
+    #         format='json',
+    #     )
+    #
+    #     content = json.loads(response.content)
+    #
+    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    #
+    #     test_tags_response = [
+    #         {'id': 2, 'url': 'http://testserver/tags/2', 'name': 'Other Tag'}
+    #     ]
+    #
+    #     self.assertEqual(content['tags'], test_tags_response)
+    #
+    #     self.check_attributes(content)
 
     def test_create_new_event(self):
         """
@@ -263,6 +327,41 @@ class EventsTests(CustomAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(content['results']), 1)
         self.check_attributes(content['results'][0])
+
+    def test_list_events_with_tag_filter(self):
+        """
+        Ensure we can list events with tag filtering.
+        """
+        self.client.force_authenticate(user=self.user)
+
+        reverse_string = str(reverse('event-list') + "?tags__name=My Tag")
+
+        response = self.client.get(
+            reverse_string,
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(content['results']), 1)
+        self.check_attributes(content['results'][0])
+
+    def test_failed_to_list_events_with_tag_filter(self):
+        """
+        Ensure we can list events with tag filtering.
+        """
+        self.client.force_authenticate(user=self.user)
+
+        reverse_string = str(reverse('event-list') + "?tags__name=WRONG TAG")
+
+        response = self.client.get(
+            reverse_string,
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(content['results']), 0)
 
     def test_bulk_events_as_users(self):
         """
