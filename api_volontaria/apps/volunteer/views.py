@@ -22,12 +22,14 @@ from api_volontaria.apps.volunteer.models import (
     Event,
     TaskType,
     Participation,
+    Tag
 )
 from api_volontaria.apps.volunteer.serializers import (
     CellSerializer,
     EventSerializer,
     TaskTypeSerializer,
     ParticipationSerializer,
+    TagSerializer
 )
 
 
@@ -71,6 +73,7 @@ class EventViewSet(viewsets.ModelViewSet):
         'start_time': ['exact', 'gte', 'lte'],
         'end_time': ['exact', 'gte', 'lte'],
         'cell': ['exact'],
+        'tags__name': ['exact'],
     }
     permission_classes = (DRYPermissions, DjangoFilterBackend)
     parser_classes = (JSONParser, FormParser, MultiPartParser)
@@ -157,3 +160,13 @@ class ParticipationViewSet(viewsets.ModelViewSet):
     }
     permission_classes = (DRYPermissions,)
     filter_backends = (ParticipationFilterBackend, DjangoFilterBackend)
+
+
+class TagViewSet(viewsets.ModelViewSet):
+
+    serializer_class = TagSerializer
+    queryset = Tag.objects.all()
+    filter_fields = '__all__'
+    permission_classes = (DRYPermissions,)
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = ['name', ]
