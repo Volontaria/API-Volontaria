@@ -51,8 +51,12 @@ class UserViewSet(viewsets.ModelViewSet):
     filter_fields = '__all__'
 
     def get_serializer_class(self):
-        if (self.action == 'update') | (self.action == 'partial_update'):
-            return serializers.UserUpdateSerializer
+        # TODO Commented section, the UserUpdateSerializer does not exist !
+        # if (self.action == 'update') | (self.action == 'partial_update'):
+        #     return serializers.UserUpdateSerializer
+
+        if self.request.user.is_staff:
+            return serializers.AdminUserSerializer
         return serializers.UserSerializer
 
     def get_queryset(self):

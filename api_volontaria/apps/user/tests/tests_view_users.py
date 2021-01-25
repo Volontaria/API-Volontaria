@@ -1,17 +1,11 @@
 import json
 
-from datetime import timedelta
-from unittest import mock
-
 from rest_framework import status
-from rest_framework.test import APIClient, APITestCase
+from rest_framework.test import APIClient
 
-from django.urls import reverse
-from django.test.utils import override_settings
 from django.contrib.auth import get_user_model
 
 from api_volontaria.factories import UserFactory, AdminFactory
-from ..models import ActionToken
 from ....testClasses import CustomAPITestCase
 
 User = get_user_model()
@@ -32,14 +26,20 @@ class UsersTests(CustomAPITestCase):
         'is_active',
         'first_name',
         'permissions',
-        'email'
+        'email',
     ]
+
+    ATTRIBUTES_ADMIN = ATTRIBUTES + ['private_note', ]
 
     def setUp(self):
         self.client = APIClient()
         self.user = UserFactory()
         self.user.set_password('Test123!')
         self.user.save()
+
+        self.admin = AdminFactory()
+        self.admin.set_password('Test123!')
+        self.admin.save()
 
     def test_profile(self):
         self.client.force_authenticate(user=self.user)
@@ -82,6 +82,54 @@ class UsersTests(CustomAPITestCase):
                 'create': False,
                 'update': False,
                 'destroy': False,
+            },
+        }
+        self.assertEqual(
+            content['permissions'],
+            permissions
+        )
+
+    def test_get_user_as_admin(self):
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get(
+            'http://api.example.org/users/' + str(self.user.id)
+        )
+
+        # HTTP code is good
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+            response.content
+        )
+
+        # Number of results is good
+        content = json.loads(response.content)
+
+        self.check_attributes(content, self.ATTRIBUTES_ADMIN)
+        permissions = {
+            'cell': {
+                'create': True,
+            },
+            'event': {
+                'create': True,
+            },
+            'participation': {
+                'create': True,
+                'update': True,
+                'destroy': True,
+            },
+            'tasktype': {
+                'create': True,
+            },
+            'application': {
+                'create': True,
+                'update': True,
+                'destroy': True,
+            },
+            'position': {
+                'create': True,
+                'update': True,
+                'destroy': True,
             },
         }
         self.assertEqual(
