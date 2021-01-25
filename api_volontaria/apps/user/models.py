@@ -10,7 +10,6 @@ from api_volontaria.apps.user.managers import UserManager, ActionTokenManager
 from rest_framework.authtoken.models import Token
 from django.utils import timezone
 from django.conf import settings
-from django.template.loader import render_to_string
 
 
 class User(AbstractUser):
@@ -18,6 +17,8 @@ class User(AbstractUser):
 
     username = None
     email = models.EmailField(_('email address'), unique=True)
+    private_note = models.TextField(_('private note'), blank=True, null=True)
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
@@ -34,9 +35,6 @@ class User(AbstractUser):
 
     @staticmethod
     def create(email, password, validated_data):
-        print(email)
-        print(password)
-        print(validated_data)
         user, created = User.objects.get_or_create(
             email=email,
             defaults=validated_data

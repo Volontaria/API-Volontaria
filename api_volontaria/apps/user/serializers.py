@@ -1,21 +1,10 @@
-import re
-
-from django.contrib.auth import get_user_model, password_validation
-from django.contrib.auth.models import Permission
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.contrib.auth import authenticate
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import ugettext_lazy as _
-
-from rest_framework.settings import api_settings
-
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
-from rest_framework.authtoken.serializers import AuthTokenSerializer
 from dry_rest_permissions.generics import DRYGlobalPermissionsField
 from rest_auth.registration.serializers import RegisterSerializer
 from rest_auth.serializers import PasswordResetSerializer
-
-from api_volontaria.apps.user.models import ActionToken
 
 User = get_user_model()
 
@@ -84,7 +73,70 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = User
-        fields = '__all__'
+        fields = (
+            'id',
+            'url',
+            'is_staff',
+            'is_superuser',
+            'is_active',
+            'date_joined',
+            'last_login',
+            'groups',
+            'user_permissions',
+            'email',
+            'permissions',
+            'first_name',
+            'last_name',
+        )
+        extra_kwargs = {
+            'password': {
+                'write_only': True,
+                'required': False,
+                'help_text': _("A valid password."),
+            },
+            'first_name': {
+                'allow_blank': False,
+                'help_text': _("A valid first name."),
+            },
+            'last_name': {
+                'allow_blank': False,
+                'help_text': _("A valid last name."),
+            },
+        }
+        read_only_fields = (
+            'id',
+            'url',
+            'is_staff',
+            'is_superuser',
+            'is_active',
+            'date_joined',
+            'last_login',
+            'groups',
+            'user_permissions',
+            'email',
+            'permissions'
+        )
+
+
+class AdminUserSerializer(UserSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'id',
+            'url',
+            'is_staff',
+            'is_superuser',
+            'is_active',
+            'date_joined',
+            'last_login',
+            'groups',
+            'user_permissions',
+            'email',
+            'permissions',
+            'private_note',
+            'first_name',
+            'last_name',
+        )
         extra_kwargs = {
             'password': {
                 'write_only': True,
