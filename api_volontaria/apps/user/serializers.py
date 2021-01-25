@@ -1,21 +1,23 @@
+from datetime import datetime
 import re
 
 from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.contrib.auth import authenticate
+from django.db.models.fields import DurationField
 from django.utils.translation import ugettext_lazy as _
 
 from rest_framework.settings import api_settings
 
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from rest_framework.authtoken.serializers import AuthTokenSerializer
 from dry_rest_permissions.generics import DRYGlobalPermissionsField
 from rest_auth.registration.serializers import RegisterSerializer
 from rest_auth.serializers import PasswordResetSerializer
 
 from api_volontaria.apps.user.models import ActionToken
+from api_volontaria.apps.user.models import APIToken
 
 User = get_user_model()
 
@@ -134,3 +136,37 @@ class UserLightSerializer(serializers.HyperlinkedModelSerializer):
             'last_name',
             'email',
         )
+
+
+class APITokenSerializer(serializers.Serializer):
+    ''' Class strongly inspired from AuthTokenSerializer class 
+    in Django Rest Framework.
+    Additions: the fields 'purpose' and 'user_email' 
+    (unlike in DRF AuthTokenSerializer,
+    the user associated with the token is not always
+    the user issuing the request (rarely in fact)
+    )
+    Note: 
+    We do not subclass ModelSerializer because:
+    1. The serializer needs read and write access
+        to the field user_email,
+        which is not a field in the APIToken model
+        (but a User field, user being a foreign key in APIToken model)
+    2. We do not want an update method
+    '''
+    # dry_rest_framework requires Serializer class to have Meta attribute
+    class Meta:
+       model = APIToken
+
+    purpose = serializers.CharField(
+        label=_("Purpose"),
+    )
+
+    user_email = serializers.EmailField(
+        label=_("User_email"),
+    )
+
+    token = serializers.CharField(
+        label=_("APIToken"),
+        read_only=True
+    )
