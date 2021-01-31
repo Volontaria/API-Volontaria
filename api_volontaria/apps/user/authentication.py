@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
-from .models import TemporaryToken
+from .models import  TemporaryToken, PersistentToken
 
 
 class TemporaryTokenAuthentication(TokenAuthentication):
@@ -13,6 +13,7 @@ class TemporaryTokenAuthentication(TokenAuthentication):
     Extends default token auth to handle temporary tokens.
     """
     models = TemporaryToken
+    print(models)
 
     def authenticate_credentials(self, key):
         """
@@ -40,3 +41,10 @@ class TemporaryTokenAuthentication(TokenAuthentication):
             token.save()
 
         return token.user, token
+
+
+class PersistentTokenAuthentication(TokenAuthentication):
+    """
+    Wrapper around default token auth to handle persistent tokens.
+    """
+    models = PersistentToken

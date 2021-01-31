@@ -230,3 +230,24 @@ class Address(models.Model):
 
     class Meta:
         abstract = True
+
+
+class TemporaryToken(Token):
+    """
+        A wrapper around django_rest_framework default 
+        authorization token model
+
+        A model for temporary tokens
+
+    """
+
+
+class PersistentToken(Token):
+    """
+        A wrapper around django_rest_framework default 
+        authorization token model
+
+        A model for persistent tokens
+        For administrators use only
+
+    """
