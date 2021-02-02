@@ -7,7 +7,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from api_volontaria.apps.user.managers import UserManager, ActionTokenManager
-from rest_framework.authtoken.models import Token
+# from rest_framework.authtoken.models import Token
 from django.utils import timezone
 from django.conf import settings
 from django.template.loader import render_to_string
@@ -232,22 +232,53 @@ class Address(models.Model):
         abstract = True
 
 
-class TemporaryToken(Token):
+class APIToken(models.Model):
     """
-        A wrapper around django_rest_framework default 
-        authorization token model
-
-        A model for temporary tokens
-
+    A model allowing for multiple persistent tokens per single user
+    For administrators use only
     """
 
+    key = models.CharField(_("Key"), max_length=40, primary_key=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name='api_token',
+        on_delete=models.CASCADE, verbose_name=_("User")
+    )
+    created = models.DateTimeField(_("Created"), auto_now_add=True)
 
-class PersistentToken(Token):
-    """
-        A wrapper around django_rest_framework default 
-        authorization token model
+    class Meta:
+        # Work around for a bug in Django:
+        # https://code.djangoproject.com/ticket/19422
+        #
+        # Also see corresponding ticket:
+        # https://github.com/encode/django-rest-framework/issues/705
+        abstract = 'rest_framework.authtoken' not in settings.INSTALLED_APPS
+        verbose_name = _("API Token")
+        verbose_name_plural = _("API Tokens")
 
-        A model for persistent tokens
-        For administrators use only
+    def save(self, *args, **kwargs):
+        if not self.key:
+            self.key = self.generate_key()
+        return super().save(*args, **kwargs)
 
-    """
+    @classmethod
+    def generate_key(cls):
+        return binascii.hexlify(os.urandom(20)).decode()
+
+    def __str__(self):
+        return self.key
+
+
+# TODO: check whether we need need the below
+
+# class TokenProxy(Token):
+#     """
+#     Proxy mapping pk to user pk for use in admin.
+#     """
+#     @property
+#     def pk(self):
+#         return self.user.pk
+
+#     class Meta:
+#         proxy = 'rest_framework.authtoken' in settings.INSTALLED_APPS
+#         abstract = 'rest_framework.authtoken' not in settings.INSTALLED_APPS
+#         verbose_name = "token"

@@ -14,9 +14,8 @@ from api_volontaria.factories import UserFactory, AdminFactory
 from ..models import ActionToken
 from ....testClasses import CustomAPITestCase
 
-# from ..authentication import TemporaryTokenAuthentication
 # from ..models import  ActionToken
-from ..models import  TemporaryToken, PersistentToken
+from ..models import APIToken
 
 User = get_user_model()
 
@@ -275,7 +274,7 @@ class AdminTests(CustomAPITestCase):
         self.client.force_authenticate(user=self.user, token='401f7ac837da42b97f613d789819ff93537bee6a')
         
         # token = ActionToken.objects.get(user__email=self.user.email)
-        token = TemporaryToken.objects.get(user__email=self.user.email)
+        token = APIToken.objects.get(user__email=self.user.email)
 
         print(token)
 

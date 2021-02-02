@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.utils.translation import ugettext_lazy as _
 
-from api_volontaria.apps.user.models import User, ActionToken
+from api_volontaria.apps.user.models import User, ActionToken, APIToken
 
 
 class UserAdmin(DjangoUserAdmin):
@@ -31,3 +31,4 @@ class UserAdmin(DjangoUserAdmin):
 
 admin.site.register(User, UserAdmin)
 admin.site.register(ActionToken)
+admin.site.register(APIToken)
