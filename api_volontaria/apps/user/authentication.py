@@ -13,6 +13,7 @@ from .models import APITokenProxy
 class APITokenAuthentication(BaseAuthentication):
     
     """
+    TokenAuthentication class, copied-pasted from django rest framwork:
     Simple token based authentication.
     Clients should authenticate by passing the token key in the "Authorization"
     HTTP header, prepended with the string "Token ".  For example:
@@ -69,38 +70,3 @@ class APITokenAuthentication(BaseAuthentication):
 
     def authenticate_header(self, request):
         return self.keyword
-
-
-# class TemporaryTokenAuthentication(TokenAuthentication):
-#     """
-#     Extends default token auth to handle temporary tokens.
-#     """
-#     models = TemporaryToken
-#     print(models)
-
-#     def authenticate_credentials(self, key):
-#         """
-#         Attempt token authentication using the provided key.
-#         """
-#         try:
-#             token = self.models.objects.get(key=key)
-#         except self.models.DoesNotExist:
-#             raise exceptions.AuthenticationFailed(_('Invalid token'))
-
-#         if not token.user.is_active:
-#             raise exceptions.AuthenticationFailed(
-#                 _('User inactive or deleted')
-#             )
-
-#         if token.expired:
-#             raise exceptions.AuthenticationFailed(_('Token has expired'))
-
-#         if settings.REST_FRAMEWORK_TEMPORARY_TOKENS['RENEW_ON_SUCCESS']:
-#             # Reset the token expiration time on successful authentication
-#             expires = timezone.now() + timezone.timedelta(
-#                 minutes=settings.REST_FRAMEWORK_TEMPORARY_TOKENS['MINUTES']
-#             )
-#             token.expires = expires
-#             token.save()
-
-#         return token.user, token

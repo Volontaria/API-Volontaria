@@ -64,3 +64,5 @@ class APITokenTests(CustomAPITestCase):
     def test_validate_raise_error_if_no_credentials_provided(self):
         with self.assertRaises(ValidationError):
             AuthTokenSerializer().validate({})
+
+    # TODO: should we test that non-admin user fails to create a token?
