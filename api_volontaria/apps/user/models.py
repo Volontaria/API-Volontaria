@@ -238,7 +238,7 @@ class APIToken(models.Model):
     For administrators use only
     """
 
-    key = models.CharField(_("Key"), max_length=40, primary_key=True)
+    key = models.CharField(_("Key"), max_length=40, unique=True) #primary_key=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, related_name='api_token',
         on_delete=models.CASCADE, verbose_name=_("User")
@@ -270,15 +270,15 @@ class APIToken(models.Model):
 
 # TODO: check whether we need need the below
 
-class APITokenProxy(APIToken):
-    """
-    Proxy mapping pk to user pk for use in admin.
-    """
-    @property
-    def pk(self):
-        return self.user.pk
+# class APITokenProxy(APIToken):
+#     """
+#     Proxy mapping pk to user pk for use in admin.
+#     """
+#     @property
+#     def pk(self):
+#         return self.user.pk
 
-    class Meta:
-        proxy = 'rest_framework.authtoken' in settings.INSTALLED_APPS
-        abstract = 'rest_framework.authtoken' not in settings.INSTALLED_APPS
-        verbose_name = "token"
+#     class Meta:
+#         proxy = 'rest_framework.authtoken' in settings.INSTALLED_APPS
+#         abstract = 'rest_framework.authtoken' not in settings.INSTALLED_APPS
+#         verbose_name = "token"

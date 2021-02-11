@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'api_volontaria.apps.position',
     'django_filters',
     'djmoney',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
@@ -75,6 +76,7 @@ MIDDLEWARE = [
     'django.middleware.locale.LocaleMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'api_volontaria.urls'
@@ -263,6 +265,21 @@ LOCAL_SETTINGS = {
 }
 
 NUMBER_OF_DAYS_BEFORE_EMERGENCY_CANCELLATION = 2
+
+# For debug toolbar, including in Docker
+# see William Vincent, Django for Professionals, 3.1, Chapter 15 "Performance"
+# Ensure that our INTERNAL_IPS matches that of our Docker host
+import socket
+hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+
+INTERNAL_IPS = [
+    # ...
+    # '127.0.0.1',
+    # '0.0.0.0',
+    [ip[:-1] + '1' for ip in ips],
+    # ...
+]
+
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'

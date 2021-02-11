@@ -6,8 +6,8 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
-# from .models import APIToken
-from .models import APITokenProxy
+from .models import APIToken
+# from .models import APITokenProxy
 
 
 class APITokenAuthentication(BaseAuthentication):
@@ -21,7 +21,7 @@ class APITokenAuthentication(BaseAuthentication):
     """
 
     keyword = 'API Token'
-    model = APITokenProxy
+    model = APIToken
 
     def get_model(self):
         # if self.model is not None:

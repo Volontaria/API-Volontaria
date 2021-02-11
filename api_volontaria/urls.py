@@ -20,6 +20,7 @@ from django.conf.urls import include
 from rest_framework.documentation import include_docs_urls
 from rest_framework.routers import DefaultRouter
 
+
 # External application routers
 # ie: from app.urls import router as app_router
 from api_volontaria.apps.volunteer.urls import router as volunteer_router
@@ -62,3 +63,9 @@ urlpatterns = [
     path('', include(user_urls)),
     path('', include(router.urls)),  # includes router generated URL
 ]
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        path('__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns
