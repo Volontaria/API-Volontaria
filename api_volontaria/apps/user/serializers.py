@@ -10,7 +10,6 @@ from rest_framework.settings import api_settings
 
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from rest_framework.authtoken.serializers import AuthTokenSerializer
 from dry_rest_permissions.generics import DRYGlobalPermissionsField
 from rest_auth.registration.serializers import RegisterSerializer
 from rest_auth.serializers import PasswordResetSerializer

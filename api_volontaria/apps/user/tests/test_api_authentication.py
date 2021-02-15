@@ -23,7 +23,7 @@
 # # from .models import CustomToken
 
 
-# from ...models import APIToken
+# from ..models import APIToken
 
 # from api_volontaria.factories import UserFactory, AdminFactory
 
