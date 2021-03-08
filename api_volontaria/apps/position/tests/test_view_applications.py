@@ -70,7 +70,7 @@ class ApplicationsTests(CustomAPITestCase):
             user=self.user,
             applied_on=LOCAL_TIMEZONE.localize(datetime(2022, 4, 15, 19)),
             motivation='passionate about that stuff',
-            application_status='accepted',
+            application_status=Application.APPLICATION_ACCEPTED,
         )
 
         self.application2 = Application.objects.create(
@@ -78,7 +78,7 @@ class ApplicationsTests(CustomAPITestCase):
             user=self.user2,
             applied_on=LOCAL_TIMEZONE.localize(datetime(2023, 1, 15, 8)),
             motivation='cool mission',
-            application_status='pending',
+            application_status=Application.APPLICATION_PENDING,
         )
 
         self.user_pending_application = Application.objects.create(
@@ -86,7 +86,7 @@ class ApplicationsTests(CustomAPITestCase):
             user=self.user,
             applied_on=LOCAL_TIMEZONE.localize(datetime(2022, 4, 15, 19)),
             motivation='passionate about that stuff',
-            application_status='pending',
+            application_status=Application.APPLICATION_PENDING,
         )
 
     def test_create_new_application_as_admin(self):
@@ -154,6 +154,36 @@ class ApplicationsTests(CustomAPITestCase):
             content
         )
         self.check_attributes(content)
+
+    def test_create_new_application_without_auth(self):
+        """
+        Ensure we can't create a new application if we are not logged in.
+        """
+        data_post = {
+            'position': reverse(
+                'position-detail',
+                args=[self.position.id],
+            ),
+            'user': reverse(
+                'user-detail',
+                args=[self.user.id],
+            ),
+            'motivation': 'seems fun',
+        }
+
+        response = self.client.post(
+            reverse('application-list'),
+            data_post,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_401_UNAUTHORIZED,
+            content
+        )
 
     def test_create_new_application_for_an_other_user(self):
         """
@@ -272,6 +302,15 @@ class ApplicationsTests(CustomAPITestCase):
 
         self.client.force_authenticate(user=self.user)
 
+        self.assertEqual(
+            self.user.id,
+            self.user_pending_application.user.id,
+        )
+        self.assertEqual(
+            self.user_pending_application.application_status,
+            Application.APPLICATION_PENDING,
+        )
+
         response = self.client.patch(
             reverse(
                 'application-detail',
@@ -321,6 +360,30 @@ class ApplicationsTests(CustomAPITestCase):
                 'detail': 'You do not have permission to perform this action.'
             }
         )
+
+    def test_update_pending_application_without_auth(self):
+        """
+        Ensure an unauthorized user can't update an application.
+        """
+        new_value = 'sounds great'
+        data_post = {
+            'motivation': new_value,
+        }
+
+        response = self.client.patch(
+            reverse(
+                'application-detail',
+                kwargs={
+                    'pk': self.user_pending_application.id,
+                },
+            ),
+            data_post,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_application_as_admin(self):
         """
@@ -385,6 +448,21 @@ class ApplicationsTests(CustomAPITestCase):
             }
         )
 
+    def test_delete_pending_application_without_auth(self):
+        """
+        Ensure an unauthorized user can't delete an application.
+        """
+        response = self.client.delete(
+            reverse(
+                'application-detail',
+                kwargs={
+                    'pk': self.user_pending_application.id
+                },
+            )
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
     def test_list_applications(self):
         """
         Ensure any user can list applications.
@@ -414,7 +492,7 @@ class ApplicationsTests(CustomAPITestCase):
         content = json.loads(response.content)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(content['results']), 2)
+        self.assertEqual(len(content['results']), 3)
         self.check_attributes(content['results'][0])
 
         at_least_one_application_is_owned_by_somebody_else = False
@@ -423,3 +501,15 @@ class ApplicationsTests(CustomAPITestCase):
                 at_least_one_application_is_owned_by_somebody_else = True
 
         self.assertTrue(at_least_one_application_is_owned_by_somebody_else)
+
+    def test_list_applications_without_auth(self):
+        """
+        Ensure any unauthorized user can't list applications.
+        """
+        response = self.client.get(
+            reverse('application-list'),
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

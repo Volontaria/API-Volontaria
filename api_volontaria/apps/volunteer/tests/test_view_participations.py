@@ -169,6 +169,43 @@ class ParticipationsTests(CustomAPITestCase):
         )
         self.check_attributes(content)
 
+    def test_create_new_participation_without_auth(self):
+        """
+        Ensure we can't create a new participation if we are not logged in.
+        """
+        data_post = {
+            'event': reverse(
+                'event-detail',
+                args=[self.event.id],
+            ),
+            'user': reverse(
+                'user-detail',
+                args=[self.user.id],
+            ),
+            'is_standby': False,
+        }
+
+        response = self.client.post(
+            reverse('participation-list'),
+            data_post,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_401_UNAUTHORIZED,
+            content
+        )
+
+        self.assertEqual(
+            content,
+            {
+                'detail': 'Authentication credentials were not provided.'
+            }
+        )
+
     def test_create_new_participation_for_an_other_user(self):
         """
         Ensure we can't create a new participation for an other user
@@ -305,6 +342,36 @@ class ParticipationsTests(CustomAPITestCase):
             }
         )
 
+    def test_update_participation_without_auth(self):
+        """
+        Ensure we can't update a participation if we are not logged in.
+        """
+        new_value = True
+        data_post = {
+            'is_standby': new_value,
+        }
+
+        response = self.client.patch(
+            reverse(
+                'participation-detail',
+                kwargs={
+                    'pk': self.participation.id
+                },
+            ),
+            data_post,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            content,
+            {
+                'detail': 'Authentication credentials were not provided.'
+            }
+        )
+
     def test_delete_participation_as_admin(self):
         """
         Ensure we can delete a participation if we are an admin.
@@ -348,6 +415,29 @@ class ParticipationsTests(CustomAPITestCase):
             }
         )
 
+    def test_delete_participation_without_auth(self):
+        """
+        Ensure we can't delete a participation if we are not logged in.
+        """
+        response = self.client.patch(
+            reverse(
+                'participation-detail',
+                kwargs={
+                    'pk': self.participation.id
+                },
+            )
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            content,
+            {
+                'detail': 'Authentication credentials were not provided.'
+            }
+        )
+
     def test_list_participations(self):
         """
         Ensure we can list participations.
@@ -369,6 +459,25 @@ class ParticipationsTests(CustomAPITestCase):
                participation['user']['id'],
                self.user.id,
             )
+
+    def test_list_participations_without_auth(self):
+        """
+        Ensure we can't list participation without being logged in.
+        """
+        response = self.client.get(
+            reverse('participation-list'),
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.assertEqual(
+            content,
+            {
+                'detail': 'Authentication credentials were not provided.'
+            }
+        )
 
     def test_list_participations_as_admin(self):
         """

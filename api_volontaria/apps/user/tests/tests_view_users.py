@@ -64,6 +64,8 @@ class UsersTests(CustomAPITestCase):
             },
             'event': {
                 'create': False,
+                'update': False,
+                'destroy': False,
             },
             'participation': {
                 'create': True,
@@ -72,11 +74,13 @@ class UsersTests(CustomAPITestCase):
             },
             'tasktype': {
                 'create': False,
+                'update': False,
+                'destroy': False,
             },
             'application': {
                 'create': True,
-                'update': False,
-                'destroy': False,
+                'update': True,
+                'destroy': True,
             },
             'position': {
                 'create': False,

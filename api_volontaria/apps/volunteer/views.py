@@ -54,14 +54,6 @@ class TaskTypeViewSet(viewsets.ModelViewSet):
     filter_fields = '__all__'
     permission_classes = (DRYPermissions,)
 
-    def get_permissions(self):
-        if self.action in ['list']:
-            permission_classes = []
-        else:
-            permission_classes = [IsAdminUser]
-
-        return [permission() for permission in permission_classes]
-
 
 class EventViewSet(viewsets.ModelViewSet):
 
@@ -72,16 +64,8 @@ class EventViewSet(viewsets.ModelViewSet):
         'end_time': ['exact', 'gte', 'lte'],
         'cell': ['exact'],
     }
-    permission_classes = (DRYPermissions, DjangoFilterBackend)
+    permission_classes = (DRYPermissions, )
     parser_classes = (JSONParser, FormParser, MultiPartParser)
-
-    def get_permissions(self):
-        if self.action in ['list']:
-            permission_classes = []
-        else:
-            permission_classes = [IsAdminUser]
-
-        return [permission() for permission in permission_classes]
 
     @action(detail=False, methods=['post'])
     def bulk(self, request):

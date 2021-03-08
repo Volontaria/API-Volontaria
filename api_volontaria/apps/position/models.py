@@ -60,6 +60,7 @@ class Position(models.Model):
         return self.name
 
     @staticmethod
+    @authenticated_users
     def has_create_permission(request):
         if request.user.is_staff:
             return True
@@ -67,6 +68,7 @@ class Position(models.Model):
             return False
 
     @staticmethod
+    @authenticated_users
     def has_destroy_permission(request):
         if request.user.is_staff:
             return True
@@ -74,6 +76,7 @@ class Position(models.Model):
             return False
 
     @staticmethod
+    @authenticated_users
     def has_update_permission(request):
         if request.user.is_staff:
             return True
@@ -85,12 +88,14 @@ class Position(models.Model):
         return True
 
     @authenticated_users
+    @authenticated_users
     def has_object_destroy_permission(self, request):
         if request.user.is_staff:
             return True
         else:
             return False
 
+    @authenticated_users
     @authenticated_users
     def has_object_update_permission(self, request):
         if request.user.is_staff:
@@ -152,31 +157,29 @@ class Application(models.Model):
         return self.user
 
     @staticmethod
+    @authenticated_users
     def has_destroy_permission(request):
-        if request.user.is_staff:
-            return True
-        else:
-            return False
+        return True
 
     @staticmethod
+    @authenticated_users
     def has_update_permission(request):
-        if request.user.is_staff:
-            return True
-        else:
-            return False
+        return True
 
     @staticmethod
+    @authenticated_users
     def has_list_permission(request):
         return True
 
     @staticmethod
+    @authenticated_users
     def has_create_permission(request):
         return True
 
     @authenticated_users
     def has_object_update_permission(self, request):
         if self.user == request.user and \
-                self.application_status == APPLICATION_PENDING:
+                self.application_status == self.APPLICATION_PENDING:
             return True
         if request.user.is_staff:
             return True
@@ -186,7 +189,7 @@ class Application(models.Model):
     @authenticated_users
     def has_object_destroy_permission(self, request):
         if self.user == request.user and \
-                self.application_status == APPLICATION_PENDING:
+                self.application_status == self.APPLICATION_PENDING:
             return True
         if request.user.is_staff:
             return True
