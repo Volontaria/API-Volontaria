@@ -142,6 +142,36 @@ class EventsTests(CustomAPITestCase):
             }
         )
 
+    def test_create_new_event_without_auth(self):
+        """
+        Ensure we can't create a new event if we are not logged in.
+        """
+        data_post = {
+            "description": "My new event description",
+            "start_time": LOCAL_TIMEZONE.localize(datetime(2100, 1, 13, 9)),
+            "end_time": LOCAL_TIMEZONE.localize(datetime(2100, 1, 15, 10)),
+            "nb_volunteers_needed": 10,
+            "nb_volunteers_standby_needed": 0,
+            "cell": self.cell.id,
+            "task_type": self.tasktype.id,
+        }
+
+        response = self.client.post(
+            reverse('event-list'),
+            data_post,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            content,
+            {
+                'detail': 'Authentication credentials were not provided.'
+            }
+        )
+
     def test_update_event_as_admin(self):
         """
         Ensure we can update a event if we are an admin.
@@ -205,6 +235,36 @@ class EventsTests(CustomAPITestCase):
             }
         )
 
+    def test_update_event_without_auth(self):
+        """
+        Ensure we can't update a event if we are not logged in.
+        """
+        new_number_of_volunteers = 2
+        data_post = {
+            'nb_volunteers_needed': new_number_of_volunteers,
+        }
+
+        response = self.client.patch(
+            reverse(
+                'event-detail',
+                kwargs={
+                    'pk': self.event.id
+                },
+            ),
+            data_post,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            content,
+            {
+                'detail': 'Authentication credentials were not provided.'
+            }
+        )
+
     def test_delete_event_as_admin(self):
         """
         Ensure we can delete a event if we are an admin.
@@ -248,12 +308,49 @@ class EventsTests(CustomAPITestCase):
             }
         )
 
+    def test_delete_event_without_auth(self):
+        """
+        Ensure we can't delete a event if we are not logged in.
+        """
+        response = self.client.patch(
+            reverse(
+                'event-detail',
+                kwargs={
+                    'pk': self.event.id
+                },
+            )
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            content,
+            {
+                'detail': 'Authentication credentials were not provided.'
+            }
+        )
+
     def test_list_events(self):
         """
         Ensure we can list events.
         """
         self.client.force_authenticate(user=self.user)
 
+        response = self.client.get(
+            reverse('event-list'),
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(content['results']), 1)
+        self.check_attributes(content['results'][0])
+
+    def test_list_events_without_auth(self):
+        """
+        Ensure we can list events without being logged in.
+        """
         response = self.client.get(
             reverse('event-list'),
         )
@@ -283,6 +380,25 @@ class EventsTests(CustomAPITestCase):
         self.assertEqual(
             content,
             {'detail': 'You do not have permission to perform this action.'}
+        )
+
+    def test_bulk_events_as_users_without_auth(self):
+        """
+        Ensure we can't bulk add events if we are not logged in.
+        :return:
+        """
+        response = self.client.post(
+            reverse('event-bulk'),
+            data={'file': BytesIO()},
+            format='multipart'
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            content,
+            {'detail': 'Authentication credentials were not provided.'}
         )
 
     def test_bulk_events_no_file_is_given(self):

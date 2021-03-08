@@ -110,6 +110,27 @@ class TaskType(models.Model):
         return self.name
 
     @staticmethod
+    def has_list_permission(request):
+        return True
+
+    @staticmethod
+    @authenticated_users
+    def has_destroy_permission(request):
+        if request.user.is_staff:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    @authenticated_users
+    def has_update_permission(request):
+        if request.user.is_staff:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    @authenticated_users
     def has_create_permission(request):
         if request.user.is_staff:
             return True
@@ -214,7 +235,36 @@ class Event(models.Model):
         return self.end_time - self.start_time
 
     @staticmethod
+    def has_list_permission(request):
+        return True
+
+    @staticmethod
+    @authenticated_users
     def has_create_permission(request):
+        if request.user.is_staff:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    @authenticated_users
+    def has_update_permission(request):
+        if request.user.is_staff:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    @authenticated_users
+    def has_destroy_permission(request):
+        if request.user.is_staff:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    @authenticated_users
+    def has_bulk_permission(request):
         if request.user.is_staff:
             return True
         else:
@@ -437,6 +487,7 @@ class Participation(models.Model):
             )
 
     @staticmethod
+    @authenticated_users
     def has_destroy_permission(request):
         if request.user.is_staff:
             return True
@@ -444,6 +495,7 @@ class Participation(models.Model):
             return False
 
     @staticmethod
+    @authenticated_users
     def has_update_permission(request):
         if request.user.is_staff:
             return True
@@ -451,13 +503,16 @@ class Participation(models.Model):
             return False
 
     @staticmethod
+    @authenticated_users
     def has_list_permission(request):
         return True
 
     @staticmethod
+    @authenticated_users
     def has_create_permission(request):
         return True
 
+    @authenticated_users
     @authenticated_users
     def has_object_update_permission(self, request):
         if self.user == request.user:
@@ -467,6 +522,7 @@ class Participation(models.Model):
         else:
             return False
 
+    @authenticated_users
     @authenticated_users
     def has_object_destroy_permission(self, request):
         if self.user == request.user:

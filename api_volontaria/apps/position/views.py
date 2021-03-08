@@ -29,3 +29,9 @@ class ApplicationViewSet(viewsets.ModelViewSet):
     queryset = Application.objects.all()
     filter_fields = '__all__'
     permission_classes = (DRYPermissions,)
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Application.objects.all()
+        else:
+            return Application.objects.filter(user=self.request.user)

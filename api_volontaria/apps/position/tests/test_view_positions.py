@@ -110,7 +110,7 @@ class PositionsTests(CustomAPITestCase):
             "is_posted": True,
         }
 
-        self.client.force_authenticate(user=self.admin)
+        self.client.force_authenticate(user=self.user)
 
         response = self.client.post(
             reverse('position-list'),
@@ -120,8 +120,46 @@ class PositionsTests(CustomAPITestCase):
 
         content = json.loads(response.content)
 
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.check_attributes(content)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.assertEqual(
+            content,
+            {
+                'detail': 'You do not have permission to perform this action.'
+            }
+        )
+
+    def test_create_new_position_without_auth(self):
+        """
+        Ensure we can't create a new position if we are not logged in.
+        """
+        data_post = {
+            "name": "My new position name",
+            "description": "My new position description",
+            "hourly_wage": 15,
+            "hourly_wage_currency": "CAD",
+            "weekly_hours": 40,
+            "minimum_days_commitment": 6,
+            "is_remote_job": True,
+            "is_posted": True,
+        }
+
+        response = self.client.post(
+            reverse('position-list'),
+            data_post,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.assertEqual(
+            content,
+            {
+                'detail': 'Authentication credentials were not provided.'
+            }
+        )
 
     def test_update_position_as_admin(self):
         """
@@ -186,6 +224,36 @@ class PositionsTests(CustomAPITestCase):
             }
         )
 
+    def test_update_position_without_user(self):
+        """
+        Ensure we can't update a position if we are not logged in.
+        """
+        new_hourly_wage = 16
+        data_post = {
+            'hourly_wage': new_hourly_wage,
+        }
+
+        response = self.client.patch(
+            reverse(
+                'position-detail',
+                kwargs={
+                    'pk': self.position.id
+                },
+            ),
+            data_post,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            content,
+            {
+                'detail': 'Authentication credentials were not provided.'
+            }
+        )
+
     def test_delete_position_as_admin(self):
         """
         Ensure we can delete a position if we are an admin.
@@ -229,12 +297,49 @@ class PositionsTests(CustomAPITestCase):
             }
         )
 
+    def test_delete_position_without_auth(self):
+        """
+        Ensure we can't delete a position if we are not logged in.
+        """
+        response = self.client.delete(
+            reverse(
+                'position-detail',
+                kwargs={
+                    'pk': self.position.id
+                },
+            )
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            content,
+            {
+                'detail': 'Authentication credentials were not provided.'
+            }
+        )
+
     def test_list_position(self):
         """
         Ensure positions can be listed by users.
         """
         self.client.force_authenticate(user=self.user)
 
+        response = self.client.get(
+            reverse('position-list'),
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(content['results']), 2)
+        self.check_attributes(content['results'][0])
+
+    def test_list_position_without_auth(self):
+        """
+        Ensure positions can be listed without being logged in.
+        """
         response = self.client.get(
             reverse('position-list'),
         )

@@ -60,7 +60,7 @@ class TaskTypesTests(CustomAPITestCase):
 
     def test_create_new_task_type(self):
         """
-        Ensure we can't create a new task type if we are a simple user.
+        Ensure we can't create a new task type if we are not logged in.
         """
         data_post = {
             'name': 'New task type',
@@ -81,6 +81,30 @@ class TaskTypesTests(CustomAPITestCase):
             content,
             {
                 'detail': 'You do not have permission to perform this action.'
+            }
+        )
+
+    def test_create_new_task_without_auth(self):
+        """
+        Ensure we can't create a new task type if we are a simple user.
+        """
+        data_post = {
+            'name': 'New task type',
+        }
+
+        response = self.client.post(
+            reverse('tasktype-list'),
+            data_post,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            content,
+            {
+                'detail': 'Authentication credentials were not provided.'
             }
         )
 
@@ -144,6 +168,36 @@ class TaskTypesTests(CustomAPITestCase):
             }
         )
 
+    def test_update_task_type_without_auth(self):
+        """
+        Ensure we can't update a task type if we are not logged in
+        """
+        new_name = 'New task type updated name'
+        data_post = {
+            'name': new_name,
+        }
+
+        response = self.client.patch(
+            reverse(
+                'tasktype-detail',
+                kwargs={
+                    'pk': self.tasktype.id
+                },
+            ),
+            data_post,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            content,
+            {
+                'detail': 'Authentication credentials were not provided.'
+            }
+        )
+
     def test_delete_task_type_as_admin(self):
         """
         Ensure we can delete a task type if we are an admin.
@@ -187,11 +241,50 @@ class TaskTypesTests(CustomAPITestCase):
             }
         )
 
+    def test_delete_task_type_without_auth(self):
+        """
+        Ensure we can't delete a task type if we are not logged in.
+        """
+
+        response = self.client.patch(
+            reverse(
+                'tasktype-detail',
+                kwargs={
+                    'pk': self.tasktype.id
+                },
+            )
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            content,
+            {
+                'detail': 'Authentication credentials were not provided.'
+            }
+        )
+
     def test_list_task_types(self):
         """
         Ensure we can list task types.
         """
         self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(
+            reverse('tasktype-list'),
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(content['results']), 1)
+        self.check_attributes(content['results'][0])
+
+    def test_list_task_types_without_auth(self):
+        """
+        Ensure we can list task types without being logged in.
+        """
 
         response = self.client.get(
             reverse('tasktype-list'),

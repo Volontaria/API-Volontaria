@@ -107,6 +107,36 @@ class CellsTests(CustomAPITestCase):
             }
         )
 
+    def test_create_new_cell_without_auth(self):
+        """
+        Ensure we can't create a new cell if we are a simple user.
+        """
+        data_post = {
+            'name': 'New cell',
+            'address_line_1': "New address",
+            'postal_code': "H2Y K8D",
+            'city': 'Gatineau',
+            'state_province': 'Quebec',
+            'longitude': '45.540237',
+            'latitude': '-73.603421',
+        }
+
+        response = self.client.post(
+            reverse('cell-list'),
+            data_post,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            content,
+            {
+                'detail': 'Authentication credentials were not provided.'
+            }
+        )
+
     def test_update_cell_as_admin(self):
         """
         Ensure we can update a cell if we are an admin.
@@ -167,6 +197,36 @@ class CellsTests(CustomAPITestCase):
             }
         )
 
+    def test_update_cell_without_auth(self):
+        """
+        Ensure we can't update a cell if we are not logged in.
+        """
+        new_name = 'New cell updated name'
+        data_post = {
+            'name': new_name,
+        }
+
+        response = self.client.patch(
+            reverse(
+                'cell-detail',
+                kwargs={
+                    'pk': self.cell.id
+                },
+            ),
+            data_post,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            content,
+            {
+                'detail': 'Authentication credentials were not provided.'
+            }
+        )
+
     def test_delete_cell_as_admin(self):
         """
         Ensure we can delete a cell if we are an admin.
@@ -210,12 +270,49 @@ class CellsTests(CustomAPITestCase):
             }
         )
 
+    def test_delete_cell_without_auth(self):
+        """
+        Ensure we can't delete a cell if we are not logged in.
+        """
+        response = self.client.patch(
+            reverse(
+                'cell-detail',
+                kwargs={
+                    'pk': self.cell.id
+                },
+            )
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(
+            content,
+            {
+                'detail': 'Authentication credentials were not provided.'
+            }
+        )
+
     def test_list_cells(self):
         """
         Ensure we can list cells.
         """
         self.client.force_authenticate(user=self.user)
 
+        response = self.client.get(
+            reverse('cell-list'),
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(content['results']), 1)
+        self.check_attributes(content['results'][0])
+
+    def test_list_cells_without_auth(self):
+        """
+        Ensure we can list cells without begin logged in.
+        """
         response = self.client.get(
             reverse('cell-list'),
         )
