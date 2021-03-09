@@ -20,7 +20,7 @@ class APITokenAuthentication(BaseAuthentication):
         Authorization: Token 401f7ac837da42b97f613d789819ff93537bee6a
     """
 
-    keyword = 'API Token'
+    keyword = 'APIToken'
     model = APIToken
 
     def get_model(self):
