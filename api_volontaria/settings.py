@@ -57,7 +57,7 @@ INSTALLED_APPS = [
     'anymail',
     'import_export',
     'simple_history',
-    # 'dry_rest_permissions',
+    'dry_rest_permissions',
     'api_volontaria.apps.log_management',
     'api_volontaria.apps.page',
     'api_volontaria.apps.volunteer',
@@ -184,9 +184,9 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         # 'rest_framework.authentication.BaseAuthentication',
-        # 'api_volontaria.apps.user.authentication.APITokenAuthentication',
-        # 'rest_framework.authentication.TokenAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
+        'api_volontaria.apps.user.authentication.APITokenAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
