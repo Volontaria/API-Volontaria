@@ -1,9 +1,11 @@
+from datetime import datetime
 import re
 
 from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.contrib.auth import authenticate
+from django.db.models.fields import DurationField
 from django.utils.translation import ugettext_lazy as _
 
 from rest_framework.settings import api_settings
@@ -15,6 +17,7 @@ from rest_auth.registration.serializers import RegisterSerializer
 from rest_auth.serializers import PasswordResetSerializer
 
 from api_volontaria.apps.user.models import ActionToken
+from api_volontaria.apps.user.models import APIToken
 
 User = get_user_model()
 
@@ -136,6 +139,12 @@ class UserLightSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class APITokenSerializer(serializers.Serializer):
+    ''' This class is stongly inspired from TokenSerializer class in Django Rest Framework
+    One addition:
+    - purpose
+
+   '''
+
     username = serializers.CharField(
         label=_("Username"),
         write_only=True
@@ -151,7 +160,12 @@ class APITokenSerializer(serializers.Serializer):
         read_only=True
     )
 
+    purpose = serializers.CharField(
+        label=_("Purpose")
+    )
+
     def validate(self, attrs):
+        
         username = attrs.get('username')
         password = attrs.get('password')
 
@@ -170,4 +184,5 @@ class APITokenSerializer(serializers.Serializer):
             raise serializers.ValidationError(msg, code='authorization')
 
         attrs['user'] = user
+
         return attrs

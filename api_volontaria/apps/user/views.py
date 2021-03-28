@@ -111,6 +111,16 @@ class FacebookLogin(SocialLoginView):
 
 
 class ObtainAPIToken(APIView):
+    ''' This class is strongly inspired from ObtainToken in Django Rest Framework
+    Some differences are in the post function:
+    - the post function has been modified to allow:
+        - creating multiple tokens by a single user
+        - specifying to which purpose the token relates
+    TODO: - a get function has been added to allow user to retrieve:
+        - a list of their tokens
+        - the token related to a given purpose  
+    '''
+    
     throttle_classes = ()
     permission_classes = ()
     parser_classes = (parsers.FormParser, parsers.MultiPartParser, parsers.JSONParser,)
@@ -157,8 +167,9 @@ class ObtainAPIToken(APIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
-        api_token, created = APIToken.objects.get_or_create(user=user)
-        return Response({'api_token': api_token.key})
+        purpose = serializer.validated_data['purpose']
+        api_token = APIToken.objects.create(user=user, purpose=purpose)
+        return Response({'api_token': api_token.key, 'purpose': api_token.purpose})
 
 
-obtain_auth_token = ObtainAuthToken.as_view()
+obtain_api_token = ObtainAPIToken.as_view()

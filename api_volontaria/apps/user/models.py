@@ -234,8 +234,8 @@ class Address(models.Model):
 
 class APIToken(models.Model):
     """
-    A model allowing for multiple persistent tokens per single user
-    For administrators use only
+    A model allowing for multiple persistent tokens per single user,
+    each for a different purpose
     """
 
     # The token key must not be the primary key, 
@@ -259,6 +259,8 @@ class APIToken(models.Model):
         abstract = 'rest_framework.authtoken' not in settings.INSTALLED_APPS
         verbose_name = _("API Token")
         verbose_name_plural = _("API Tokens")
+
+        unique_together = [['user', 'purpose']]
 
     def save(self, *args, **kwargs):
         if not self.key:
