@@ -154,7 +154,7 @@ class Application(models.Model):
     )
 
     def __str__(self):
-        return self.user
+        return f'application to {self.position} by {self.user}'
 
     @staticmethod
     @authenticated_users

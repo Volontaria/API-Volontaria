@@ -247,7 +247,7 @@ class APIToken(models.Model):
         settings.AUTH_USER_MODEL, related_name='api_token',
         on_delete=models.CASCADE, verbose_name=_("User")
     )
-    purpose = models.CharField(_("Purpose"), max_length=200, blank=True)
+    purpose = models.CharField(_("Purpose"), max_length=200, blank=False)
     created = models.DateTimeField(_("Created"), auto_now_add=True)
 
     class Meta:
