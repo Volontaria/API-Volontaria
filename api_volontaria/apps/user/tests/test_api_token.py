@@ -19,7 +19,7 @@ from ..admin import APITokenAdmin
 
 class APITokenTests(CustomAPITestCase):
     """ 
-    inspired by AuthTokenTests class in django-rest-framework tests
+    inspired from AuthTokenTests class in django-rest-framework tests
     """
 
     def setUp(self):

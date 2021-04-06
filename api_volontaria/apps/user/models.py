@@ -7,7 +7,6 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from api_volontaria.apps.user.managers import UserManager, ActionTokenManager
-# from rest_framework.authtoken.models import Token
 from django.utils import timezone
 from django.conf import settings
 from django.template.loader import render_to_string
@@ -239,7 +238,7 @@ class APIToken(models.Model):
     """
 
     # The token key must not be the primary key, 
-    # because django admin displays the primary key in the url address bar!
+    # because django 2.2 admin displays the primary key in the url address bar!
     # (for reference, DRF, where the token is the primary key, needs an APIProxy class)
     key = models.CharField(_("Key"), max_length=40, unique=True) 
     
@@ -254,7 +253,7 @@ class APIToken(models.Model):
         # Work around for a bug in Django:
         # https://code.djangoproject.com/ticket/19422
         #
-        # Also see corresponding ticket:
+        # See also related ticket:
         # https://github.com/encode/django-rest-framework/issues/705
         abstract = 'rest_framework.authtoken' not in settings.INSTALLED_APPS
         verbose_name = _("API Token")

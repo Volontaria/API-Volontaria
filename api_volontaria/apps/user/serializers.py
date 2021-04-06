@@ -139,7 +139,8 @@ class UserLightSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class APITokenSerializer(serializers.Serializer):
-    ''' This class is strongly inspired from AuthTokenSerializer class in Django Rest Framework
+    ''' Class strongly inspired from AuthTokenSerializer class 
+    in Django Rest Framework.
     One addition:
     - purpose
 

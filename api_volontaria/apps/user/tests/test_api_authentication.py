@@ -4,19 +4,11 @@ from datetime import datetime
 import pytz
 
 # External modules
-# from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 from django.conf import settings
-# from django.contrib.auth.models import User
 from django.test import TestCase
-# from rest_framework.tests.authentication.test_authentication import BaseTokenAuthTests
-
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
-
 
 
 # Application modules

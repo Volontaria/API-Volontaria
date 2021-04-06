@@ -7,33 +7,23 @@ from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
 from .models import APIToken
-# from .models import APITokenProxy
 
 
 class APITokenAuthentication(BaseAuthentication):
     
     """
-    TokenAuthentication class, copied-pasted from django rest framwork:
+    TokenAuthentication class, copied-pasted at 99% from django rest framwork:
     Simple token based authentication.
     Clients should authenticate by passing the token key in the "Authorization"
-    HTTP header, prepended with the string "Token ".  For example:
-        Authorization: Token 401f7ac837da42b97f613d789819ff93537bee6a
+    HTTP header, prepended with the string "APIToken ".  For example:
+        Authorization: APIToken 401f7ac837da42b97f613d789819ff93537bee6a
     """
 
     keyword = 'APIToken'
     model = APIToken
 
     def get_model(self):
-        # if self.model is not None:
         return self.model
-        # from rest_framework.authtoken.models import Token
-        # return Token
-
-    """
-    A custom token model may be used, but must have the following properties.
-    * key -- The string identifying the token
-    * user -- The user to which the token belongs
-    """
 
     def authenticate(self, request):
         auth = get_authorization_header(request).split()
