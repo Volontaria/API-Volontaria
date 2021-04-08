@@ -32,9 +32,11 @@ from rest_framework.views import APIView
 
 from api_volontaria import permissions
 
-from .models import (
-    ActionToken,
-)
+# from .models import (
+#     ActionToken,
+# )
+
+from .models import APIToken
 
 from . import serializers
 
@@ -170,6 +172,25 @@ class ObtainAPIToken(APIView):
         purpose = serializer.validated_data['purpose']
         api_token = APIToken.objects.create(user=user, purpose=purpose)
         return Response({'api_token': api_token.key, 'purpose': api_token.purpose})
+    
+    def get(self, request, format=None):
+        ''' Return to user list of his own API Tokens
+        and to admin list of all existing API Tokens 
+        '''
+
+        requester = self.request.user
+        
+        if requester.is_authenticated():  
+        # TODO: fix error above; TypeError: 'bool' object is not callable
+            if requester.is_staff:
+                api_tokens = APIToken.objects.all()
+            else:
+                api_tokens = APIToken.objects.filter(user=requester)
+            serializer = APITokenSerializer(api_tokens, many=True)
+            return Response(serializer.data)
+        else:
+            content = {'message': 'Unauthenticated'}
+            return Response(content, status=status.HTTP_401_UNAUTHORIZED)
 
 
 obtain_api_token = ObtainAPIToken.as_view()
