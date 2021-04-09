@@ -11,7 +11,9 @@ from django.utils import timezone
 from django.conf import settings
 # from django.template.loader import render_to_string
 
-from dry_rest_permissions.generics import authenticated_users
+from dry_rest_permissions.generics import DRYPermissions,\
+    authenticated_users
+
 
 
 class User(AbstractUser):
@@ -251,6 +253,8 @@ class APIToken(models.Model):
     purpose = models.CharField(_("Purpose"), max_length=200, blank=False)
     created = models.DateTimeField(_("Created"), auto_now_add=True)
 
+    permission_classes = (DRYPermissions,)
+
     class Meta:
         # Work around for a bug in Django:
         # https://code.djangoproject.com/ticket/19422
@@ -272,10 +276,10 @@ class APIToken(models.Model):
     def generate_key(cls):
         return binascii.hexlify(os.urandom(20)).decode()
 
-    # @staticmethod
-    # @authenticated_users
-    # def has_list_permission(request):
-    #     return True
+    @staticmethod
+    @authenticated_users
+    def has_list_permission(request):
+        return True
 
     def __str__(self):
         return self.key

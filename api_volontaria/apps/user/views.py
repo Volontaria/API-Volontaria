@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model, password_validation
 from django.conf import settings
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import AnonymousUser, Permission
 from django.utils import timezone
 from django.http import Http404
 from django.core.exceptions import ValidationError
@@ -177,20 +177,34 @@ class ObtainAPIToken(APIView):
         ''' Return to user list of his own API Tokens
         and to admin list of all existing API Tokens 
         '''
-
-        requester = self.request.user
-        
-        if requester.is_authenticated():  
-        # TODO: fix error above; TypeError: 'bool' object is not callable
-            if requester.is_staff:
+        # TypeError: Cannot cast AnonymousUser to int. Are you trying to use it in place of User?
+        # requester = self.request.user
+        # print('requester: ', requester)
+        if self.request.user.is_authenticated:
+            if self.request.user.is_staff:
                 api_tokens = APIToken.objects.all()
             else:
-                api_tokens = APIToken.objects.filter(user=requester)
+                print('----')
+                print('mouaf')
+                print('----')
+                api_tokens = APIToken.objects.filter(user=self.request.user)
             serializer = APITokenSerializer(api_tokens, many=True)
             return Response(serializer.data)
         else:
-            content = {'message': 'Unauthenticated'}
+            print('XXXXX')
+            content = {'message': 'Please login or register.'}
             return Response(content, status=status.HTTP_401_UNAUTHORIZED)
+        
+        # except TypeError as e:
+        #     print(f'Error: {e}')
+        #     # content = {'message': 'Unauthenticated'}
+        #     # return Response(content, status=status.HTTP_401_UNAUTHORIZED)
 
+
+        # requester = self.request.user
+        
+        # if requester.is_authenticated():  
+        # TODO: fix error above; TypeError: 'bool' object is not callable
+            
 
 obtain_api_token = ObtainAPIToken.as_view()

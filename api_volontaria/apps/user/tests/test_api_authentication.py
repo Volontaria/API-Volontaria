@@ -13,6 +13,7 @@ from django.test import TestCase
 
 # Application modules
 from api_volontaria.factories import (
+    AdminFactory,
     UserFactory,
 )
 from api_volontaria.apps.position.models import (
@@ -33,13 +34,22 @@ class APITokenAuthTests(CustomAPITestCase):
 
     def setUp(self):
         self.client = APIClient()
+        self.admin = AdminFactory()
         self.user = UserFactory()
+        self.user1 = UserFactory()
     
         self.key = 'abcd1234'
         self.token = APIToken.objects.create(
             key=self.key,
             user=self.user,
             purpose="C'est bien plus beau lorsque c'est inutile",
+            )
+
+        self.key1 = 'efgh5678'
+        self.token1 = APIToken.objects.create(
+            key=self.key1,
+            user=self.user,
+            purpose="Service alpha",
             )
 
         self.position = Position.objects.create(
@@ -50,6 +60,82 @@ class APITokenAuthTests(CustomAPITestCase):
             is_posted=True,
         )
 
+    def test_admin_can_list_all_api_tokens(self):
+        """ Ensure staff can list all api tokens """
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get(
+            reverse('api_token_creation'),
+        )
+
+        content = json.loads(response.content)
+
+        print('---')
+        print(content)
+        # print(content['purpose'])
+        print('---')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(content), 2)
+
+    def test_user_can_list_their_own_api_tokens(self):
+        """ Ensure an authenticated user can list his api tokens """
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(
+            reverse('api_token_creation'),
+        )
+
+        content = json.loads(response.content)
+
+        print('---')
+        print(content)
+        # print(content['purpose'])
+        print('---')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(content), 2)
+
+    def test_user_cannot_list_other_user_api_tokens(self):
+        """ Ensure an authenticated non-staff user
+        cannot list someone else's api tokens
+        """
+
+        self.client.force_authenticate(user=self.user1)
+
+        response = self.client.get(
+            reverse('api_token_creation'),
+        )
+
+        content = json.loads(response.content)
+
+        print('+++')
+        print(content)
+        # print(content['purpose'])
+        print('+++')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(content), 0)
+
+    def test_unauthenticated_user_cannot_list_any_api_tokens(self):
+        """ Ensure an unauthenticated user
+        cannot list any api tokens
+        """
+
+        response = self.client.get(
+            reverse('api_token_creation'),
+        )
+
+        content = json.loads(response.content)
+
+        print('+++')
+        print(content)
+        # print(content['purpose'])
+        print('+++')
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(content['message'], 'Please login or register.')
+    
     def test_create_new_application_when_passing_api_token(self):
         """
         Ensure we can create a new application if we are a simple user
