@@ -1,4 +1,3 @@
-from api_volontaria.apps.user.views import ObtainAPIToken
 from rest_framework.routers import SimpleRouter
 from django.urls import path
 from django.conf.urls import include

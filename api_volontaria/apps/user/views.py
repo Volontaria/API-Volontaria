@@ -8,26 +8,27 @@ from django.utils.translation import ugettext_lazy as _
 
 from rest_framework import status, viewsets, mixins
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from rest_framework.views import APIView
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.authtoken.serializers import AuthTokenSerializer
+# from rest_framework.views import APIView
+# from rest_framework.authtoken.views import ObtainAuthToken
+# from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.parsers import JSONParser
+# from rest_framework.parsers import JSONParser
 from allauth.socialaccount.providers.facebook.views import (
     FacebookOAuth2Adapter,
 )
 from rest_auth.registration.views import SocialLoginView
 
-from rest_framework import parsers, renderers
+# from rest_framework import parsers, renderers
 from .models import APIToken
 from .serializers import APITokenSerializer
 from rest_framework.compat import coreapi, coreschema
 from rest_framework.response import Response
 from rest_framework.schemas import ManualSchema
 from rest_framework.schemas import coreapi as coreapi_schema
-from rest_framework.views import APIView
+# from rest_framework.views import APIView
 
+from dry_rest_permissions.generics import DRYPermissions
 
 
 from api_volontaria import permissions
@@ -112,7 +113,7 @@ class FacebookLogin(SocialLoginView):
     adapter_class = FacebookOAuth2Adapter
 
 
-class ObtainAPIToken(APIView):
+class APITokenViewSet(viewsets.ModelViewSet):
     ''' This class is strongly inspired from ObtainToken in Django Rest Framework
     Some differences are in the post function:
     - the post function has been modified to allow:
@@ -123,11 +124,21 @@ class ObtainAPIToken(APIView):
         - the token related to a given purpose  
     '''
     
-    throttle_classes = ()
-    permission_classes = ()
-    parser_classes = (parsers.FormParser, parsers.MultiPartParser, parsers.JSONParser,)
-    renderer_classes = (renderers.JSONRenderer,)
+    # throttle_classes = ()
+    # permission_classes = () # Pas besoin
+    # parser_classes = (parsers.FormParser, parsers.MultiPartParser, parsers.JSONParser,)
+    # renderer_classes = (renderers.JSONRenderer,)
+
     serializer_class = APITokenSerializer
+    # queryset = APIToken.objects.all()
+    filter_fields = '__all__'
+    permission_classes = (DRYPermissions,)
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return APIToken.objects.all()
+        else:
+            return APIToken.objects.filter(user=self.request.user)
 
     if coreapi_schema.is_enabled():
         schema = ManualSchema(
@@ -165,7 +176,7 @@ class ObtainAPIToken(APIView):
         kwargs['context'] = self.get_serializer_context()
         return self.serializer_class(*args, **kwargs)
 
-    def post(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
@@ -173,38 +184,121 @@ class ObtainAPIToken(APIView):
         api_token = APIToken.objects.create(user=user, purpose=purpose)
         return Response({'api_token': api_token.key, 'purpose': api_token.purpose})
     
-    def get(self, request, format=None):
-        ''' Return to user list of his own API Tokens
-        and to admin list of all existing API Tokens 
-        '''
-        # TypeError: Cannot cast AnonymousUser to int. Are you trying to use it in place of User?
-        # requester = self.request.user
-        # print('requester: ', requester)
-        if self.request.user.is_authenticated:
-            if self.request.user.is_staff:
-                api_tokens = APIToken.objects.all()
-            else:
-                print('----')
-                print('mouaf')
-                print('----')
-                api_tokens = APIToken.objects.filter(user=self.request.user)
-            serializer = APITokenSerializer(api_tokens, many=True)
-            return Response(serializer.data)
-        else:
-            print('XXXXX')
-            content = {'message': 'Please login or register.'}
-            return Response(content, status=status.HTTP_401_UNAUTHORIZED)
-        
-        # except TypeError as e:
-        #     print(f'Error: {e}')
-        #     # content = {'message': 'Unauthenticated'}
-        #     # return Response(content, status=status.HTTP_401_UNAUTHORIZED)
+    # def get(self, request, format=None):
+    #     ''' Return to user list of his own API Tokens
+    #     and to admin list of all existing API Tokens 
+    #     '''
+    #     if self.request.user.is_authenticated:
+    #         if self.request.user.is_staff:
+    #             api_tokens = APIToken.objects.all()
+    #         else:
+    #             print('----')
+    #             print('mouaf')
+    #             print('----')
+    #             api_tokens = APIToken.objects.filter(user=self.request.user)
+    #         serializer = APITokenSerializer(api_tokens, many=True)
+    #         return Response(serializer.data)
+    #     else:
+    #         print('XXXXX')
+    #         content = {'message': 'Please login or register.'}
+    #         return Response(content, status=status.HTTP_401_UNAUTHORIZED)     
+                  
+# obtain_api_token = ObtainAPIToken.as_view()
 
 
-        # requester = self.request.user
+# class ObtainAPIToken(APIView):
+#     ''' This class is strongly inspired from ObtainToken in Django Rest Framework
+#     Some differences are in the post function:
+#     - the post function has been modified to allow:
+#         - creating multiple tokens by a single user
+#         - specifying to which purpose the token relates
+#     TODO: - a get function has been added to allow user to retrieve:
+#         - a list of their tokens
+#         - the token related to a given purpose  
+#     '''
+    
+#     throttle_classes = ()
+#     permission_classes = () # Pas besoin
+#     parser_classes = (parsers.FormParser, parsers.MultiPartParser, parsers.JSONParser,)
+#     renderer_classes = (renderers.JSONRenderer,)
+#     serializer_class = APITokenSerializer
+
+#     if coreapi_schema.is_enabled():
+#         schema = ManualSchema(
+#             fields=[
+#                 coreapi.Field(
+#                     name="username",
+#                     required=True,
+#                     location='form',
+#                     schema=coreschema.String(
+#                         title="Username",
+#                         description="Valid username for authentication",
+#                     ),
+#                 ),
+#                 coreapi.Field(
+#                     name="password",
+#                     required=True,
+#                     location='form',
+#                     schema=coreschema.String(
+#                         title="Password",
+#                         description="Valid password for authentication",
+#                     ),
+#                 ),
+#             ],
+#             encoding="application/json",
+#         )
+
+#     def get_serializer_context(self):
+#         return {
+#             'request': self.request,
+#             'format': self.format_kwarg,
+#             'view': self
+#         }
+
+#     def get_serializer(self, *args, **kwargs):
+#         kwargs['context'] = self.get_serializer_context()
+#         return self.serializer_class(*args, **kwargs)
+
+#     def post(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         user = serializer.validated_data['user']
+#         purpose = serializer.validated_data['purpose']
+#         api_token = APIToken.objects.create(user=user, purpose=purpose)
+#         return Response({'api_token': api_token.key, 'purpose': api_token.purpose})
+    
+#     def get(self, request, format=None):
+#         ''' Return to user list of his own API Tokens
+#         and to admin list of all existing API Tokens 
+#         '''
+#         # TypeError: Cannot cast AnonymousUser to int. Are you trying to use it in place of User?
+#         # requester = self.request.user
+#         # print('requester: ', requester)
+#         if self.request.user.is_authenticated:
+#             if self.request.user.is_staff:
+#                 api_tokens = APIToken.objects.all()
+#             else:
+#                 print('----')
+#                 print('mouaf')
+#                 print('----')
+#                 api_tokens = APIToken.objects.filter(user=self.request.user)
+#             serializer = APITokenSerializer(api_tokens, many=True)
+#             return Response(serializer.data)
+#         else:
+#             print('XXXXX')
+#             content = {'message': 'Please login or register.'}
+#             return Response(content, status=status.HTTP_401_UNAUTHORIZED)
         
-        # if requester.is_authenticated():  
-        # TODO: fix error above; TypeError: 'bool' object is not callable
+#         # except TypeError as e:
+#         #     print(f'Error: {e}')
+#         #     # content = {'message': 'Unauthenticated'}
+#         #     # return Response(content, status=status.HTTP_401_UNAUTHORIZED)
+
+
+#         # requester = self.request.user
+        
+#         # if requester.is_authenticated():  
+#         # TODO: fix error above; TypeError: 'bool' object is not callable
             
 
-obtain_api_token = ObtainAPIToken.as_view()
+# obtain_api_token = ObtainAPIToken.as_view()
