@@ -146,14 +146,14 @@ class APITokenSerializer(serializers.Serializer):
 
    '''
 
-    # class Meta:
-    #    model = APIToken
-    #    fields = [
-    #        'username',
-    #        'password',
-    #        'token',
-    #        'purpose',
-    #    ]
+    class Meta:
+       model = APIToken
+       fields = [
+           'username',
+           'password',
+           'token',
+           'purpose',
+       ]
 
     username = serializers.CharField(
         label=_("Username"),

@@ -278,8 +278,41 @@ class APIToken(models.Model):
 
     @staticmethod
     @authenticated_users
+    def has_destroy_permission(request):
+        return True
+
+    @staticmethod
+    @authenticated_users
+    def has_update_permission(request):
+        return True
+
+    @staticmethod
+    @authenticated_users
     def has_list_permission(request):
         return True
+
+    @staticmethod
+    @authenticated_users
+    def has_create_permission(request):
+        return True
+
+    @authenticated_users
+    def has_object_update_permission(self, request):
+        if self.user == request.user:
+            return True
+        if request.user.is_staff:
+            return True
+        else:
+            return False
+
+    @authenticated_users
+    def has_object_destroy_permission(self, request):
+        if self.user == request.user:
+            return True
+        if request.user.is_staff:
+            return True
+        else:
+            return False
 
     def __str__(self):
         return self.key
