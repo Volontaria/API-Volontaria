@@ -6,7 +6,6 @@ from django.contrib.admin import site
 
 from rest_framework.test import APIClient
 from rest_framework.exceptions import ValidationError
-from rest_framework.authtoken.models import Token
 
 from api_volontaria.apps.user.serializers import APITokenSerializer
 

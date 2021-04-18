@@ -9,11 +9,9 @@ from django.utils.translation import ugettext_lazy as _
 from api_volontaria.apps.user.managers import UserManager, ActionTokenManager
 from django.utils import timezone
 from django.conf import settings
-# from django.template.loader import render_to_string
 
 from dry_rest_permissions.generics import DRYPermissions,\
     authenticated_users
-
 
 
 class User(AbstractUser):

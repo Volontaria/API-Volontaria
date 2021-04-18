@@ -18,11 +18,10 @@ from django.conf import settings
 from django.conf.urls import include, url
 from rest_framework.documentation import include_docs_urls
 from rest_framework.routers import DefaultRouter
-from api_volontaria.apps.user.views import FacebookLogin
-# from api_volontaria.apps.user.views import obtain_api_token
 
 # External application routers
 # ie: from app.urls import router as app_router
+from api_volontaria.apps.user.views import FacebookLogin
 
 from . import views
 
@@ -50,6 +49,5 @@ urlpatterns = [
     url(r'^accounts/', include('allauth.urls'), name='socialaccount_signup'),
     url(r'^rest-auth/registration/', include('rest_auth.registration.urls')),
     url(r'^rest-auth/facebook/$', FacebookLogin.as_view(), name='fb_login'),
-    # url(r'^api-token-creation/', obtain_api_token, name='api_token_creation'),
     path('', include(router.urls)),  # includes router generated URL
 ]

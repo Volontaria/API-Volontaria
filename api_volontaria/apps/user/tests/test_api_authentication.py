@@ -70,11 +70,6 @@ class APITokenAuthTests(CustomAPITestCase):
 
         content = json.loads(response.content)
 
-        # print('---')
-        # print(content)
-        # # print(content['purpose'])
-        # print('---')
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(content), 2)
 
@@ -87,11 +82,6 @@ class APITokenAuthTests(CustomAPITestCase):
         )
 
         content = json.loads(response.content)
-
-        print('---')
-        print(content)
-        print(content[0]['purpose'])
-        print('---')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(content), 2)
@@ -111,11 +101,6 @@ class APITokenAuthTests(CustomAPITestCase):
 
         content = json.loads(response.content)
 
-        # print('+++')
-        # print(content)
-        # # print(content['purpose'])
-        # print('+++')
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(content), 0)
 
@@ -129,12 +114,6 @@ class APITokenAuthTests(CustomAPITestCase):
         )
 
         content = json.loads(response.content)
-
-        print('+++')
-        print(content)
-        print('+')
-        print(content['detail'])
-        print('+++')
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(content['detail'], 'Authentication credentials were not provided.')
@@ -218,7 +197,7 @@ class BaseTokenAuthTests:
     Strongly inspired from tests/authentication/test_authentication.py
     (which cannot be imported from rest_framewok as such (being outside rest_framework),
     so copied-pasted below,
-    with some adjustments needed for code to fit Volontaria code base
+    with some adjustments made as needed to fit Volontaria application
 
     """
     model = None
