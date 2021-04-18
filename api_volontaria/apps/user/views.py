@@ -133,6 +133,14 @@ class APITokenViewSet(viewsets.ModelViewSet):
     # queryset = APIToken.objects.all()
     filter_fields = '__all__'
     permission_classes = (DRYPermissions,)
+    # Setting pagination_class to None
+    # in order to remove the metadata count, next, previous and results,
+    # and instead expose pure content only at the REST API endpoint
+    # see https://stackoverflow.com/questions/22484006/django-rest-framework-directly-display-on-results-list-in-genericview?noredirect=1&lq=1
+    # but paginate_by is now pending deprecation
+    # see https://www.django-rest-framework.org/api-guide/pagination/
+    # hence:
+    pagination_class = None
 
     def get_queryset(self):
         if self.request.user.is_staff:

@@ -65,15 +65,15 @@ class APITokenAuthTests(CustomAPITestCase):
         self.client.force_authenticate(user=self.admin)
 
         response = self.client.get(
-            reverse('api_token_creation'),
+            reverse('api-token-list'),
         )
 
         content = json.loads(response.content)
 
-        print('---')
-        print(content)
-        # print(content['purpose'])
-        print('---')
+        # print('---')
+        # print(content)
+        # # print(content['purpose'])
+        # print('---')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(content), 2)
@@ -83,18 +83,20 @@ class APITokenAuthTests(CustomAPITestCase):
         self.client.force_authenticate(user=self.user)
 
         response = self.client.get(
-            reverse('api_token_creation'),
+            reverse('api-token-list'),
         )
 
         content = json.loads(response.content)
 
         print('---')
         print(content)
-        # print(content['purpose'])
+        print(content[0]['purpose'])
         print('---')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(content), 2)
+        self.assertEqual(content[0]['purpose'], "C'est bien plus beau lorsque c'est inutile")
+        self.assertEqual(content[1]['purpose'], "Service alpha")
 
     def test_user_cannot_list_other_user_api_tokens(self):
         """ Ensure an authenticated non-staff user
@@ -104,15 +106,15 @@ class APITokenAuthTests(CustomAPITestCase):
         self.client.force_authenticate(user=self.user1)
 
         response = self.client.get(
-            reverse('api_token_creation'),
+            reverse('api-token-list'),
         )
 
         content = json.loads(response.content)
 
-        print('+++')
-        print(content)
-        # print(content['purpose'])
-        print('+++')
+        # print('+++')
+        # print(content)
+        # # print(content['purpose'])
+        # print('+++')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(content), 0)
@@ -123,18 +125,19 @@ class APITokenAuthTests(CustomAPITestCase):
         """
 
         response = self.client.get(
-            reverse('api_token_creation'),
+            reverse('api-token-list'),
         )
 
         content = json.loads(response.content)
 
         print('+++')
         print(content)
-        # print(content['purpose'])
+        print('+')
+        print(content['detail'])
         print('+++')
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(content['message'], 'Please login or register.')
+        self.assertEqual(content['detail'], 'Authentication credentials were not provided.')
     
     def test_create_new_application_when_passing_api_token(self):
         """

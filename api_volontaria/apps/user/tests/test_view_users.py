@@ -57,8 +57,20 @@ class UsersTests(CustomAPITestCase):
         # Number of results is good
         content = json.loads(response.content)
 
+        print('*******')
+        print(content)
+        print('********')
+        print(content['permissions'])
+        print('*********')
+
         self.check_attributes(content)
         permissions = {
+            'apitoken': {
+                'create': True,
+                'update': True,
+                'destroy': True,
+                },
+
             'cell': {
                 'create': False,
             },
@@ -225,6 +237,10 @@ class UsersTests(CustomAPITestCase):
 
         # Number of results is good
         content = json.loads(response.content)
+
+        print('&&&&')
+        print(content)
+        print('&&&&')
 
         self.assertEqual(
             content,
