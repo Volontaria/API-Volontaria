@@ -1,12 +1,13 @@
 from django.contrib.auth import get_user_model, password_validation
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, Permission
+from django.db.models import Q
 from django.utils import timezone
 from django.http import Http404
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
-from rest_framework import status, viewsets, mixins
+from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
@@ -20,7 +21,9 @@ from allauth.socialaccount.providers.facebook.views import (
 )
 from rest_auth.registration.views import SocialLoginView
 
-from dry_rest_permissions.generics import DRYPermissions
+from dry_rest_permissions.generics import (
+    DRYPermissions, DRYPermissionsFiltersBase
+)
 
 from .models import APIToken
 from .serializers import APITokenSerializer
@@ -99,6 +102,21 @@ class UserViewSet(viewsets.ModelViewSet):
 class FacebookLogin(SocialLoginView):
     adapter_class = FacebookOAuth2Adapter
 
+class APITokenBackend(DRYPermissionsFiltersBase):
+    ''' Class used to limit the API tokens 
+    a simple user can retrieve in a list request
+    to its own API tokens
+    '''
+    def filter_list_queryset(self, request, queryset, view):
+        """
+        Limits all list requests to only be seen by the staff or owner.
+        """
+        if request.user.is_staff:
+            return queryset
+        else:
+            return queryset.filter(user=request.user)
+
+
 
 class APITokenViewSet(viewsets.ModelViewSet):
     ''' This class is strongly inspired from ObtainToken in Django Rest Framework
@@ -113,15 +131,15 @@ class APITokenViewSet(viewsets.ModelViewSet):
     serializer_class = APITokenSerializer
     filter_fields = '__all__'
     permission_classes = (DRYPermissions,)
+    filter_backends = (APITokenBackend,)
 
-    # Setting pagination_class to None
-    # in order to remove the metadata count, next, previous and results,
-    # and instead expose pure content only at the REST API endpoint
-    # see https://stackoverflow.com/questions/22484006/django-rest-framework-directly-display-on-results-list-in-genericview?noredirect=1&lq=1
-    # but paginate_by is now pending deprecation
-    # see https://www.django-rest-framework.org/api-guide/pagination/
-    # hence:
-    pagination_class = None
+    # def get_permissions(self):
+    #     if self.action in ['list', 'retrieve']:
+    #         permission_classes = []
+    #     else:
+    #         permission_classes = [IsAdminUser]
+
+    #     return [permission() for permission in permission_classes]
 
     def get_queryset(self):
         if self.request.user.is_staff:

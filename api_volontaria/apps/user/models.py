@@ -274,43 +274,52 @@ class APIToken(models.Model):
     def generate_key(cls):
         return binascii.hexlify(os.urandom(20)).decode()
 
+    # Permissions: 
+    # Only an admin can create, update and destroy API tokens
+    # Users can only see a list of their own API tokens
+    # (the latter is obtained from combining has_list_permission
+    # below with a filter on what can be listed in views.py)
     @staticmethod
     @authenticated_users
-    def has_destroy_permission(request):
-        return True
+    def has_write_permission(request):
+        '''Gives create, update and destroy permission to staff only'''
+        return request.user.is_staff
 
     @staticmethod
     @authenticated_users
-    def has_update_permission(request):
-        return True
+    def has_object_write_permission(request):
+        '''Gives staff only permission to update and destroy API tokens'''
+        return request.user.is_staff
+
+    # @staticmethod
+    # @authenticated_users
+    # def has_update_permission(request):
+    #     return request.user.is_staff
 
     @staticmethod
     @authenticated_users
     def has_list_permission(request):
         return True
 
-    @staticmethod
-    @authenticated_users
-    def has_create_permission(request):
-        return True
+    # @staticmethod
+    # @authenticated_users
+    # def has_create_permission(request):
+    #     return request.user.is_staff
 
-    @authenticated_users
-    def has_object_update_permission(self, request):
-        if self.user == request.user:
-            return True
-        if request.user.is_staff:
-            return True
-        else:
-            return False
+    # @authenticated_users
+    # def has_object_update_permission(self, request):
+    #     return request.user.is_staff
 
-    @authenticated_users
-    def has_object_destroy_permission(self, request):
-        if self.user == request.user:
-            return True
-        if request.user.is_staff:
-            return True
-        else:
-            return False
+    # @authenticated_users
+    # def has_object_destroy_permission(self, request):
+    #     return request.user.is_staff
+
+    # if self.user == request.user:
+    #         return True
+    #     if request.user.is_staff:
+    #         return True
+    #     else:
+    #         return False
 
     def __str__(self):
         return self.key
