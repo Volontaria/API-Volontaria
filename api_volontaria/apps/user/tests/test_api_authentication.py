@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 import pytz
 
-# External modules
+# Third-party libraries
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -28,7 +28,10 @@ LOCAL_TIMEZONE = pytz.timezone(settings.TIME_ZONE)
 
 
 class APITokenAuthTests(CustomAPITestCase):
-    """ API Token authentication, integrated within Volontaria solution """
+    """ Testing API token usage as credentials
+    when trying to perform legitimate actions
+    in Volontaria settings
+    """
 
     header_prefix = 'APIToken '
 
@@ -60,64 +63,6 @@ class APITokenAuthTests(CustomAPITestCase):
             is_posted=True,
         )
 
-    def test_admin_can_list_all_api_tokens(self):
-        """ Ensure staff can list all api tokens """
-        self.client.force_authenticate(user=self.admin)
-
-        response = self.client.get(
-            reverse('api-token-list'),
-        )
-
-        content = json.loads(response.content)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(content), 2)
-
-    def test_user_can_list_their_own_api_tokens(self):
-        """ Ensure an authenticated user can list his api tokens """
-        self.client.force_authenticate(user=self.user)
-
-        response = self.client.get(
-            reverse('api-token-list'),
-        )
-
-        content = json.loads(response.content)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(content), 2)
-        self.assertEqual(content[0]['purpose'], "C'est bien plus beau lorsque c'est inutile")
-        self.assertEqual(content[1]['purpose'], "Service alpha")
-
-    def test_user_cannot_list_other_user_api_tokens(self):
-        """ Ensure an authenticated non-staff user
-        cannot list someone else's api tokens
-        """
-
-        self.client.force_authenticate(user=self.user1)
-
-        response = self.client.get(
-            reverse('api-token-list'),
-        )
-
-        content = json.loads(response.content)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(content), 0)
-
-    def test_unauthenticated_user_cannot_list_any_api_tokens(self):
-        """ Ensure an unauthenticated user
-        cannot list any api tokens
-        """
-
-        response = self.client.get(
-            reverse('api-token-list'),
-        )
-
-        content = json.loads(response.content)
-
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(content['detail'], 'Authentication credentials were not provided.')
-    
     def test_create_new_application_when_passing_api_token(self):
         """
         Ensure we can create a new application if we are a simple user
@@ -154,8 +99,8 @@ class APITokenAuthTests(CustomAPITestCase):
 
     def test_fail_create_new_application_when_passing_invalid_api_token(self):
         """
-        Ensure we cannot create a new application if we are a simple user
-        with invalid api token
+        Ensure we cannot create a new application
+        if we are a simple user with invalid api token
         """
         data_post = {
             'position': reverse(
@@ -194,11 +139,13 @@ class APITokenAuthTests(CustomAPITestCase):
 class BaseTokenAuthTests:
     """
     Token authentication
-    Strongly inspired from tests/authentication/test_authentication.py
-    (which cannot be imported from rest_framewok as such (being outside rest_framework),
+    Strongly inspired from
+    tests/authentication/test_authentication.py
+    (which cannot be imported from rest_framewok
+    as such (being outside rest_framework),
     so copied-pasted below,
-    with some adjustments made as needed to fit Volontaria application
-
+    with some adjustments made as needed 
+    to fit Volontaria application)
     """
     model = None
     path = None

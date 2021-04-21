@@ -150,7 +150,7 @@ class APITokenSerializer(serializers.Serializer):
        model = APIToken
        fields = [
            'username',
-           'password',
+        #    'password',
            'token',
            'purpose',
        ]
@@ -159,12 +159,12 @@ class APITokenSerializer(serializers.Serializer):
         label=_("Username"),
         write_only=True
     )
-    password = serializers.CharField(
-        label=_("Password"),
-        style={'input_type': 'password'},
-        trim_whitespace=False,
-        write_only=True
-    )
+    # password = serializers.CharField(
+    #     label=_("Password"),
+    #     style={'input_type': 'password'},
+    #     trim_whitespace=False,
+    #     write_only=True
+    # )
     token = serializers.CharField(
         label=_("APIToken"),
         read_only=True
@@ -176,22 +176,30 @@ class APITokenSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         
-        username = attrs.get('username')
-        password = attrs.get('password')
+        email = attrs.get('username')
+        # password = attrs.get('password')
 
-        if username and password:
-            user = authenticate(request=self.context.get('request'),
-                                username=username, password=password)
+        if email:
+            user = User.objects.get(email=email)
+            if not user.is_active:
+                msg = _('Unable to create token for this user, \
+                    as there is no active user \
+                    with the "email" you provided.')
+
+                raise serializers.ValidationError(msg)            
+            # authenticate(request=self.context.get('request'),
+            #                     username=username, password=password)
 
             # The authenticate call simply returns None for is_active=False
             # users. (Assuming the default ModelBackend authentication
             # backend.)
-            if not user:
-                msg = _('Unable to log in with provided credentials.')
-                raise serializers.ValidationError(msg, code='authorization')
+            # if not user:
+            #     msg = _('Unable to log in with provided credentials.')
+            #     raise serializers.ValidationError(msg, code='authorization')
         else:
-            msg = _('Must include "username" and "password".')
-            raise serializers.ValidationError(msg, code='authorization')
+            msg = _('Must include "email" of the user for whom \
+                you want to create a token')
+            raise serializers.ValidationError(msg)
 
         attrs['user'] = user
 

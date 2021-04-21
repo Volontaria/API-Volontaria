@@ -22,7 +22,7 @@ from allauth.socialaccount.providers.facebook.views import (
 from rest_auth.registration.views import SocialLoginView
 
 from dry_rest_permissions.generics import (
-    DRYPermissions, DRYPermissionsFiltersBase
+    DRYPermissions, DRYPermissionFiltersBase
 )
 
 from .models import APIToken
@@ -102,7 +102,7 @@ class UserViewSet(viewsets.ModelViewSet):
 class FacebookLogin(SocialLoginView):
     adapter_class = FacebookOAuth2Adapter
 
-class APITokenBackend(DRYPermissionsFiltersBase):
+class APITokenBackend(DRYPermissionFiltersBase):
     ''' Class used to limit the API tokens 
     a simple user can retrieve in a list request
     to its own API tokens

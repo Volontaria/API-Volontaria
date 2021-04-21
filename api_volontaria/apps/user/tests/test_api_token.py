@@ -1,17 +1,19 @@
+# Standard library
 import json
-
 from datetime import timedelta
 
+# Third-party libraries
 from django.contrib.admin import site
+from django.urls import reverse
 
 from rest_framework.test import APIClient
 from rest_framework.exceptions import ValidationError
+from rest_framework import status
 
+# Application modules
 from api_volontaria.apps.user.serializers import APITokenSerializer
-
 from api_volontaria.factories import UserFactory, AdminFactory
 from ....testClasses import CustomAPITestCase
-
 from ..models import APIToken
 from ..admin import APITokenAdmin
 
@@ -25,16 +27,25 @@ class APITokenTests(CustomAPITestCase):
         self.site = site
         self.client = APIClient()
         self.user = UserFactory()
+        self.user1 = UserFactory()
         self.admin = AdminFactory()
         self.user_authtoken = APIToken.objects.create(
-            key='test_user_authtoken',
+            key='test_user_apitoken_123',
             user=self.user,
-            purpose='Because it is hard')
+            purpose='Service alpha')
+        self.user_authtoken2 = APIToken.objects.create(
+            key='test_user_apitoken_456',
+            user=self.user,
+            purpose='Service beta',
+            )
         self.admin_apitoken = APIToken.objects.create(
             key='test_admin_apitoken',
             user=self.admin,
-            purpose="Pas dans l'espoir du succès")
+            purpose='Service gamma')
 
+    # Three generic tests strongly inspired 
+    # from DRF testing suite for Token
+    
     def test_model_admin_displayed_fields(self):
         mock_request = object()
         token_admin = APITokenAdmin(self.admin_apitoken, self.site)
@@ -46,16 +57,22 @@ class APITokenTests(CustomAPITestCase):
     def test_validate_raise_error_if_no_credentials_provided(self):
         with self.assertRaises(ValidationError):
             APITokenSerializer().validate({})
-  
+
+
+    # Tests tailored to Volontaria API Token
+    # permission system:
+    # Admin has all write and read permissions
+    # Users can only list their own API Tokens (seeing purpose only)
+      
     def test_more_than_one_token_can_be_created_for_single_admin(self):
         token_initial_count = APIToken.objects.filter(
             user=self.admin
         ).count()
 
         self.token_2 = APIToken.objects.create(
-            key='test_admin_apitoken 2',
+            key='test_admin_apitoken_2',
             user=self.admin, 
-            purpose="C'est bien plus beau lorsque c'est inutile",
+            purpose='Service zeta',
         )  
 
         token_final_count = APIToken.objects.filter(
@@ -70,9 +87,9 @@ class APITokenTests(CustomAPITestCase):
         ).count()
 
         self.token_2 = APIToken.objects.create(
-            key='test_admin_apitoken 2',
+            key='test_apitoken_2',
             user=self.user,
-            purpose="Not because it is easy"
+            purpose="Service gamma"
         )
 
         token_final_count = APIToken.objects.filter(
@@ -80,3 +97,145 @@ class APITokenTests(CustomAPITestCase):
         ).count()
 
         self.assertEqual(token_final_count, token_initial_count + 1)
+
+    def test_user_cannot_create_api_token(self):
+        self.client.force_authenticate(user=self.user)
+
+        data_post = {
+            'purpose': 'New Service',
+        }
+
+        # auth = self.header_prefix + self.key
+
+        response = self.client.post(
+            reverse('api-token-list'),
+            data_post,
+            format='json',
+        )
+
+        # self.client.post(
+        #     reverse('application-list'),
+        #     data_post,
+        #     format='json',
+        #     HTTP_AUTHORIZATION=auth,
+        # )
+
+        content = json.loads(response.content)
+
+        print(content)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN,
+        )
+
+    def test_admin_can_create_api_token(self):
+        self.client.force_authenticate(user=self.admin)
+
+        data_post = {
+            'purpose': 'New Service',
+            'username': self.admin.email,
+            'password': self.admin.password,
+        }
+
+        # auth = self.header_prefix + self.key
+
+        response = self.client.post(
+            reverse('api-token-list'),
+            data_post,
+            format='json',
+        )
+
+        # self.client.post(
+        #     reverse('application-list'),
+        #     data_post,
+        #     format='json',
+        #     HTTP_AUTHORIZATION=auth,
+        # )
+
+        content = json.loads(response.content)
+
+        print('***admin***')
+        print(content)
+        print('***admin***')
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_201_CREATED,
+            content
+        )   
+
+
+    def test_admin_can_list_all_api_tokens(self):
+        """ Ensure staff can list all api tokens """
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get(
+            reverse('api-token-list'),
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(content['count'], 3)
+        self.assertEqual(
+            content['results'][0]['purpose'],
+            'Service alpha')
+        self.assertEqual(
+            content['results'][1]['purpose'],
+            'Service beta')
+        self.assertEqual(
+            content['results'][2]['purpose'],
+            'Service gamma')
+
+    def test_user_can_list_their_own_api_tokens(self):
+        """ Ensure an authenticated user
+        can list his own api tokens 
+        """
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(
+            reverse('api-token-list'),
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(content['count'], 2)
+        self.assertEqual(
+            content['results'][0]['purpose'],
+            'Service alpha')
+        self.assertEqual(
+            content['results'][1]['purpose'],
+            'Service beta')
+
+    def test_user_cannot_list_other_user_api_tokens(self):
+        """ Ensure an authenticated non-staff user
+        cannot list someone else's api tokens
+        """
+
+        self.client.force_authenticate(user=self.user1)
+
+        response = self.client.get(
+            reverse('api-token-list'),
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(content['count'], 0)
+
+    def test_unauthenticated_user_cannot_list_any_api_tokens(self):
+        """ Ensure an unauthenticated user
+        cannot list any api tokens
+        """
+
+        response = self.client.get(
+            reverse('api-token-list'),
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(content['detail'], 'Authentication credentials were not provided.')
+    
