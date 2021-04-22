@@ -1,6 +1,7 @@
 # Standard library
 import json
 from datetime import timedelta
+from os import PRIO_PGRP
 
 # Third-party libraries
 from django.contrib.admin import site
@@ -129,16 +130,17 @@ class APITokenTests(CustomAPITestCase):
             status.HTTP_403_FORBIDDEN,
         )
 
-    def test_admin_can_create_api_token(self):
-        self.client.force_authenticate(user=self.admin)
+    def test_admin_can_create_api_token_for_oneself(self):
+        initial_api_token_count = APIToken.objects.filter(
+            user=self.admin
+        ).count()
+        
+        self.client.force_authenticate(user=self.admin)       
 
         data_post = {
             'purpose': 'New Service',
-            'username': self.admin.email,
-            'password': self.admin.password,
+            'email': self.admin.email,
         }
-
-        # auth = self.header_prefix + self.key
 
         response = self.client.post(
             reverse('api-token-list'),
@@ -146,25 +148,83 @@ class APITokenTests(CustomAPITestCase):
             format='json',
         )
 
-        # self.client.post(
-        #     reverse('application-list'),
-        #     data_post,
-        #     format='json',
-        #     HTTP_AUTHORIZATION=auth,
-        # )
-
         content = json.loads(response.content)
 
-        print('***admin***')
-        print(content)
-        print('***admin***')
+        final_api_token_count = APIToken.objects.filter(
+            user=self.admin
+        ).count()
 
         self.assertEqual(
             response.status_code,
-            status.HTTP_201_CREATED,
+            status.HTTP_200_OK,
             content
-        )   
+        )
 
+        self.assertEqual(
+            final_api_token_count,
+            initial_api_token_count + 1
+        )
+
+    def test_admin_can_create_api_token_for_user(self):
+        initial_api_token_count = APIToken.objects.filter(
+            user=self.user
+        ).count()
+        
+        self.client.force_authenticate(user=self.admin)       
+
+        data_post = {
+            'purpose': 'New Service',
+            'email': self.user.email,
+        }
+
+        response = self.client.post(
+            reverse('api-token-list'),
+            data_post,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+
+        final_api_token_count = APIToken.objects.filter(
+            user=self.user
+        ).count()
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+            content
+        )
+
+        self.assertEqual(
+            final_api_token_count,
+            initial_api_token_count + 1
+        )
+    
+    def test_user_cannot_create_api_token(self):
+        # initial_api_token_count = APIToken.objects.filter(
+        #     user=self.user
+        # ).count()
+        
+        self.client.force_authenticate(user=self.user)       
+
+        data_post = {
+            'purpose': 'New Service',
+            'email': self.user.email,
+        }
+
+        response = self.client.post(
+            reverse('api-token-list'),
+            data_post,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN,
+            content
+        )
 
     def test_admin_can_list_all_api_tokens(self):
         """ Ensure staff can list all api tokens """
@@ -175,6 +235,10 @@ class APITokenTests(CustomAPITestCase):
         )
 
         content = json.loads(response.content)
+
+        print('$$$$$$$')
+        print(content)
+        print('$$$$$$$$$$$$')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(content['count'], 3)

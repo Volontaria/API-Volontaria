@@ -149,16 +149,31 @@ class APITokenSerializer(serializers.Serializer):
     class Meta:
        model = APIToken
        fields = [
-           'username',
+           'email',
         #    'password',
-           'token',
-           'purpose',
+            # 'user',
+            'purpose',
+            'token',
        ]
 
-    username = serializers.CharField(
-        label=_("Username"),
-        write_only=True
+    #TODO: ask whether setup below is legit
+    # email = serializers.EmailField(
+    #     label=_("Email"),
+    #     write_only=True
+    # )
+
+    # email = serializers.EmailField(
+    #     source = 'user.email',
+    #     label=_("Email"),
+    #     read_only=True
+    # )
+
+    email = serializers.EmailField(
+        source = 'user.email',
+        label=_("Email"),
+        # read_only=True
     )
+
     # password = serializers.CharField(
     #     label=_("Password"),
     #     style={'input_type': 'password'},
@@ -175,12 +190,28 @@ class APITokenSerializer(serializers.Serializer):
     )
 
     def validate(self, attrs):
-        
-        email = attrs.get('username')
+        '''
+        Validates whether user for whom token is meant exists.
+        Since email is unique in User model
+        but admin who creates tokens for other users
+        does not know their password,
+        we use email to access user
+        and check that user is active
+        (different approach from DRF Token
+        where validation is with username + password,
+        since, in DRF, users can only create tokens for themselves) 
+        '''
+        email = attrs.get('email')
         # password = attrs.get('password')
 
         if email:
             user = User.objects.get(email=email)
+            print('user ***')
+            print(user)
+            print('*** user')
+            print('active?')
+            print(user.is_active)
+            print('---')
             if not user.is_active:
                 msg = _('Unable to create token for this user, \
                     as there is no active user \
@@ -202,5 +233,10 @@ class APITokenSerializer(serializers.Serializer):
             raise serializers.ValidationError(msg)
 
         attrs['user'] = user
+        # attrs['email'] = email
+
+        print('+++ attrs')
+        print(attrs)
+        print('++++')
 
         return attrs

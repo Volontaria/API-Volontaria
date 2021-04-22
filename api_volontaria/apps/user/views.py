@@ -151,21 +151,21 @@ class APITokenViewSet(viewsets.ModelViewSet):
         schema = ManualSchema(
             fields=[
                 coreapi.Field(
-                    name="username",
+                    name="email",
                     required=True,
                     location='form',
                     schema=coreschema.String(
-                        title="Username",
-                        description="Valid username for authentication",
+                        title="Email",
+                        description="Valid email associated with an active user",
                     ),
                 ),
                 coreapi.Field(
-                    name="password",
+                    name="purpose",
                     required=True,
                     location='form',
                     schema=coreschema.String(
-                        title="Password",
-                        description="Valid password for authentication",
+                        title="Purpose",
+                        description="Service to be associated with the API Token",
                     ),
                 ),
             ],
@@ -189,4 +189,8 @@ class APITokenViewSet(viewsets.ModelViewSet):
         user = serializer.validated_data['user']
         purpose = serializer.validated_data['purpose']
         api_token = APIToken.objects.create(user=user, purpose=purpose)
-        return Response({'api_token': api_token.key, 'purpose': api_token.purpose})
+        return Response({
+            'api_token': api_token.key,
+            'purpose': api_token.purpose,
+            'email': api_token.user.email,
+            })
