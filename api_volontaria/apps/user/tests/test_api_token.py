@@ -12,7 +12,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework import status
 
 # Application modules
-from api_volontaria.apps.user.serializers import APITokenSerializer
+from api_volontaria.apps.user.serializers import SingleAPITokenSerializer
 from api_volontaria.factories import UserFactory, AdminFactory
 from ....testClasses import CustomAPITestCase
 from ..models import APIToken
@@ -57,7 +57,7 @@ class APITokenTests(CustomAPITestCase):
     
     def test_validate_raise_error_if_no_credentials_provided(self):
         with self.assertRaises(ValidationError):
-            APITokenSerializer().validate({})
+            SingleAPITokenSerializer().validate({})
 
 
     # Tests tailored to Volontaria API Token
@@ -104,6 +104,7 @@ class APITokenTests(CustomAPITestCase):
 
         data_post = {
             'purpose': 'New Service',
+            'user_email': self.user.email,
         }
 
         # auth = self.header_prefix + self.key
@@ -139,11 +140,11 @@ class APITokenTests(CustomAPITestCase):
 
         data_post = {
             'purpose': 'New Service',
-            'email': self.admin.email,
+            'user_email': self.admin.email,
         }
 
         response = self.client.post(
-            reverse('api-token-list'),
+            reverse('single-api-token-list'),
             data_post,
             format='json',
         )
@@ -156,7 +157,7 @@ class APITokenTests(CustomAPITestCase):
 
         self.assertEqual(
             response.status_code,
-            status.HTTP_200_OK,
+            status.HTTP_201_CREATED,
             content
         )
 
@@ -174,11 +175,11 @@ class APITokenTests(CustomAPITestCase):
 
         data_post = {
             'purpose': 'New Service',
-            'email': self.user.email,
+            'user_email': self.user.email,
         }
 
         response = self.client.post(
-            reverse('api-token-list'),
+            reverse('single-api-token-list'),
             data_post,
             format='json',
         )
@@ -191,7 +192,7 @@ class APITokenTests(CustomAPITestCase):
 
         self.assertEqual(
             response.status_code,
-            status.HTTP_200_OK,
+            status.HTTP_201_CREATED,
             content
         )
 
@@ -252,9 +253,9 @@ class APITokenTests(CustomAPITestCase):
             content['results'][2]['purpose'],
             'Service gamma')
 
-    def test_user_can_list_their_own_api_tokens(self):
+    def test_user_cannot_list_api_tokens(self):
         """ Ensure an authenticated user
-        can list his own api tokens 
+        cannot list api tokens 
         """
         self.client.force_authenticate(user=self.user)
 
@@ -264,30 +265,8 @@ class APITokenTests(CustomAPITestCase):
 
         content = json.loads(response.content)
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(content['count'], 2)
-        self.assertEqual(
-            content['results'][0]['purpose'],
-            'Service alpha')
-        self.assertEqual(
-            content['results'][1]['purpose'],
-            'Service beta')
-
-    def test_user_cannot_list_other_user_api_tokens(self):
-        """ Ensure an authenticated non-staff user
-        cannot list someone else's api tokens
-        """
-
-        self.client.force_authenticate(user=self.user1)
-
-        response = self.client.get(
-            reverse('api-token-list'),
-        )
-
-        content = json.loads(response.content)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(content['count'], 0)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(content['detail'], 'You do not have permission to perform this action.')
 
     def test_unauthenticated_user_cannot_list_any_api_tokens(self):
         """ Ensure an unauthenticated user
@@ -302,4 +281,3 @@ class APITokenTests(CustomAPITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(content['detail'], 'Authentication credentials were not provided.')
-    

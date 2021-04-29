@@ -298,8 +298,8 @@ class APIToken(models.Model):
 
     @staticmethod
     @authenticated_users
-    def has_list_permission(request):
-        return True
+    def has_read_permission(request):
+        return request.user.is_staff
 
     # @staticmethod
     # @authenticated_users

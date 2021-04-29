@@ -60,9 +60,10 @@ class UsersTests(CustomAPITestCase):
         self.check_attributes(content)
         permissions = {
             'apitoken': {
-                'create': True,
-                'update': True,
-                'destroy': True,
+                'read': False,
+                'write': False,
+                # 'update': False,
+                # 'destroy': False,
             },
             'cell': {
                 'create': False,

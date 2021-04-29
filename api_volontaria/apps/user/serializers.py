@@ -138,40 +138,65 @@ class UserLightSerializer(serializers.HyperlinkedModelSerializer):
         )
 
 
-class APITokenSerializer(serializers.Serializer):
+class SingleAPITokenSerializer(serializers.Serializer):
     ''' Class strongly inspired from AuthTokenSerializer class 
     in Django Rest Framework.
     One addition:
     - purpose
 
-   '''
+    notes: 
+    1. we do not use ModelSerializer because we do not want an update method
+    2. two API token serializers coexist:
+    (a single serializer could not accommodate the fact that email
+    needs to be provided by requestor or gets retrieved from the database)
+        a. SingleAPITokenSerializer: 
+        - used to create an API Token or retrieve a single API Token
+        - need to provide email of the user
+        for whom admin wants to create new API Token.
+        b. MultipleAPITokenSerializer:
+        - used to get a full or partial list of existing API Tokens
+        - the email of the user is retrieved from the database
+    '''
 
+
+    # user = UserLightSerializer
+
+    # dry_rest_framework requires Serializer class to have Meta attribute
     class Meta:
        model = APIToken
-       fields = [
-           'email',
-        #    'password',
-            # 'user',
-            'purpose',
-            'token',
-       ]
+
+    #  assert serializer_class.Meta.model is not None, (
+    #         "global_permissions set to true without a model "
+    #         "set on the serializer for '%s'" % view.__class__.__name__
+    #     )
+    #    fields = [
+    #         # 'user_set',
+    #     #    'password',
+    #         'user',
+    #         'purpose',
+    #         'token',
+    #    ]
 
     #TODO: ask whether setup below is legit
     # email = serializers.EmailField(
     #     label=_("Email"),
     #     write_only=True
     # )
-
-    # email = serializers.EmailField(
-    #     source = 'user.email',
-    #     label=_("Email"),
-    #     read_only=True
+    # user = serializers.CharField(
+    #     label=_("")
     # )
+   
 
-    email = serializers.EmailField(
-        source = 'user.email',
+    user_email = serializers.EmailField(
+        # source = 'user.email',
         label=_("Email"),
+        write_only=True,
         # read_only=True
+    )
+
+    purpose = serializers.CharField(
+        label=_("Purpose"),
+        write_only=True
     )
 
     # password = serializers.CharField(
@@ -184,10 +209,7 @@ class APITokenSerializer(serializers.Serializer):
         label=_("APIToken"),
         read_only=True
     )
-
-    purpose = serializers.CharField(
-        label=_("Purpose")
-    )
+    
 
     def validate(self, attrs):
         '''
@@ -201,11 +223,14 @@ class APITokenSerializer(serializers.Serializer):
         where validation is with username + password,
         since, in DRF, users can only create tokens for themselves) 
         '''
-        email = attrs.get('email')
+        user_email = attrs.get('user_email')
         # password = attrs.get('password')
+        print('*email*')
+        print(user_email)
+        print('***')
 
-        if email:
-            user = User.objects.get(email=email)
+        if user_email:
+            user = User.objects.get(email=user_email)
             print('user ***')
             print(user)
             print('*** user')
@@ -228,15 +253,173 @@ class APITokenSerializer(serializers.Serializer):
             #     msg = _('Unable to log in with provided credentials.')
             #     raise serializers.ValidationError(msg, code='authorization')
         else:
-            msg = _('Must include "email" of the user for whom \
-                you want to create a token')
+            msg = _('Must include "email" of the user\
+             for whom you want to create a token')
             raise serializers.ValidationError(msg)
 
-        attrs['user'] = user
-        # attrs['email'] = email
+        # attrs['user'] = user
+        attrs['user_email'] = user_email
 
         print('+++ attrs')
         print(attrs)
         print('++++')
 
         return attrs
+
+
+class MultipleAPITokenSerializer(serializers.Serializer):
+    ''' Class strongly inspired from AuthTokenSerializer class 
+    in Django Rest Framework.
+    One addition:
+    - purpose
+
+    notes: 
+    1. we do not use ModelSerializer because we do not want an update method
+    2. two API token serializers coexist:
+    (a single serializer could not accommodate the fact that email
+    needs to be provided by requestor or gets retrieved from the database)
+        a. SingleAPITokenSerializer: 
+        - used to create an API Token or retrieve a single API Token
+        - need to provide email of the user
+        for whom admin wants to create new API Token.
+        b. MultipleAPITokenSerializer:
+        - used to get a full or partial list of existing API Tokens
+        - the email of the user is retrieved from the database
+    '''
+
+
+    # user = UserLightSerializer
+
+    # dry_rest_framework requires Serializer class to have Meta attribute
+    class Meta:
+       model = APIToken
+
+    #  assert serializer_class.Meta.model is not None, (
+    #         "global_permissions set to true without a model "
+    #         "set on the serializer for '%s'" % view.__class__.__name__
+    #     )
+    #    fields = [
+    #         # 'user_set',
+    #     #    'password',
+    #         'user',
+    #         'purpose',
+    #         'token',
+    #    ]
+
+    #TODO: ask whether setup below is legit
+    # email = serializers.EmailField(
+    #     label=_("Email"),
+    #     write_only=True
+    # )
+    # user = serializers.CharField(
+    #     label=_("")
+    # )
+   
+
+    user_email = serializers.EmailField(
+        source = 'user.email',
+        label=_("Email"),
+        # write_only=True,
+        # read_only=True
+    )
+
+    purpose = serializers.CharField(
+        label=_("Purpose"),
+        # read_only=True
+    )
+
+    # password = serializers.CharField(
+    #     label=_("Password"),
+    #     style={'input_type': 'password'},
+    #     trim_whitespace=False,
+    #     write_only=True
+    # )
+    token = serializers.CharField(
+        label=_("APIToken"),
+        read_only=True
+    )
+    
+
+    # def validate(self, attrs):
+    #     '''
+    #     Validates whether user for whom token is meant exists.
+    #     Since email is unique in User model
+    #     but admin who creates tokens for other users
+    #     does not know their password,
+    #     we use email to access user
+    #     and check that user is active
+    #     (different approach from DRF Token
+    #     where validation is with username + password,
+    #     since, in DRF, users can only create tokens for themselves) 
+    #     '''
+    #     user_email = attrs.get('user_email')
+    #     # password = attrs.get('password')
+    #     print('*email*')
+    #     print(user_email)
+    #     print('***')
+
+    #     if user_email:
+    #         user = User.objects.get(email=user_email)
+    #         print('user ***')
+    #         print(user)
+    #         print('*** user')
+    #         print('active?')
+    #         print(user.is_active)
+    #         print('---')
+    #         if not user.is_active:
+    #             msg = _('Unable to create token for this user, \
+    #                 as there is no active user \
+    #                 with the "email" you provided.')
+
+    #             raise serializers.ValidationError(msg)            
+    #         # authenticate(request=self.context.get('request'),
+    #         #                     username=username, password=password)
+
+    #         # The authenticate call simply returns None for is_active=False
+    #         # users. (Assuming the default ModelBackend authentication
+    #         # backend.)
+    #         # if not user:
+    #         #     msg = _('Unable to log in with provided credentials.')
+    #         #     raise serializers.ValidationError(msg, code='authorization')
+    #     else:
+    #         msg = _('Must include "email" of the user\
+    #          for whom you want to create a token')
+    #         raise serializers.ValidationError(msg)
+
+    #     # attrs['user'] = user
+    #     attrs['user_email'] = user_email
+
+    #     print('+++ attrs')
+    #     print(attrs)
+    #     print('++++')
+
+    #     return attrs
+
+
+
+
+
+# class APITokenReadOnlySerializer(serializers.Serializer):
+#     '''
+#     Serializer to read entire or partial list of API tokens.
+#     Unlike in APITokenSerializer, the email value is fetched
+#     from the database User table, through the foreign key User id
+#     '''
+#     class Meta:
+#        model = APIToken
+#        fields = [
+#            'email',
+#         #    'password',
+#             # 'user',
+#             'purpose',
+#        ]
+
+#     email = serializers.EmailField(
+#         source = 'user.email',
+#         label=_("Email"),
+#         read_only=True
+#     )
+
+#     purpose = serializers.CharField(
+#         label=_("Purpose")
+#     )
