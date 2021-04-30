@@ -137,7 +137,7 @@ class SingleAPITokenViewSet(viewsets.GenericViewSet,
     permission_classes = (DRYPermissions,)
     
     queryset = APIToken.objects.all()
-    filter_fields = ['purpose', 'user', 'created']
+    filter_fields = ['purpose', 'user']
     
     # filter_backends = (APITokenBackend,)
 
@@ -196,7 +196,14 @@ class SingleAPITokenViewSet(viewsets.GenericViewSet,
         serializer.is_valid(raise_exception=True)
         purpose = serializer.validated_data['purpose']
         user_email = serializer.validated_data['user_email']
-        user = User.objects.get(email=user_email)
+        try:
+            user = User.objects.get(email=user_email)
+        except User.DoesNotExist:
+            content = {
+                'detail': 'Unable to create an API token: there is no active user'
+                ' with the email you provided.'
+                }
+            return Response(content, status=status.HTTP_404_NOT_FOUND)
         api_token = APIToken.objects.create(user=user, purpose=purpose)
         return Response(
             {'api_token': api_token.key,
@@ -205,8 +212,36 @@ class SingleAPITokenViewSet(viewsets.GenericViewSet,
             status=status.HTTP_201_CREATED
             )
 
+    def list(self, request, *args, **kwargs):
+        # print('bien avant')
+        queryset = self.filter_queryset(self.get_queryset())
+        print(queryset)
+        print('avant')
+
+
+
+        page = self.paginate_queryset(queryset)
+        print('page:')
+        print(page)
+        print('XXX')
+        if page is not None:
+            print('avant serializer')
+            serializer = self.get_serializer(page, many=True)
+            print(serializer)
+            print('apres serializer')
+            print('serializer data')
+            print(serializer.data)
+            print('-----')
+            return self.get_paginated_response(serializer.data)
+
+        print('en dehors du if')
+        serializer = self.get_serializer(queryset, many=True)
+        print(serializer)
+        return Response(serializer.data)
+
     @action(detail=False) 
     def selected_user_tokens(self, request, *args, **kwargs):
+        print('called!')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -219,6 +254,7 @@ class SingleAPITokenViewSet(viewsets.GenericViewSet,
             selected_tokens = APIToken.objects.get_queryset(
                 purpose=selected_purpose, user=selected_user
             )
+            # criterion = str([selected_purpose, ' + ', selected_email])
             # should we loop through results before calling Response?
             # and format?
             return Response(selected_tokens)
@@ -228,6 +264,8 @@ class SingleAPITokenViewSet(viewsets.GenericViewSet,
             selected_tokens = APIToken.objects.get_queryset(
                 purpose=selected_purpose
             )
+
+            # criterion = selected_purpose
             # should we loop through results before calling Response?
             # and format?
             return Response(selected_tokens)
@@ -238,6 +276,8 @@ class SingleAPITokenViewSet(viewsets.GenericViewSet,
             selected_tokens = APIToken.objects.get_queryset(
                 user=selected_user
             )
+
+            # criterion = selected_email
             # should we loop through results before calling Response?
             # and format?
             return Response(selected_tokens)
@@ -246,7 +286,9 @@ class SingleAPITokenViewSet(viewsets.GenericViewSet,
             # can we return a list here and delete the MultipleAPITokenViewSet?
             # or else just raise an error here
             # return self.list(request, *args, **kwargs)
-            raise(Error)
+            serializer = self.get_serializer(data=request.data)
+            print(serializer)
+            return Response(f'The selection: {serializer} does not match any record.')
 
         #     purpose = serializer.validated_data['purpose']
         

@@ -54,11 +54,6 @@ class APITokenTests(CustomAPITestCase):
 
     def test_token_string_representation(self):
         assert str(self.admin_apitoken) == 'test_admin_apitoken'
-    
-    def test_validate_raise_error_if_no_credentials_provided(self):
-        with self.assertRaises(ValidationError):
-            SingleAPITokenSerializer().validate({})
-
 
     # Tests tailored to Volontaria API Token
     # permission system:
@@ -225,6 +220,42 @@ class APITokenTests(CustomAPITestCase):
             response.status_code,
             status.HTTP_403_FORBIDDEN,
             content
+        )
+
+    def test_error_on_create_when_email_does_not_match_any_active_user_email(self):
+        """ Ensure token cannot be created for inactive user """
+        
+        self.client.force_authenticate(user=self.admin)       
+
+        data_post = {
+            'purpose': 'New Service',
+            'user_email': self.user.email + "charabia",
+        }
+
+        response = self.client.post(
+            reverse('single-api-token-list'),
+            data_post,
+            format='json',
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_404_NOT_FOUND,
+            content
+        )
+
+        print('###')
+        print(content)
+        # print(content.detail)
+        print('###')
+        
+
+        self.assertEqual(
+            content,
+            {'detail': 'Unable to create an API token: there is no active'
+            ' user with the email you provided.'}
         )
 
     def test_admin_can_list_all_api_tokens(self):

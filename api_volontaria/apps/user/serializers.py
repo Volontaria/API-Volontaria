@@ -185,19 +185,27 @@ class SingleAPITokenSerializer(serializers.Serializer):
     # user = serializers.CharField(
     #     label=_("")
     # )
-   
+    # retrieved_user_email = serializers.EmailField(
+    #     # source = 'user.email',
+    #     label=_("Email"),
+    #     # write_only=True,
+    #     read_only=True
+    # )
+    print('debut du serializer')
+
+    purpose = serializers.CharField(
+        label=_("Purpose"),
+        # write_only=True
+    )
 
     user_email = serializers.EmailField(
         # source = 'user.email',
         label=_("Email"),
-        write_only=True,
+        # write_only=True,
         # read_only=True
     )
 
-    purpose = serializers.CharField(
-        label=_("Purpose"),
-        write_only=True
-    )
+   
 
     # password = serializers.CharField(
     #     label=_("Password"),
@@ -210,61 +218,75 @@ class SingleAPITokenSerializer(serializers.Serializer):
         read_only=True
     )
     
+    
+    
+    
 
-    def validate(self, attrs):
-        '''
-        Validates whether user for whom token is meant exists.
-        Since email is unique in User model
-        but admin who creates tokens for other users
-        does not know their password,
-        we use email to access user
-        and check that user is active
-        (different approach from DRF Token
-        where validation is with username + password,
-        since, in DRF, users can only create tokens for themselves) 
-        '''
-        user_email = attrs.get('user_email')
-        # password = attrs.get('password')
-        print('*email*')
-        print(user_email)
-        print('***')
+    # def validate(self, attrs):
+    #     '''
+    #     Validates whether user for whom token is meant exists.
+    #     Since email is unique in User model
+    #     but admin who creates tokens for other users
+    #     does not know their password,
+    #     we use email to access user
+    #     and check that user is active
+    #     (different approach from DRF Token
+    #     where validation is with username + password,
+    #     since, in DRF, users can only create tokens for themselves) 
+    #     '''
 
-        if user_email:
-            user = User.objects.get(email=user_email)
-            print('user ***')
-            print(user)
-            print('*** user')
-            print('active?')
-            print(user.is_active)
-            print('---')
-            if not user.is_active:
-                msg = _('Unable to create token for this user, \
-                    as there is no active user \
-                    with the "email" you provided.')
+    #     print(attrs.get('user_email'))
 
-                raise serializers.ValidationError(msg)            
-            # authenticate(request=self.context.get('request'),
-            #                     username=username, password=password)
+    #     if attrs.get('user_email'):
+ 
+    #         user_email = attrs.get('user_email')
+    #         # password = attrs.get('password')
+    #         print('*email*')
+    #         print(user_email)
+    #         print('***')
 
-            # The authenticate call simply returns None for is_active=False
-            # users. (Assuming the default ModelBackend authentication
-            # backend.)
-            # if not user:
-            #     msg = _('Unable to log in with provided credentials.')
-            #     raise serializers.ValidationError(msg, code='authorization')
-        else:
-            msg = _('Must include "email" of the user\
-             for whom you want to create a token')
-            raise serializers.ValidationError(msg)
+    #         if user_email:
+    #             user = User.objects.get(email=user_email)
+    #             print('user ***')
+    #             print(user)
+    #             print('*** user')
+    #             print('active?')
+    #             print(user.is_active)
+    #             print('---')
+    #             if not user.is_active:
+    #                 msg = _('Unable to create token for this user, \
+    #                     as there is no active user \
+    #                     with the "email" you provided.')
 
-        # attrs['user'] = user
-        attrs['user_email'] = user_email
+    #                 raise serializers.ValidationError(msg)            
+    #             # authenticate(request=self.context.get('request'),
+    #             #                     username=username, password=password)
 
-        print('+++ attrs')
-        print(attrs)
-        print('++++')
+    #             # The authenticate call simply returns None for is_active=False
+    #             # users. (Assuming the default ModelBackend authentication
+    #             # backend.)
+    #             # if not user:
+    #             #     msg = _('Unable to log in with provided credentials.')
+    #             #     raise serializers.ValidationError(msg, code='authorization')
+    #         else:
+    #             msg = _('Must include "email" of the user\
+    #             for whom you want to create a token')
+    #             raise serializers.ValidationError(msg)
 
-        return attrs
+        
+
+
+    #     # attrs['user'] = user
+    #         attrs['user_email'] = user_email
+
+    #     elif attrs.get('user_email'):
+    #         return attrs
+
+    #     print('+++ attrs')
+    #     print(attrs)
+    #     print('++++')
+
+        # return attrs
 
 
 class MultipleAPITokenSerializer(serializers.Serializer):
