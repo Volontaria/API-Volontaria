@@ -1,15 +1,16 @@
-from django.contrib.auth import get_user_model, password_validation
+# Third-party libraries
+from django.contrib.auth import get_user_model#, password_validation
 from django.conf import settings
-from django.contrib.auth.models import AnonymousUser, Permission
-from django.db.models import Q
-from django.utils import timezone
+# from django.contrib.auth.models import AnonymousUser, Permission
+# from django.db.models import Q
+# from django.utils import timezone
 from django.http import Http404
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
+from django.db.models.query import QuerySet
 
 from rest_framework import mixins, status, viewsets
-from rest_framework.decorators import action
-from rest_framework.views import APIView
+# from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
@@ -18,20 +19,17 @@ from rest_framework.response import Response
 from rest_framework.schemas import ManualSchema
 from rest_framework.schemas import coreapi as coreapi_schema
 
-
 from allauth.socialaccount.providers.facebook.views import (
     FacebookOAuth2Adapter,
 )
 from rest_auth.registration.views import SocialLoginView
 
-from dry_rest_permissions.generics import (
-    DRYPermissions, DRYPermissionFiltersBase
-)
+from dry_rest_permissions.generics import DRYPermissions
 
+# Volontaria modules
 from .models import APIToken
-from .serializers import SingleAPITokenSerializer, MultipleAPITokenSerializer
+from .serializers import APITokenSerializer
 from api_volontaria import permissions
-# from .models import APIToken
 from . import serializers
 
 User = get_user_model()
@@ -105,91 +103,52 @@ class UserViewSet(viewsets.ModelViewSet):
 class FacebookLogin(SocialLoginView):
     adapter_class = FacebookOAuth2Adapter
 
-# class APITokenBackend(DRYPermissionFiltersBase):
-#     ''' Class used to limit the API tokens 
-#     a simple user can retrieve in a list request
-#     to its own API tokens
-#     '''
-#     def filter_list_queryset(self, request, queryset, view):
-#         """
-#         Limits all list requests to only be seen by the staff or owner.
-#         """
-#         if request.user.is_staff:
-#             return queryset
-#         else:
-#             return queryset.filter(user=request.user)
 
-
-class SingleAPITokenViewSet(viewsets.GenericViewSet,
+class APITokenViewSet(viewsets.GenericViewSet,
                         mixins.CreateModelMixin,
                         mixins.ListModelMixin):
 
-    ''' This class is strongly inspired from ObtainAuthToken in Django Rest Framework
+    ''' This class is strongly inspired from ObtainAuthToken
+    in Django Rest Framework
     Some differences are in the post function:
     - the post function has been modified to allow:
         - creating multiple tokens by a single user
         - specifying to which purpose the token relates
-    TODO: - a get function has been added to allow user to retrieve:
-        - a list of their tokens
-        - the token related to a given purpose  
+    - the addition of a list function allowing admin to retrieve:
+        - a list of all API tokens
+        - a list of API tokens filtered
+         on the fields 'purpose' and/or 'user_email'  
     '''
-    serializer_class = SingleAPITokenSerializer
+
+    serializer_class = APITokenSerializer
     permission_classes = (DRYPermissions,)
-    
     queryset = APIToken.objects.all()
-    filter_fields = ['purpose', 'user']
     
-    # filter_backends = (APITokenBackend,)
-
-    # def get_permissions(self):
-    #     if self.action in ['list', 'retrieve']:
-    #         permission_classes = []
-    #     else:
-    #         permission_classes = [IsAdminUser]
-
-    #     return [permission() for permission in permission_classes]
-
-    # def get_queryset(self):
-    #     if self.request.user.is_staff:
-    #         return APIToken.objects.all()
-    #     else:
-    #         return APIToken.objects.filter(user=self.request.user)
-
-    if coreapi_schema.is_enabled():
-        schema = ManualSchema(
-            fields=[
-                coreapi.Field(
-                    name="email",
-                    required=True,
-                    location='form',
-                    schema=coreschema.String(
-                        title="Email",
-                        description="Valid email associated with an active user",
-                    ),
-                ),
-                coreapi.Field(
-                    name="purpose",
-                    required=True,
-                    location='form',
-                    schema=coreschema.String(
-                        title="Purpose",
-                        description="Service to be associated with the API Token",
-                    ),
-                ),
-            ],
-            encoding="application/json",
-        )
-
-    # def get_serializer_context(self):
-    #     return {
-    #         'request': self.request,
-    #         'format': self.format_kwarg,
-    #         'view': self
-    #     }
-
-    # def get_serializer(self, *args, **kwargs):
-    #     kwargs['context'] = self.get_serializer_context()
-    #     return self.serializer_class(*args, **kwargs)
+    #TODO: review this coreapi schema
+    # if coreapi_schema.is_enabled():
+    #     schema = ManualSchema(
+    #         fields=[
+    #             coreapi.Field(
+    #                 name="email",
+    #                 required=True,
+    #                 location='form',
+    #                 schema=coreschema.String(
+    #                     title="Email",
+    #                     description="Valid email associated with an active user",
+    #                 ),
+    #             ),
+    #             coreapi.Field(
+    #                 name="purpose",
+    #                 required=True,
+    #                 location='form',
+    #                 schema=coreschema.String(
+    #                     title="Purpose",
+    #                     description="Service to be associated with the API Token",
+    #                 ),
+    #             ),
+    #         ],
+    #         encoding="application/json",
+    #     )
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -213,234 +172,60 @@ class SingleAPITokenViewSet(viewsets.GenericViewSet,
             )
 
     def list(self, request, *args, **kwargs):
-        # print('bien avant')
-        queryset = self.filter_queryset(self.get_queryset())
+        ''' Get full or partial list of API Tokens,
+        as a function of filters on 'purpose' and/or 'user_email'
+        '''
+
+        request_data = request.data
+        print('%%%%')
+        print(request_data.get('purpose'))
+        print('%%%%')
+        
+        #Overrides get_queryset in case there is a filter 
+        # TODO: explore how to tailor filtering using FilterSet instead
+        if (request_data.get('purpose') 
+        and request_data.get('user_email') is None):
+            print('if_purpose is accessed')
+            
+            selected_purpose = request_data.get('purpose')
+            queryset = APIToken.objects.filter(purpose=selected_purpose)
+        elif (request_data.get('purpose') is None
+        and request_data.get('user_email')):
+            selected_email = request_data.get('user_email')
+            selected_user = User.objects.get(email=selected_email)
+            queryset = APIToken.objects.filter(user=selected_user)
+        elif (request_data.get('purpose')
+        and request_data.get('user_email')):
+            selected_purpose = request_data.get('purpose')
+            selected_email = request_data.get('user_email')
+            selected_user = User.objects.get(email=selected_email)
+            queryset = APIToken.objects.filter(
+                purpose=selected_purpose
+                ).filter(
+                user=selected_user
+                )
+        elif (request_data.get('purpose') is None
+        and request_data.get('user_email') is None):
+            queryset = self.filter_queryset(self.get_queryset().order_by('id'))
+        
+        print('$$$$')
         print(queryset)
-        print('avant')
+        print('$$$$')
 
+        data = [
+            {
+            'user_email': q.user.email,
+            'purpose': q.purpose,
+            }
+            for q in queryset
+        ]
 
-
-        page = self.paginate_queryset(queryset)
-        print('page:')
-        print(page)
-        print('XXX')
+        page = self.paginate_queryset(data)
         if page is not None:
-            print('avant serializer')
+            print('if page is accessed')
             serializer = self.get_serializer(page, many=True)
-            print(serializer)
-            print('apres serializer')
-            print('serializer data')
-            print(serializer.data)
-            print('-----')
             return self.get_paginated_response(serializer.data)
 
-        print('en dehors du if')
         serializer = self.get_serializer(queryset, many=True)
-        print(serializer)
+        print('after if page is accessed')
         return Response(serializer.data)
-
-    @action(detail=False) 
-    def selected_user_tokens(self, request, *args, **kwargs):
-        print('called!')
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        if (serializer.validated_data['purpose']
-        and serializer.validated_data['user_email']):
-            selected_purpose = serializer.validated_data['purpose']
-            selected_email = serializer.validated_data['user_email']
-            selected_user = User.objects.get(email=selected_email)
-            
-            selected_tokens = APIToken.objects.get_queryset(
-                purpose=selected_purpose, user=selected_user
-            )
-            # criterion = str([selected_purpose, ' + ', selected_email])
-            # should we loop through results before calling Response?
-            # and format?
-            return Response(selected_tokens)
-
-        elif serializer.validated_data['purpose']:
-            selected_purpose = serializer.validated_data['purpose']
-            selected_tokens = APIToken.objects.get_queryset(
-                purpose=selected_purpose
-            )
-
-            # criterion = selected_purpose
-            # should we loop through results before calling Response?
-            # and format?
-            return Response(selected_tokens)
-
-        elif serializer.validated_data['user_email']:
-            selected_email = serializer.validated_data['user_email']
-            selected_user = User.objects.get(email=selected_email)
-            selected_tokens = APIToken.objects.get_queryset(
-                user=selected_user
-            )
-
-            # criterion = selected_email
-            # should we loop through results before calling Response?
-            # and format?
-            return Response(selected_tokens)
-
-        else:
-            # can we return a list here and delete the MultipleAPITokenViewSet?
-            # or else just raise an error here
-            # return self.list(request, *args, **kwargs)
-            serializer = self.get_serializer(data=request.data)
-            print(serializer)
-            return Response(f'The selection: {serializer} does not match any record.')
-
-        #     purpose = serializer.validated_data['purpose']
-        
-        # user_email = serializer.validated_data['user_email']
-        # user_email = serializer.validated_data['user_email']
-        # user = User.objects.get(email=user_email)
-        # selected_user_tokens = APIToken.objects.get_queryset(
-        #     user=user
-        # ) 
-        
-
-
-class MultipleAPITokenViewSet(mixins.ListModelMixin,
-                            viewsets.GenericViewSet):
-    queryset = APIToken.objects.all()
-    # filter_fields = ['purpose', 'user', 'created']
-    serializer_class = MultipleAPITokenSerializer
-
-    permission_classes = (DRYPermissions,)
-
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-# How to include OK_Created response in the Response plus an adhoc message?
-
-
-
-#############################################
-# class APITokenView(APIView):
-#     serializer_class = APITokenSerializer
-#     filter_fields = '__all__'
-#     permission_classes = (DRYPermissions,)
-
-#     def get_serializer_context(self):
-#         return {
-#             'request': self.request,
-#             'format': self.format_kwarg,
-#             'view': self
-#         }
-
-#     def get_serializer(self, *args, **kwargs):
-#         kwargs['context'] = self.get_serializer_context()
-#         return self.serializer_class(*args, **kwargs)
-
-#     def create(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         user = serializer.validated_data['user']
-#         purpose = serializer.validated_data['purpose']
-#         api_token = APIToken.objects.create(user=user, purpose=purpose)
-#         return Response({
-#             'api_token': api_token.key,
-#             'purpose': api_token.purpose,
-#             'email': api_token.user.email,
-#             })
-
-
-# obtain_api_token = APITokenView.as_view()
-
-# class APITokenViewSet(viewsets.ModelViewSet):
-#     ''' This class is strongly inspired from ObtainToken in Django Rest Framework
-#     Some differences are in the post function:
-#     - the post function has been modified to allow:
-#         - creating multiple tokens by a single user
-#         - specifying to which purpose the token relates
-#     TODO: - a get function has been added to allow user to retrieve:
-#         - a list of their tokens
-#         - the token related to a given purpose  
-#     '''
-#     serializer_class = APITokenSerializer
-#     filter_fields = '__all__'
-#     permission_classes = (DRYPermissions,)
-#     # filter_backends = (APITokenBackend,)
-
-#     # def get_permissions(self):
-#     #     if self.action in ['list', 'retrieve']:
-#     #         permission_classes = []
-#     #     else:
-#     #         permission_classes = [IsAdminUser]
-
-#     #     return [permission() for permission in permission_classes]
-
-#     # def get_queryset(self):
-#     #     if self.request.user.is_staff:
-#     #         return APIToken.objects.all()
-#     #     else:
-#     #         return APIToken.objects.filter(user=self.request.user)
-
-#     if coreapi_schema.is_enabled():
-#         schema = ManualSchema(
-#             fields=[
-#                 coreapi.Field(
-#                     name="email",
-#                     required=True,
-#                     location='form',
-#                     schema=coreschema.String(
-#                         title="Email",
-#                         description="Valid email associated with an active user",
-#                     ),
-#                 ),
-#                 coreapi.Field(
-#                     name="purpose",
-#                     required=True,
-#                     location='form',
-#                     schema=coreschema.String(
-#                         title="Purpose",
-#                         description="Service to be associated with the API Token",
-#                     ),
-#                 ),
-#             ],
-#             encoding="application/json",
-#         )
-
-#     def get_serializer_context(self):
-#         return {
-#             'request': self.request,
-#             'format': self.format_kwarg,
-#             'view': self
-#         }
-
-#     def get_serializer(self, *args, **kwargs):
-#         kwargs['context'] = self.get_serializer_context()
-#         return self.serializer_class(*args, **kwargs)
-
-#     def create(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         user = serializer.validated_data['user']
-#         purpose = serializer.validated_data['purpose']
-#         api_token = APIToken.objects.create(user=user, purpose=purpose)
-#         return Response({
-#             'api_token': api_token.key,
-#             'purpose': api_token.purpose,
-#             'email': api_token.user.email,
-#             })
-
-
-# class APITokenReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
-#     """
-#     A simple ViewSet for viewing api tokens.
-#     Note: a read-only viewset is needed to match
-#     the read-only serializer which is itself needed
-#     to allow getting the token user's email from database
-#     instead of having to provide it
-#     when creating a token
-#     """
-#     serializer_class = serializers.APITokenReadOnlySerializer
-#     # filter_fields = '__all__'
-#     filter_fields = [
-#         'email',
-#         'purpose',
-#     ]
-#     permission_classes = (DRYPermissions,)
-#     filter_backends = (APITokenBackend,)
-    

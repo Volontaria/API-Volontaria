@@ -12,7 +12,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework import status
 
 # Application modules
-from api_volontaria.apps.user.serializers import SingleAPITokenSerializer
+from api_volontaria.apps.user.serializers import APITokenSerializer
 from api_volontaria.factories import UserFactory, AdminFactory
 from ....testClasses import CustomAPITestCase
 from ..models import APIToken
@@ -139,7 +139,7 @@ class APITokenTests(CustomAPITestCase):
         }
 
         response = self.client.post(
-            reverse('single-api-token-list'),
+            reverse('api-token-list'),
             data_post,
             format='json',
         )
@@ -174,7 +174,7 @@ class APITokenTests(CustomAPITestCase):
         }
 
         response = self.client.post(
-            reverse('single-api-token-list'),
+            reverse('api-token-list'),
             data_post,
             format='json',
         )
@@ -233,7 +233,7 @@ class APITokenTests(CustomAPITestCase):
         }
 
         response = self.client.post(
-            reverse('single-api-token-list'),
+            reverse('api-token-list'),
             data_post,
             format='json',
         )
