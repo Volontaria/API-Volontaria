@@ -226,6 +226,9 @@ class APITokenViewSet(viewsets.GenericViewSet,
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
 
+        #TODO: revisit below: necessary?
+        # if page: necessary?
+
         serializer = self.get_serializer(queryset, many=True)
         print('after if page is accessed')
         return Response(serializer.data)
