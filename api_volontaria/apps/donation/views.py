@@ -1,20 +1,12 @@
 import stripe
 from requests import Response
-from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework import status, generics, viewsets
+from rest_framework.decorators import api_view, action
+
+from api_volontaria.apps.donation.models import Donation
+from api_volontaria.apps.donation.serializers import DonationSerializer
 
 
-@api_view(['POST'])
-def donate(request):
-    data = request.data
-    print(data['email'])
-    payment_intent = stripe.PaymentIntent.create(
-        amount=data['amount'], currency='cad',
-
-        payment_method=data['payment_method_id'],
-        confirmation_method='manual',
-        confirm=True,
-        receipt_email=data['email'])
-    return Response(status=status.HTTP_200_OK, data=payment_intent)
-
-
+class DonationViewSet(viewsets.ModelViewSet):
+    serializer_class = DonationSerializer
+    queryset = Donation.objects.all()
