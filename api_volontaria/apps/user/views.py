@@ -122,7 +122,7 @@ class APITokenViewSet(viewsets.GenericViewSet,
 
     serializer_class = APITokenSerializer
     permission_classes = (DRYPermissions,)
-    queryset = APIToken.objects.all()
+    # queryset = APIToken.objects.all()
     
     #TODO: review this coreapi schema
     # if coreapi_schema.is_enabled():
@@ -150,6 +150,42 @@ class APITokenViewSet(viewsets.GenericViewSet,
     #         encoding="application/json",
     #     )
 
+    def get_queryset(self):
+
+        # TODO: add .order_by('id'))
+        
+        # queryset = super(CLASS_NAME, self).get_queryset()
+        queryset = APIToken.objects.all()
+        # filter_category = self.request.query_params.get('category', None)
+        selected_purpose = self.request.query_params.get('purpose', None)
+        selected_email = self.request.query_params.get('user_email', None)
+        if (selected_purpose is not None and selected_email is not None):
+            selected_user = User.objects.get(email=selected_email)
+            # queryset = APIToken.objects.filter(
+            #     purpose=selected_purpose
+            #     ).filter(
+            #     user=selected_user
+            #     )
+            queryset = queryset.filter(
+                purpose=selected_purpose
+                ).filter(
+                user=selected_user
+                )
+            # queryset = queryset.filter(
+            #     purpose=selected_purpose,
+            #     user_email=selected_email
+            #     )
+        elif (selected_purpose is not None and selected_email is None):
+            queryset = queryset.filter(
+                purpose=selected_purpose
+                )
+        elif (selected_purpose is None and selected_email is None):
+            selected_user = User.objects.get(email=selected_email)
+            queryset = queryset.filter(
+                user=selected_user
+                )
+        return queryset
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -171,64 +207,64 @@ class APITokenViewSet(viewsets.GenericViewSet,
             status=status.HTTP_201_CREATED
             )
 
-    def list(self, request, *args, **kwargs):
-        ''' Get full or partial list of API Tokens,
-        as a function of filters on 'purpose' and/or 'user_email'
-        '''
+    # def list(self, request, *args, **kwargs):
+    #     ''' Get full or partial list of API Tokens,
+    #     as a function of filters on 'purpose' and/or 'user_email'
+    #     '''
 
-        request_data = request.data
-        print('%%%%')
-        print(request_data.get('purpose'))
-        print('%%%%')
+    #     request_data = request.data
+    #     print('%%%%')
+    #     print(request_data.get('purpose'))
+    #     print('%%%%')
         
-        #Overrides get_queryset in case there is a filter 
-        # TODO: explore how to tailor filtering using FilterSet instead
-        if (request_data.get('purpose') 
-        and request_data.get('user_email') is None):
-            print('if_purpose is accessed')
+    #     #Overrides get_queryset in case there is a filter 
+    #     # TODO: explore how to tailor filtering using FilterSet instead
+    #     if (request_data.get('purpose') 
+    #     and request_data.get('user_email') is None):
+    #         print('if_purpose is accessed')
             
-            selected_purpose = request_data.get('purpose')
-            queryset = APIToken.objects.filter(purpose=selected_purpose)
-        elif (request_data.get('purpose') is None
-        and request_data.get('user_email')):
-            selected_email = request_data.get('user_email')
-            selected_user = User.objects.get(email=selected_email)
-            queryset = APIToken.objects.filter(user=selected_user)
-        elif (request_data.get('purpose')
-        and request_data.get('user_email')):
-            selected_purpose = request_data.get('purpose')
-            selected_email = request_data.get('user_email')
-            selected_user = User.objects.get(email=selected_email)
-            queryset = APIToken.objects.filter(
-                purpose=selected_purpose
-                ).filter(
-                user=selected_user
-                )
-        elif (request_data.get('purpose') is None
-        and request_data.get('user_email') is None):
-            queryset = self.filter_queryset(self.get_queryset().order_by('id'))
+    #         selected_purpose = request_data.get('purpose')
+    #         queryset = APIToken.objects.filter(purpose=selected_purpose)
+    #     elif (request_data.get('purpose') is None
+    #     and request_data.get('user_email')):
+    #         selected_email = request_data.get('user_email')
+    #         selected_user = User.objects.get(email=selected_email)
+    #         queryset = APIToken.objects.filter(user=selected_user)
+    #     elif (request_data.get('purpose')
+    #     and request_data.get('user_email')):
+    #         selected_purpose = request_data.get('purpose')
+    #         selected_email = request_data.get('user_email')
+    #         selected_user = User.objects.get(email=selected_email)
+    #         queryset = APIToken.objects.filter(
+    #             purpose=selected_purpose
+    #             ).filter(
+    #             user=selected_user
+    #             )
+    #     elif (request_data.get('purpose') is None
+    #     and request_data.get('user_email') is None):
+    #         queryset = self.filter_queryset(self.get_queryset().order_by('id'))
         
-        print('$$$$')
-        print(queryset)
-        print('$$$$')
+    #     print('$$$$')
+    #     print(queryset)
+    #     print('$$$$')
 
-        data = [
-            {
-            'user_email': q.user.email,
-            'purpose': q.purpose,
-            }
-            for q in queryset
-        ]
+    #     data = [
+    #         {
+    #         'user_email': q.user.email,
+    #         'purpose': q.purpose,
+    #         }
+    #         for q in queryset
+    #     ]
 
-        page = self.paginate_queryset(data)
-        if page is not None:
-            print('if page is accessed')
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+    #     page = self.paginate_queryset(data)
+    #     if page is not None:
+    #         print('if page is accessed')
+    #         serializer = self.get_serializer(page, many=True)
+    #         return self.get_paginated_response(serializer.data)
 
-        #TODO: revisit below: necessary?
-        # if page: necessary?
+    #     #TODO: revisit below: necessary?
+    #     # if page: necessary?
 
-        serializer = self.get_serializer(queryset, many=True)
-        print('after if page is accessed')
-        return Response(serializer.data)
+    #     serializer = self.get_serializer(queryset, many=True)
+    #     print('after if page is accessed')
+    #     return Response(serializer.data)

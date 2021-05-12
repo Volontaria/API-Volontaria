@@ -322,41 +322,43 @@ class APITokenTests(CustomAPITestCase):
 
     def test_filter_api_tokens_on_purpose_field(self):
         """ Ensure api tokens matching selected purpose are listed """
-        # self.client.force_authenticate(user=self.admin)
+        self.client.force_authenticate(user=self.admin)
 
         # request = {
 
         # }
-        view = APITokenViewSet.as_view({'get': 'list'})
+        # view = APITokenViewSet.as_view({'get': 'list'})
 
 
-        factory = APIRequestFactory()
-        request = factory.get('/api-tokens', data={'purpose': 'Service alpha'}, format='json')
-        force_authenticate(request, user=self.admin)
-        response = view(request)
+        # factory = APIRequestFactory()
+        # request = factory.get('/api-tokens', data={'purpose': 'Service alpha'}, format='json')
+        # force_authenticate(request, user=self.admin)
+        # response = view(request)
         
         # response = APITokenViewSet.list(self, request)
-        # data = {
-        #     'purpose': 'Service alpha',
-        #     'user_email': '',
-        # }
-        print('rrr')
-        print(response)
-        print('rrr')
-
-        print('ddd')
-        print(response.data)
-        print('ddd')
-
-        # response = self.client.get(
-        #     reverse('api-token-list'),
-        # )
-
+        data = {
+            'purpose': 'Service alpha',
+            'user_email': '',
+        }
         # print('rrr')
         # print(response)
         # print('rrr')
 
-        response.render()
+        # print('ddd')
+        # print(response.data)
+        # print('ddd')
+
+        response = self.client.get(
+            reverse('api-token-list'),
+            data,
+            format = 'json'
+        )
+
+        print('rrr')
+        print(response)
+        print('rrr')
+
+        # response.render()
 
 
         content = json.loads(response.content)
@@ -389,36 +391,42 @@ class APITokenTests(CustomAPITestCase):
         # request = {
 
         # }
-        view = APITokenViewSet.as_view({'get': 'list'})
+        # view = APITokenViewSet.as_view({'get': 'list'})
 
 
-        factory = APIRequestFactory()
-        request = factory.get('/api-tokens', data={'purpose': 'Service unknown'}, format='json')
-        force_authenticate(request, user=self.admin)
-        response = view(request)
+        # factory = APIRequestFactory()
+        # request = factory.get('/api-tokens', data={'purpose': 'Service unknown'}, format='json')
+        # force_authenticate(request, user=self.admin)
+        # response = view(request)
+
+
         
         # response = APITokenViewSet.list(self, request)
         # data = {
         #     'purpose': 'Service alpha',
         #     'user_email': '',
         # }
-        print('rrrunknown')
-        print(response)
-        print('rrrunknown')
+        # print('rrrunknown')
+        # print(response)
+        # print('rrrunknown')
 
-        print('dddunknown')
-        print(response.data)
-        print('dddunknown')
+        # print('dddunknown')
+        # print(response.data)
+        # print('dddunknown')
 
-        # response = self.client.get(
-        #     reverse('api-token-list'),
-        # )
+        response = self.client.get(
+            reverse('api-token-list'),
+            {
+                'purpose': 'Service unknown'
+            },
+            format='json',
+        )
 
         # print('rrr')
         # print(response)
         # print('rrr')
 
-        response.render()
+        # response.render()
 
 
         content = json.loads(response.content)
@@ -433,41 +441,43 @@ class APITokenTests(CustomAPITestCase):
 
     def test_filter_api_tokens_on_user_email_field(self):
         """ Ensure api tokens matching selected user_email are listed """
-        # self.client.force_authenticate(user=self.admin)
+        self.client.force_authenticate(user=self.admin)
 
         # request = {
 
         # }
-        view = APITokenViewSet.as_view({'get': 'list'})
+        # view = APITokenViewSet.as_view({'get': 'list'})
 
 
-        factory = APIRequestFactory()
-        request = factory.get('/api-tokens', data={'user_email': self.admin.email}, format='json')
-        force_authenticate(request, user=self.admin)
-        response = view(request)
+        # factory = APIRequestFactory()
+        # request = factory.get('/api-tokens', data={'user_email': self.admin.email}, format='json')
+        # force_authenticate(request, user=self.admin)
+        # response = view(request)
         
         # response = APITokenViewSet.list(self, request)
-        # data = {
-        #     'purpose': 'Service alpha',
-        #     'user_email': '',
-        # }
-        print('rrremail')
-        print(response)
-        print('rrremail')
+        data = {
+            'purpose': 'Service alpha',
+            'user_email': '',
+        }
+        # print('rrremail')
+        # print(response)
+        # print('rrremail')
 
-        print('dddemail')
-        print(response.data)
-        print('dddemail')
+        # print('dddemail')
+        # print(response.data)
+        # print('dddemail')
 
-        # response = self.client.get(
-        #     reverse('api-token-list'),
-        # )
+        response = self.client.get(
+            reverse('api-token-list'),
+            data,
+            format='json'
+        )
 
         # print('rrr')
         # print(response)
         # print('rrr')
 
-        response.render()
+        # response.render()
 
 
         content = json.loads(response.content)
