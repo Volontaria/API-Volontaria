@@ -7,9 +7,8 @@ User = get_user_model()
 class UserFactory(factory.DjangoModelFactory):
     class Meta:
         model = User
-
     # Using fixed first name and last name
-    # instead of factory.Faker('first_name') and f.F('last_name')
+    # instead of factory.Faker('first_name') and factory.F('last_name')
     # respectively, so that test_password_change_but_too_weak
     # in test_view_users.py
     # always returns the same message
@@ -26,7 +25,6 @@ class UserFactory(factory.DjangoModelFactory):
 class AdminFactory(factory.DjangoModelFactory):
     class Meta:
         model = User
-
     first_name = 'Victor'
     last_name = 'Hugo'
     email = factory.Sequence('chuck{0}@example.com'.format)

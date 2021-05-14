@@ -8,7 +8,6 @@ from django.contrib.admin import site
 from django.urls import reverse
 
 from rest_framework.test import APIClient
-# from rest_framework.exceptions import ValidationError
 from rest_framework import status
 from rest_framework.test import APIRequestFactory, force_authenticate
 
@@ -46,9 +45,9 @@ class APITokenTests(CustomAPITestCase):
             user=self.admin,
             purpose='Service gamma')
 
-    # Three generic tests strongly inspired 
+    # Two generic tests strongly inspired 
     # from DRF testing suite for Token
-    
+
     def test_model_admin_displayed_fields(self):
         mock_request = object()
         token_admin = APITokenAdmin(self.admin_apitoken, self.site)
@@ -61,7 +60,7 @@ class APITokenTests(CustomAPITestCase):
     # permission system:
     # Admin has all write and read permissions
     # Users can only list their own API Tokens (seeing purpose only)
-      
+    
     def test_more_than_one_token_can_be_created_for_single_admin(self):
         token_initial_count = APIToken.objects.filter(
             user=self.admin
@@ -104,20 +103,11 @@ class APITokenTests(CustomAPITestCase):
             'user_email': self.user.email,
         }
 
-        # auth = self.header_prefix + self.key
-
         response = self.client.post(
             reverse('api-token-list'),
             data_post,
             format='json',
         )
-
-        # self.client.post(
-        #     reverse('application-list'),
-        #     data_post,
-        #     format='json',
-        #     HTTP_AUTHORIZATION=auth,
-        # )
 
         content = json.loads(response.content)
 
@@ -199,10 +189,7 @@ class APITokenTests(CustomAPITestCase):
         )
     
     def test_user_cannot_create_api_token(self):
-        # initial_api_token_count = APIToken.objects.filter(
-        #     user=self.user
-        # ).count()
-        
+
         self.client.force_authenticate(user=self.user)       
 
         data_post = {
@@ -248,17 +235,6 @@ class APITokenTests(CustomAPITestCase):
             content
         )
 
-        # print('###')
-        # print(content)
-        # print(content.get('detail'))
-        # print('###')
-        
-
-        # self.assertEqual(
-        #     content,
-        #     {'detail': 'Unable to create an API token: there is no active'
-        #     ' user with the email you provided.'}
-        # )
         self.assertEqual(
             content.get('detail'),
             'Unable to create an API token: there is no active'
@@ -274,10 +250,6 @@ class APITokenTests(CustomAPITestCase):
         )
 
         content = json.loads(response.content)
-
-        # print('$$$$$$$')
-        # print(content)
-        # print('$$$$$$$$$$$$')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(content['count'], 3)
@@ -324,48 +296,14 @@ class APITokenTests(CustomAPITestCase):
         """ Ensure api tokens matching selected purpose are listed """
         self.client.force_authenticate(user=self.admin)
 
-        # request = {
-
-        # }
-        # view = APITokenViewSet.as_view({'get': 'list'})
-
-
-        # factory = APIRequestFactory()
-        # request = factory.get('/api-tokens', data={'purpose': 'Service alpha'}, format='json')
-        # force_authenticate(request, user=self.admin)
-        # response = view(request)
-        
-        # response = APITokenViewSet.list(self, request)
-        data = {
-            'purpose': 'Service alpha',
-            'user_email': '',
-        }
-        # print('rrr')
-        # print(response)
-        # print('rrr')
-
-        # print('ddd')
-        # print(response.data)
-        # print('ddd')
-
         response = self.client.get(
-            reverse('api-token-list'),
-            data,
-            format = 'json'
+            '/'.join([
+                reverse('api-token-list'),
+                '?purpose=Service+alpha',
+            ]),
         )
 
-        print('rrr')
-        print(response)
-        print('rrr')
-
-        # response.render()
-
-
         content = json.loads(response.content)
-
-        print('ccc')
-        print(content)
-        print('ccc')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(content['count'], 1)
@@ -373,67 +311,19 @@ class APITokenTests(CustomAPITestCase):
             content['results'][0]['purpose'],
             'Service alpha')
 
-        # self.assertEqual(content['count'], 3)
-        # self.assertEqual(
-        #     content['results'][0]['purpose'],
-        #     'Service alpha')
-        # self.assertEqual(
-        #     content['results'][1]['purpose'],
-        #     'Service beta')
-        # self.assertEqual(
-        #     content['results'][2]['purpose'],
-        #     'Service gamma')
-
     def test_filter_api_tokens_on_purpose_field_with_non_existing_value(self):
         """ Ensure an empty list is returned when no match """
-        # self.client.force_authenticate(user=self.admin)
-
-        # request = {
-
-        # }
-        # view = APITokenViewSet.as_view({'get': 'list'})
-
-
-        # factory = APIRequestFactory()
-        # request = factory.get('/api-tokens', data={'purpose': 'Service unknown'}, format='json')
-        # force_authenticate(request, user=self.admin)
-        # response = view(request)
-
-
-        
-        # response = APITokenViewSet.list(self, request)
-        # data = {
-        #     'purpose': 'Service alpha',
-        #     'user_email': '',
-        # }
-        # print('rrrunknown')
-        # print(response)
-        # print('rrrunknown')
-
-        # print('dddunknown')
-        # print(response.data)
-        # print('dddunknown')
+        self.client.force_authenticate(user=self.admin)
 
         response = self.client.get(
-            reverse('api-token-list'),
-            {
-                'purpose': 'Service unknown'
-            },
+            '/'.join([
+                reverse('api-token-list'),
+                '?purpose=Service+unknown',
+            ]),
             format='json',
         )
 
-        # print('rrr')
-        # print(response)
-        # print('rrr')
-
-        # response.render()
-
-
         content = json.loads(response.content)
-
-        print('ccc')
-        print(content)
-        print('ccc')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(content['count'], 0)
@@ -443,58 +333,71 @@ class APITokenTests(CustomAPITestCase):
         """ Ensure api tokens matching selected user_email are listed """
         self.client.force_authenticate(user=self.admin)
 
-        # request = {
-
-        # }
-        # view = APITokenViewSet.as_view({'get': 'list'})
-
-
-        # factory = APIRequestFactory()
-        # request = factory.get('/api-tokens', data={'user_email': self.admin.email}, format='json')
-        # force_authenticate(request, user=self.admin)
-        # response = view(request)
-        
-        # response = APITokenViewSet.list(self, request)
-        data = {
-            'purpose': 'Service alpha',
-            'user_email': '',
-        }
-        # print('rrremail')
-        # print(response)
-        # print('rrremail')
-
-        # print('dddemail')
-        # print(response.data)
-        # print('dddemail')
-
         response = self.client.get(
-            reverse('api-token-list'),
-            data,
+            ''.join([
+                reverse('api-token-list'),
+                '/',
+                '?user_email=',
+                self.admin.email,
+            ]),
             format='json'
         )
 
-        # print('rrr')
-        # print(response)
-        # print('rrr')
-
-        # response.render()
-
-
         content = json.loads(response.content)
 
-        print('ccc')
-        print(content)
-        print('ccc')
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(content['count'], 3)
+        self.assertEqual(content['count'], 1)
         self.assertEqual(
             content['results'][0]['user_email'],
             self.admin.email)
-        # self.assertEqual(
-        #     content['results'][1]['purpose'],
-        #     'Service beta')
-        # self.assertEqual(
-        #     content['results'][2]['purpose'],
-        #     'Service gamma')
+        self.assertEqual(
+            content['results'][0]['purpose'],
+            'Service gamma')
 
+    def test_filter_api_tokens_on_user_email_field_with_non_existing_value(self):
+        """ Ensure an empty list is returned when no match """
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get(
+            '/'.join([
+                reverse('api-token-list'),
+                '?user_email=yenapas',
+            ]),
+            format='json',
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(content['count'], 0)
+        self.assertEqual(content['results'],[])
+
+    def test_filter_api_tokens_on_both_user_email_and_purpose_fields(self):
+        """
+        Ensure api tokens matching both selected user_email 
+        and selected purpose are listed
+        """
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get(
+            ''.join([
+                reverse('api-token-list'),
+                '/',
+                '?purpose=Service alpha',
+                '&',
+                '?user_email=',
+                self.user.email,
+            ]),
+            format='json'
+        )
+
+        content = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(content['count'], 1)
+        self.assertEqual(
+            content['results'][0]['user_email'],
+            self.user.email)
+        self.assertEqual(
+            content['results'][0]['purpose'],
+            'Service alpha')
