@@ -16,18 +16,13 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls import include, url
-from rest_framework.documentation import include_docs_urls
-from rest_framework.routers import (DefaultRouter) #, SimpleRouter,
-#     Route, DynamicRoute)
+from rest_framework.routers import (DefaultRouter)
 
 # External application routers
 # ie: from app.urls import router as app_router
 from api_volontaria.apps.user.views import FacebookLogin
 
 from . import views
-
-# from api_volontaria.apps.user.views import obtain_api_token
-
 
 class OptionalSlashDefaultRouter(DefaultRouter):
     """ Subclass of DefaultRouter to make the trailing slash optional """
@@ -38,9 +33,6 @@ class OptionalSlashDefaultRouter(DefaultRouter):
 
 # Create one or more routers and register our viewsets with them.
 router = OptionalSlashDefaultRouter()
-
-# External workplace application
-# ie: router.registry.extend(app_router.registry)
 
 # Main application routes
 router.register('users', views.UserViewSet)

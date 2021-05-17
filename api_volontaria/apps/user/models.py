@@ -291,35 +291,10 @@ class APIToken(models.Model):
         '''Gives staff only permission to update and destroy API tokens'''
         return request.user.is_staff
 
-    # @staticmethod
-    # @authenticated_users
-    # def has_update_permission(request):
-    #     return request.user.is_staff
-
     @staticmethod
     @authenticated_users
     def has_read_permission(request):
         return request.user.is_staff
-
-    # @staticmethod
-    # @authenticated_users
-    # def has_create_permission(request):
-    #     return request.user.is_staff
-
-    # @authenticated_users
-    # def has_object_update_permission(self, request):
-    #     return request.user.is_staff
-
-    # @authenticated_users
-    # def has_object_destroy_permission(self, request):
-    #     return request.user.is_staff
-
-    # if self.user == request.user:
-    #         return True
-    #     if request.user.is_staff:
-    #         return True
-    #     else:
-    #         return False
 
     def __str__(self):
         return self.key

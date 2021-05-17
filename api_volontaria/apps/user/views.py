@@ -1,23 +1,16 @@
 # Third-party libraries
-from django.contrib.auth import get_user_model#, password_validation
+from django.contrib.auth import get_user_model
 from django.conf import settings
-# from django.contrib.auth.models import AnonymousUser, Permission
-# from django.db.models import Q
-# from django.utils import timezone
 from django.http import Http404
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from django.db.models.query import QuerySet
 
 from rest_framework import mixins, status, viewsets
-# from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.compat import coreapi, coreschema
 from rest_framework.response import Response
-from rest_framework.schemas import ManualSchema
-from rest_framework.schemas import coreapi as coreapi_schema
 
 from allauth.socialaccount.providers.facebook.views import (
     FacebookOAuth2Adapter,
@@ -107,48 +100,20 @@ class FacebookLogin(SocialLoginView):
 class APITokenViewSet(viewsets.GenericViewSet,
                         mixins.CreateModelMixin,
                         mixins.ListModelMixin):
-
-    ''' This class is strongly inspired from ObtainAuthToken
+    ''' 
+    This class is strongly inspired from ObtainAuthToken
     in Django Rest Framework
-    Some differences are in the post function:
+    Main differences are:
     - the post function has been modified to allow:
         - creating multiple tokens by a single user
         - specifying to which purpose the token relates
     - the addition of a list function allowing admin to retrieve:
         - a list of all API tokens
-        - a list of API tokens filtered
+        - a partial list of API tokens, filtered
          on the fields 'purpose' and/or 'user_email'  
     '''
-
     serializer_class = APITokenSerializer
     permission_classes = (DRYPermissions,)
-    # queryset = APIToken.objects.all()
-    
-    #TODO: review this coreapi schema
-    # if coreapi_schema.is_enabled():
-    #     schema = ManualSchema(
-    #         fields=[
-    #             coreapi.Field(
-    #                 name="email",
-    #                 required=True,
-    #                 location='form',
-    #                 schema=coreschema.String(
-    #                     title="Email",
-    #                     description="Valid email associated with an active user",
-    #                 ),
-    #             ),
-    #             coreapi.Field(
-    #                 name="purpose",
-    #                 required=True,
-    #                 location='form',
-    #                 schema=coreschema.String(
-    #                     title="Purpose",
-    #                     description="Service to be associated with the API Token",
-    #                 ),
-    #             ),
-    #         ],
-    #         encoding="application/json",
-    #     )
 
     def get_queryset(self):
         '''
@@ -180,6 +145,7 @@ class APITokenViewSet(viewsets.GenericViewSet,
         return queryset
 
     def create(self, request, *args, **kwargs):
+        ''' Create API Token '''
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         purpose = serializer.validated_data['purpose']
@@ -205,9 +171,7 @@ class APITokenViewSet(viewsets.GenericViewSet,
         as a function of filter criteria
         that are passed by the queryset
         '''
-
         queryset = self.filter_queryset(self.get_queryset())
-
         data = [
             {
             'user_email': q.user.email,
@@ -215,7 +179,6 @@ class APITokenViewSet(viewsets.GenericViewSet,
             }
             for q in queryset
         ]
-
         page = self.paginate_queryset(data)
         if page is not None:
             serializer = self.get_serializer(page, many=True)

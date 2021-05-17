@@ -154,7 +154,6 @@ class APITokenSerializer(serializers.Serializer):
         (but a User field, user being a foreign key in APIToken model)
     2. We do not want an update method
     '''
-
     # dry_rest_framework requires Serializer class to have Meta attribute
     class Meta:
        model = APIToken

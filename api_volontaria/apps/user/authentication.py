@@ -10,7 +10,6 @@ from .models import APIToken
 
 
 class APITokenAuthentication(BaseAuthentication):
-    
     """
     TokenAuthentication class, copied-pasted at 99% from django rest framwork:
     Simple token based authentication.

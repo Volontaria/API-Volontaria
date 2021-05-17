@@ -9,7 +9,6 @@ from django.urls import reverse
 
 from rest_framework.test import APIClient
 from rest_framework import status
-from rest_framework.test import APIRequestFactory, force_authenticate
 
 # Application modules
 from api_volontaria.apps.user.serializers import APITokenSerializer
@@ -59,7 +58,7 @@ class APITokenTests(CustomAPITestCase):
     # Tests tailored to Volontaria API Token
     # permission system:
     # Admin has all write and read permissions
-    # Users can only list their own API Tokens (seeing purpose only)
+    # Users have none
     
     def test_more_than_one_token_can_be_created_for_single_admin(self):
         token_initial_count = APIToken.objects.filter(
@@ -267,6 +266,7 @@ class APITokenTests(CustomAPITestCase):
         """ Ensure an authenticated user
         cannot list api tokens 
         """
+
         self.client.force_authenticate(user=self.user)
 
         response = self.client.get(
@@ -331,6 +331,7 @@ class APITokenTests(CustomAPITestCase):
 
     def test_filter_api_tokens_on_user_email_field(self):
         """ Ensure api tokens matching selected user_email are listed """
+
         self.client.force_authenticate(user=self.admin)
 
         response = self.client.get(
@@ -356,6 +357,7 @@ class APITokenTests(CustomAPITestCase):
 
     def test_filter_api_tokens_on_user_email_field_with_non_existing_value(self):
         """ Ensure an empty list is returned when no match """
+
         self.client.force_authenticate(user=self.admin)
 
         response = self.client.get(
@@ -377,6 +379,7 @@ class APITokenTests(CustomAPITestCase):
         Ensure api tokens matching both selected user_email 
         and selected purpose are listed
         """
+
         self.client.force_authenticate(user=self.admin)
 
         response = self.client.get(

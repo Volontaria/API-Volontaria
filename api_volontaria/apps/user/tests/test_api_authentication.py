@@ -10,7 +10,6 @@ from rest_framework.test import APIClient
 from django.conf import settings
 from django.test import TestCase
 
-
 # Application modules
 from api_volontaria.factories import (
     AdminFactory,
@@ -28,7 +27,7 @@ LOCAL_TIMEZONE = pytz.timezone(settings.TIME_ZONE)
 
 
 class APITokenAuthTests(CustomAPITestCase):
-    """ Testing API token usage as credentials
+    """ Testing API token usage as credential
     when trying to perform legitimate actions
     in Volontaria settings
     """
@@ -284,7 +283,6 @@ class BaseTokenAuthTests:
         """
         auth = self.header_prefix + self.key
 
-
         def func_to_test():
             return self.csrf_client.post(
                 self.path, {'example': 'example'},
@@ -306,6 +304,7 @@ class BaseTokenAuthTests:
         """
         Ensure POSTing json over token auth without correct credentials fails
         """
+
         response = self.csrf_client.post(
             self.path, {'example': 'example'}, format='json'
         )
@@ -313,8 +312,10 @@ class BaseTokenAuthTests:
 
 
 class CustomAPITokenAuthTests(BaseTokenAuthTests, TestCase):
-    """ This class of tests is stronlgy inspired from CustomKeywordTokenAuthTests class 
-    in django-rest-framework/tests/authentication/test_authentication.py
+    """ This class of tests is stronlgy inspired
+    from CustomKeywordTokenAuthTests class in
+    django-rest-framework
+    /tests/authentication/test_authentication.py
     """
 
     model = APIToken
