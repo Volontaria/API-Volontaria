@@ -7,10 +7,11 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from api_volontaria.apps.user.managers import UserManager, ActionTokenManager
-from rest_framework.authtoken.models import Token
 from django.utils import timezone
 from django.conf import settings
-from django.template.loader import render_to_string
+
+from dry_rest_permissions.generics import DRYPermissions,\
+    authenticated_users
 
 
 class User(AbstractUser):
@@ -230,3 +231,70 @@ class Address(models.Model):
 
     class Meta:
         abstract = True
+
+
+class APIToken(models.Model):
+    """
+    A model allowing for multiple persistent tokens per single user,
+    each for a different purpose
+    """
+
+    # The token key must not be the primary key, 
+    # because django 2.2 admin displays the primary key in the url address bar!
+    # (for reference, DRF, where the token is the primary key, needs an APIProxy class)
+    key = models.CharField(_("Key"), max_length=40, unique=True) 
+    
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name='api_token',
+        on_delete=models.CASCADE, verbose_name=_("User")
+    )
+    purpose = models.CharField(_("Purpose"), max_length=200, blank=False)
+    created = models.DateTimeField(_("Created"), auto_now_add=True)
+
+    permission_classes = (DRYPermissions,)
+
+    class Meta:
+        # Work around for a bug in Django:
+        # https://code.djangoproject.com/ticket/19422
+        #
+        # See also related ticket:
+        # https://github.com/encode/django-rest-framework/issues/705
+        abstract = 'rest_framework.authtoken' not in settings.INSTALLED_APPS
+        verbose_name = _("API Token")
+        verbose_name_plural = _("API Tokens")
+
+        unique_together = [['user', 'purpose']]
+
+    def save(self, *args, **kwargs):
+        if not self.key:
+            self.key = self.generate_key()
+        return super().save(*args, **kwargs)
+
+    @classmethod
+    def generate_key(cls):
+        return binascii.hexlify(os.urandom(20)).decode()
+
+    # Permissions: 
+    # Only an admin can create, update and destroy API tokens
+    # Users can only see a list of their own API tokens
+    # (the latter is obtained from combining has_list_permission
+    # below with a filter on what can be listed in views.py)
+    @staticmethod
+    @authenticated_users
+    def has_write_permission(request):
+        '''Gives create, update and destroy permission to staff only'''
+        return request.user.is_staff
+
+    @staticmethod
+    @authenticated_users
+    def has_object_write_permission(request):
+        '''Gives staff only permission to update and destroy API tokens'''
+        return request.user.is_staff
+
+    @staticmethod
+    @authenticated_users
+    def has_read_permission(request):
+        return request.user.is_staff
+
+    def __str__(self):
+        return self.key

@@ -1,9 +1,6 @@
 from rest_framework.test import APITestCase
 
 
-from rest_framework.test import APITestCase
-
-
 class CustomAPITestCase(APITestCase):
     ATTRIBUTES = []
 
