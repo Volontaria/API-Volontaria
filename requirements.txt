@@ -1,5 +1,5 @@
 Django==2.2.12
-djangorestframework==3.11.0
+djangorestframework==3.11.2
 django-allauth==0.40
 django-rest-auth==0.9.5
 django-dry-rest-permissions==1.1.0
