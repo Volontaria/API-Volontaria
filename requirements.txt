@@ -20,7 +20,7 @@ django-model-utils==4.0.0
 babel==2.8.0
 django-import-export==2.0.2
 django-money==1.1
-
+stripe==2.56.0
 # Documentation tools
 mkdocs==1.1.2
 mkdocs-material==5.2.3

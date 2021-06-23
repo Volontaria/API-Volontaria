@@ -26,6 +26,7 @@ from rest_framework.routers import DefaultRouter
 from api_volontaria.apps.volunteer.urls import router as volunteer_router
 from api_volontaria.apps.page.urls import router as page_router
 from api_volontaria.apps.position.urls import router as position_router
+from api_volontaria.apps.donation.urls import router as donation_router
 
 from api_volontaria.apps.user.urls import router as user_router
 from api_volontaria.apps.user.urls import urlpatterns as user_urls
@@ -47,6 +48,7 @@ router.registry.extend(user_router.registry)
 router.registry.extend(volunteer_router.registry)
 router.registry.extend(page_router.registry)
 router.registry.extend(position_router.registry)
+router.registry.extend(donation_router.registry)
 
 urlpatterns = [
     path(
@@ -62,4 +64,5 @@ urlpatterns = [
     ),
     path('', include(user_urls)),
     path('', include(router.urls)),  # includes router generated URL
+    #path('payment/', snippet_list, name='snippet'),
 ]

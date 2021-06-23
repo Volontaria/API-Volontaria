@@ -29,7 +29,6 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost', cast=Csv())
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -60,6 +59,8 @@ INSTALLED_APPS = [
     'api_volontaria.apps.page',
     'api_volontaria.apps.volunteer',
     'api_volontaria.apps.position',
+    'api_volontaria.apps.donation',
+    'stripe',
     'django_filters',
     'djmoney',
 ]
@@ -99,7 +100,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'api_volontaria.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
@@ -119,7 +119,7 @@ ACCOUNT_EMAIL_VERIFICATION = 'optional'
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 AUTH_USER_MODEL = 'user.User'
-ACCOUNT_ADAPTER = 'api_volontaria'\
+ACCOUNT_ADAPTER = 'api_volontaria' \
                   '.apps.user.adapters.AccountAdapter'
 REST_AUTH_SERIALIZERS = {
     'USER_DETAILS_SERIALIZER':
@@ -158,7 +158,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
@@ -196,11 +195,9 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 100
 }
 
-
 # CORS Header Django Rest Framework
 
 CORS_ORIGIN_ALLOW_ALL = True
-
 
 # Temporary Token
 
@@ -218,7 +215,7 @@ ACTIVATION_TOKENS = {
 
 ANYMAIL = {
     'SENDINBLUE_API_KEY':
-    config('SENDINBLUE_API_KEY', default='placeholder_key'),
+        config('SENDINBLUE_API_KEY', default='placeholder_key'),
     'REQUESTS_TIMEOUT': (30, 30),
     'TEMPLATES': {
         'CONFIRMATION_PARTICIPATION': config(
@@ -247,8 +244,8 @@ LOCAL_SETTINGS = {
         'ORGANIZATION',
         default='Volontaria'),
     'CONTACT_EMAIL': config(
-            'CONTACT_EMAIL',
-            default='noreply@volontaria.org',
+        'CONTACT_EMAIL',
+        default='noreply@volontaria.org',
     ),
     'EMAIL_SERVICE': config(
         'EMAIL_SERVICE',
