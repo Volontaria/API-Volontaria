@@ -205,6 +205,12 @@ class Event(models.Model):
         on_delete=models.PROTECT,
     )
 
+    search_fields = ['description', 
+                    'start_time',
+                    'cell__name',
+                    'task_type__name',
+                    ]
+
     def __str__(self):
         return str(self.start_time) + ' - ' + str(self.end_time)
 
@@ -238,6 +244,14 @@ class Event(models.Model):
     def has_list_permission(request):
         return True
 
+    @staticmethod
+    def has_read_permission(request):
+        return True
+
+    @staticmethod
+    def has_object_read_permission(request):
+        return True
+   
     @staticmethod
     @authenticated_users
     def has_create_permission(request):

@@ -111,6 +111,12 @@ class EventAdmin(admin.ModelAdmin):
     date_hierarchy = 'start_time'
     ordering = ('start_time',)
 
+    search_fields = [
+        'description', 'start_time', 
+        'cell__name', 
+        'task_type__name', 
+    ]
+
     @staticmethod
     def status_volunteers(obj):
         return str(obj.nb_volunteers) + ' / ' + \
