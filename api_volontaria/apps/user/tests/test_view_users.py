@@ -69,6 +69,7 @@ class UsersTests(CustomAPITestCase):
             'event': {
                 'create': False,
                 'update': False,
+                'read': True,
                 'destroy': False,
             },
             'participation': {
