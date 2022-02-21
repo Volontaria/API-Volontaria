@@ -187,7 +187,7 @@ class APITokenTests(CustomAPITestCase):
             initial_api_token_count + 1
         )
     
-    def test_user_cannot_create_api_token(self):
+    def test_user_cannot_create_api_token_two(self):
 
         self.client.force_authenticate(user=self.user)       
 
