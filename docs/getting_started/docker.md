@@ -35,7 +35,7 @@ docker-compose run api python source/apiVolontaria/manage.py createsuperuser
 
 ## Configurations
 
-If you want to modify some settings of your Docker image you can just overwrite your `.env.docker` file with the 
+If you want to modify some settings of your Docker image you can just overwrite your `.env` file with the 
 ENV variable that you want. Differents Django settings are based on ENV variables as you can see 
 in `source/apiVolontaria/apiVolontaria/settings.py`
 

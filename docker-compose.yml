@@ -4,14 +4,14 @@ services:
   postgres:
     image: postgres:latest
     environment:
-      POSTGRES_DB: my_db_name
-      POSTGRES_USER: my_db_user
-      POSTGRES_PASSWORD: my_db_password
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
   web:
     restart: always
-    env_file: .env.docker
+    env_file: .env
     environment:
-      - DJANGO_SECRET_KEY=local
+      - DJANGO_SECRET_KEY=${SECRET_KEY}
     image: web
     build: ./
     command: >
@@ -31,4 +31,4 @@ services:
     volumes:
       - ./:/code
     ports:
-      - "8001:8001"
+      - "8010:8010"
