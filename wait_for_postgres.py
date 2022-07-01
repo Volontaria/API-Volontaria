@@ -10,7 +10,7 @@ config = {
     "dbname": os.getenv("POSTGRES_DB", "postgres"),
     "user": os.getenv("POSTGRES_USER", "postgres"),
     "password": os.getenv("POSTGRES_PASSWORD", ""),
-    "host": os.getenv("DATABASE_URL", "postgres")
+    "host": os.getenv("HOST", "postgres")
 }
 
 start_time = time()
@@ -22,14 +22,14 @@ logger.addHandler(logging.StreamHandler())
 def pg_isready(host, user, password, dbname):
     while time() - start_time < check_timeout:
         try:
-            conn = psycopg2.connect(**vars())
+            conn = psycopg2.connect(**config)
             logger.info("Postgres is ready! ✨ 💅")
             conn.close()
             return True
         except psycopg2.OperationalError:
             logger.info(
                 f"Postgres isn't ready. Waiting for {check_interval} "
-                f"{interval_unit}..."
+                f"{interval_unit}... using {config}"
             )
             sleep(check_interval)
 
